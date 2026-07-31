@@ -18,13 +18,15 @@ See `specs/game-design.md` for the full technical brief and
 ```
 data/     roads.json, cars.json, checkpoints.json, traffic.json
 shared/   fixedmath, prng, canonical, statehash, constants, road_data, car_data, checkpoint_data, traffic_data  (Luau-portable)
-engine/   reducer, state, car_physics, road_progress, traffic, copy_state, snapshot, commands
+engine/   reducer, state, car_physics, road_progress, traffic, scenario, copy_state, snapshot, commands
 client/   index.html, main, projection, road_renderer, renderer_canvas, hud, input, session_local
 server/   node http + ws race rooms                         (added later)
 luau/     Luau twins of shared/ (+ engine/ after Milestone 1)
 roblox/   Rojo project mounting luau/ into ReplicatedStorage.Shared
 test/     node --test suites + pinned fixtures
-specs/    game-design (brief), 01 determinism contract, 02 road & course model
+tools/    repin_checkpoint_1a.mjs (conscious golden repin)
+debugging/ replay.mjs (scenario replay as a race report)
+specs/    game-design (brief) + 01 determinism … 07 local race loop
 ```
 
 ## Running the gates

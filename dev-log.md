@@ -198,3 +198,30 @@ state). Accel run now starts with 4 cars; finish still tick 215, checkpoint tick
 
 **Next:** slice-008 local-race-loop — formalize the scenario replay + promote the
 golden to `checkpoint_1a` with a repin tool.
+
+---
+
+## marker-0007 — slice-008 local-race-loop (2026-07-31)
+
+**Goal:** formalize the headless race loop as a deterministic scenario replay
+and pin the Milestone 1 golden `checkpoint_1a`.
+
+**Built:**
+- `engine/scenario.js` — `runScenario(scenario, ctx)`: scheduled input changes
+  (held between ticks) drive the reducer to completion; returns state, pinned
+  snapshot hashes, an ordered event census, and the final hash. Stops when all
+  seats finish/timeout.
+- `test/fixtures/checkpoint_1a.json` — seed 12345 accel run: hashes at 10/100/215,
+  `finalHash aede4f551034a311`, `finishTick 215`, census `[checkpoint@119,
+  finish@215]`. Hashes at 10/100 match `physics_1a` (consistent by construction).
+- `tools/repin_checkpoint_1a.mjs` — conscious repin (requires a reason, prints
+  the census before writing).
+- `debugging/replay.mjs` — human race report (replay as bug report).
+- `test/checkpoint_1a.test.js` — pinned hashes, census drift tripwire,
+  two-run byte-identity, loop termination. `specs/07`.
+
+**Gate:** `./test.sh` → 64/64 + Luau spine parity OK.
+
+**MILESTONE 1 COMPLETE** (solo checkpoint run). **Next:** the batched Luau engine
+twin (port order §20, cross-checked against `checkpoint_1a` as the JS↔Luau
+contract), then Milestone 2 (node ws server room).

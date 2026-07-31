@@ -14,7 +14,9 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-005 canvas-road-renderer  *(client: pseudo-3D road + car + HUD + local session)*
 - [x] slice-006 checkpoint-timer  *(timer + checkpoint bonus + timeout; repinned physics golden)*
 - [x] slice-007 traffic-spawn  *(deterministic segment-seeded traffic; repinned golden)*
-- [ ] slice-008 local-race-loop  *(+ `checkpoint_1a` golden hash fixture)*
+- [x] slice-008 local-race-loop  *(scenario replay + `checkpoint_1a` golden + repin tool)*
+
+**Milestone 1 (solo checkpoint run): COMPLETE.**
 
 ## Milestone 2 — Server room
 
@@ -48,6 +50,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 ## Harness (grown as the feature it tests arrives)
 
 - [x] node --test unit gates + golden fixtures + `test.sh` self-test
+- [x] scenario replay (`engine/scenario.js`) + `checkpoint_1a` + repin tool + `debugging/replay.mjs`
 - [ ] sim campaign (`debugging/sim_campaign_outrun.sh`) — with AI drivers
 - [ ] sweep battery (`tools/sim_sweep.mjs`) + fairness tools (mirror/carswap/traffic)
 - [ ] Playwright client smoke / ui-acceptance / perf smoke

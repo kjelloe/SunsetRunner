@@ -1,0 +1,43 @@
+{
+  "note": "checkpoint_1a milestone fixture. Last repinned: initial pin at slice-008 (marker-0007)",
+  "scenario": {
+    "name": "checkpoint_1a",
+    "seed": 12345,
+    "courseId": 1,
+    "carId": 1,
+    "startTimeTicks": 1500,
+    "maxTicks": 400,
+    "hashTicks": [
+      10,
+      100,
+      215
+    ],
+    "inputs": [
+      {
+        "tick": 1,
+        "steer": 0,
+        "accel": 1,
+        "brake": 0
+      }
+    ]
+  },
+  "expected": {
+    "hashes": {
+      "10": "8d8602919ab2ba7b",
+      "100": "279d3a5cfd76219b",
+      "215": "aede4f551034a311"
+    },
+    "finalHash": "aede4f551034a311",
+    "finishTick": 215,
+    "census": [
+      {
+        "type": "checkpoint",
+        "tick": 119
+      },
+      {
+        "type": "finish",
+        "tick": 215
+      }
+    ]
+  }
+}
