@@ -43,9 +43,9 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 ## Luau twin (batched — after Milestone 1 lands)
 
 - [x] spine twin seam (prng/fixedmath/canonical/statehash/constants) + parity gate
-- [ ] slice-019 roblox engine twin (car_physics, road_progress, timer, forks,
-      traffic, collision, reducer) — port order per §20, same JSON scenarios as
-      cross-language contracts
+- [x] slice-019 roblox engine twin (state, car_physics, road_progress, traffic,
+      copy_state, snapshot, reducer, scenario + loaders) — reproduces
+      `checkpoint_1a` byte-identically via lune (marker-0008)
 
 ## Harness (grown as the feature it tests arrives)
 

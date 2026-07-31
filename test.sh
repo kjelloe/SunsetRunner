@@ -9,12 +9,12 @@ npm test --silent
 js_rc=$?
 
 echo
-echo "== Luau parity gate (lune) =="
+echo "== Luau parity gates (lune) =="
 if command -v lune >/dev/null 2>&1; then
-  lune run luau/spine-check.luau
+  lune run luau/spine-check.luau && lune run luau/checkpoint-1a-check.luau
   luau_rc=$?
 else
-  echo "lune not installed — skipping Luau parity gate"
+  echo "lune not installed — skipping Luau parity gates"
   luau_rc=0
 fi
 

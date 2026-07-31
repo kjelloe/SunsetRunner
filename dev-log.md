@@ -225,3 +225,28 @@ and pin the Milestone 1 golden `checkpoint_1a`.
 **MILESTONE 1 COMPLETE** (solo checkpoint run). **Next:** the batched Luau engine
 twin (port order §20, cross-checked against `checkpoint_1a` as the JS↔Luau
 contract), then Milestone 2 (node ws server room).
+
+---
+
+## marker-0008 — Luau engine twin (batched, post-M1) (2026-08-01)
+
+**Goal:** the deferred full Luau port of the engine, proven byte-identical to JS
+against the `checkpoint_1a` golden.
+
+**Ported (§20 order):** `luau/{road_data,car_data,traffic_data}` loaders and
+`luau/{state,car_physics,road_progress,traffic,copy_state,snapshot,reducer,
+scenario}` — mirroring the JS engine. `canonical.luau` gained `writeI32LE`.
+
+**Translation traps handled:** held flags are numbers → compare `~= 0` (Luau
+0 is truthy); serde arrays are 1-indexed → `arr[(value % #arr) + 1]`; Luau
+`continue`; snapshot byte layout field-identical.
+
+**Gate:** `luau/checkpoint-1a-check.luau` runs the scenario through the Luau
+engine and asserts every pinned hash + final hash + census. Matched JS on the
+first run: `aede4f551034a311`. `test/luau_engine.test.js` runs it in `npm test`;
+`test.sh` runs both Luau gates. `specs/08`. Rojo already mounts `luau/`.
+
+**Gate:** `./test.sh` → 65/65 + spine parity + engine parity OK.
+
+**Next:** Milestone 2 — node ws server room (slice-009), remote session seam
+(slice-010).

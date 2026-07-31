@@ -25,6 +25,11 @@ local function createByteWriter()
 			table.insert(bytes, math.floor(v / 16777216) % 256)
 			return w
 		end,
+		-- Two's-complement i32. Lua's floored % already yields the unsigned
+		-- 32-bit representation for negatives (-1 % 2^32 = 4294967295).
+		writeI32LE = function(v: number)
+			return w.writeU32LE(v % 4294967296)
+		end,
 		toBytes = function()
 			return bytes
 		end,
