@@ -250,3 +250,27 @@ first run: `aede4f551034a311`. `test/luau_engine.test.js` runs it in `npm test`;
 
 **Next:** Milestone 2 — node ws server room (slice-009), remote session seam
 (slice-010).
+
+---
+
+## marker-0009 — slice-009 node-ws-room (2026-08-01)
+
+**Goal:** a server-authoritative race room over http + `ws` (first Milestone 2
+slice). First runtime dependency: `ws`.
+
+**Built:**
+- `server/protocol.js` — join/input/welcome/view/error + on-wire validation.
+- `server/game_room.js` — `createRoom`: drop-in `addSeat`/`removeSeat` (cap
+  `maxSeats` 8), queued per-seat input, `tick()` (drain inputs → advance_tick,
+  sim stays the pure reducer), `viewFor` (self + minified ghosts + traffic +
+  hash).
+- `server/index.js` — `startServer` (exported for tests; `npm start` boots on
+  PORT): node http static host for client/shared/engine/data + a 20 Hz room that
+  broadcasts per-seat views.
+- `test/game_room.test.js` (drop-in, self/ghost split, maxSeats, leave,
+  deterministic replay) + `test/server_ws.test.js` (real ws join→input→view,
+  malformed-input rejection). `specs/09`.
+
+**Gate:** `./test.sh` → 71/71 + both Luau gates OK.
+
+**Next:** slice-010 remote-session-seam (client remote session).

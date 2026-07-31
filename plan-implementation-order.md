@@ -20,7 +20,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 ## Milestone 2 — Server room
 
-- [ ] slice-009 node-ws-room
+- [x] slice-009 node-ws-room  *(http static + ws room, protocol, per-seat views)*
 - [ ] slice-010 remote-session-seam
 
 ## Milestone 3 — 8-player ghost race
