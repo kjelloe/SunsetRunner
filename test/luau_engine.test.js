@@ -7,21 +7,26 @@ import { dirname, resolve } from "node:path";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 // Cross-language ENGINE contract: the Luau engine twin must reproduce the
-// checkpoint_1a golden (hashes + census) byte-identically. Skips when lune is
+// engine goldens (hashes + census) byte-identically. Skips when lune is
 // unavailable so the JS suite stays runnable without the Luau toolchain.
-test("luau engine twin reproduces checkpoint_1a (via lune)", () => {
+function runLuauGate(script, okMarker) {
   let out;
   try {
-    out = execFileSync("lune", ["run", "luau/checkpoint-1a-check.luau"], {
-      cwd: repoRoot,
-      encoding: "utf8",
-    });
+    out = execFileSync("lune", ["run", script], { cwd: repoRoot, encoding: "utf8" });
   } catch (err) {
     if (err.code === "ENOENT") {
-      console.log("lune not installed — skipping Luau engine parity gate");
+      console.log(`lune not installed — skipping ${script}`);
       return;
     }
-    assert.fail(`lune engine parity gate failed:\n${err.stdout || ""}${err.stderr || ""}`);
+    assert.fail(`lune gate ${script} failed:\n${err.stdout || ""}${err.stderr || ""}`);
   }
-  assert.match(out, /LUAU ENGINE PARITY OK/);
+  assert.match(out, okMarker);
+}
+
+test("luau engine twin reproduces checkpoint_1a (via lune)", () => {
+  runLuauGate("luau/checkpoint-1a-check.luau", /LUAU ENGINE PARITY OK/);
+});
+
+test("luau engine twin reproduces collision_1a (via lune)", () => {
+  runLuauGate("luau/collision-1a-check.luau", /LUAU COLLISION PARITY OK/);
 });

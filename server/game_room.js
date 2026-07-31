@@ -50,6 +50,8 @@ export function createRoom(ctx, opts = {}) {
     seats: [], startTimeTicks, trafficConfig: ctx.trafficConfig,
     maxSeats: opts.maxSeats ?? 8,
   });
+  // Room ctx for the sim; rivalCollision is a per-room toggle (§10/§11).
+  const simCtx = opts.rivalCollision ? { ...ctx, rivalCollision: 1 } : ctx;
   const inputs = new Map(); // seatId -> latest { steer, accel, brake }
   let nextSeatId = 1;
 
@@ -78,9 +80,9 @@ export function createRoom(ctx, opts = {}) {
     // One authoritative sim step: drain queued inputs, then advance a tick.
     tick() {
       for (const [seatId, inp] of inputs) {
-        state = apply(state, { type: CMD_INPUT, seatId, steer: inp.steer, accel: inp.accel, brake: inp.brake }, ctx);
+        state = apply(state, { type: CMD_INPUT, seatId, steer: inp.steer, accel: inp.accel, brake: inp.brake }, simCtx);
       }
-      state = apply(state, { type: CMD_ADVANCE_TICK }, ctx);
+      state = apply(state, { type: CMD_ADVANCE_TICK }, simCtx);
       return state;
     },
 

@@ -6,7 +6,7 @@ local reducer = require("./reducer")
 local snapshot = require("./snapshot")
 
 local function isCensus(t: string): boolean
-	return t == "checkpoint" or t == "finish" or t == "timeout"
+	return t == "checkpoint" or t == "finish" or t == "timeout" or t == "collision"
 end
 
 local function allDone(state): boolean
@@ -21,7 +21,21 @@ end
 local function runScenario(scenario, ctx)
 	local byTick = {}
 	for _, inp in ipairs(scenario.inputs) do
-		byTick[inp.tick] = inp
+		if not byTick[inp.tick] then
+			byTick[inp.tick] = {}
+		end
+		table.insert(byTick[inp.tick], inp)
+	end
+
+	local seats = scenario.seats or { { id = 1, carId = scenario.carId } }
+	local runCtx = ctx
+	if scenario.rivalCollision then
+		runCtx = {
+			courseSet = ctx.courseSet,
+			carSet = ctx.carSet,
+			trafficConfig = ctx.trafficConfig,
+			rivalCollision = 1,
+		}
 	end
 
 	local state = stateMod.createInitialState({
@@ -29,7 +43,7 @@ local function runScenario(scenario, ctx)
 		courseSet = ctx.courseSet,
 		carSet = ctx.carSet,
 		courseId = scenario.courseId,
-		seats = { { id = 1, carId = scenario.carId } },
+		seats = seats,
 		startTimeTicks = scenario.startTimeTicks,
 		trafficConfig = ctx.trafficConfig,
 	})
@@ -44,11 +58,13 @@ local function runScenario(scenario, ctx)
 	local lastTick = 0
 
 	for t = 1, scenario.maxTicks do
-		local inp = byTick[t]
-		if inp then
-			state = reducer.apply(state, { type = "input", seatId = 1, steer = inp.steer, accel = inp.accel, brake = inp.brake }, ctx)
+		local inps = byTick[t]
+		if inps then
+			for _, inp in ipairs(inps) do
+				state = reducer.apply(state, { type = "input", seatId = inp.seatId or 1, steer = inp.steer, accel = inp.accel, brake = inp.brake }, runCtx)
+			end
 		end
-		state = reducer.apply(state, { type = "advance_tick" }, ctx)
+		state = reducer.apply(state, { type = "advance_tick" }, runCtx)
 		for _, e in ipairs(state.events) do
 			if isCensus(e.type) then
 				table.insert(census, { type = e.type, tick = e.tick })

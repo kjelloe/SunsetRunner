@@ -8,6 +8,7 @@ import { cloneState } from "./copy_state.js";
 import { stepLongitudinal, stepLateral } from "./car_physics.js";
 import { advanceRoad } from "./road_progress.js";
 import { spawnSegmentTraffic, advanceTraffic } from "./traffic.js";
+import { resolveRivalCollisions } from "./collision.js";
 import { getCar } from "../shared/car_data.js";
 import { getSegment } from "../shared/road_data.js";
 
@@ -59,6 +60,12 @@ export function apply(state, command, ctx = {}) {
         seat.speed = 0;
         next.events.push({ type: "timeout", seatId: seat.id, tick: next.tick });
       }
+    }
+    // 10. rival collision (cross-seat; after per-seat updates — timer/finish do
+    // not read speed/laneX, so this placement is equivalent and keeps single-seat
+    // hashes stable). Off unless the room enables it.
+    if (ctx.rivalCollision) {
+      for (const e of resolveRivalCollisions(next, next.tick)) next.events.push(e);
     }
     advanceTraffic(next, ctx.courseSet); // 8b. move/despawn traffic
     return next;

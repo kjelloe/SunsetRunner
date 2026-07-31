@@ -323,3 +323,35 @@ and both Luau gates stay green.
 **Gate:** `./test.sh` → 77/77 + both Luau gates OK.
 
 **Next:** slice-012 same-segment-collision.
+
+---
+
+## marker-0012 — slice-012 same-segment-collision (2026-08-01)
+
+**Goal:** arcade rival soft-bump for cars sharing a segment, gated per room,
+twinned in Luau. Completes Milestone 3.
+
+**Built:**
+- `engine/collision.js` — `resolveRivalCollisions`: overlapping seats shed
+  `BUMP_SLOW` and shove apart by `BUMP_PUSH`, emit `collision` events.
+  Order-INDEPENDENT (deltas from pre-bump state, applied together;
+  seatId tie-break).
+- `engine/reducer.js` — runs collision as a cross-seat pass after the per-seat
+  loop (equivalent to §25 step 10; keeps single-seat hashes stable), gated by
+  `ctx.rivalCollision`.
+- `engine/scenario.js` — multi-seat (`scenario.seats`), per-input `seatId`,
+  `scenario.rivalCollision`; `collision` added to the census set.
+- `server/game_room.js` — `createRoom({ rivalCollision })` threads the toggle.
+- Luau twin: `luau/collision.luau` + reducer/scenario updates +
+  `luau/collision-1a-check.luau` gate (matches JS `28f01c18c272da59`).
+  `test.sh` runs three Luau gates.
+- `test/fixtures/collision_1a.json` (2-seat golden) + `test/collision.test.js`.
+  `specs/12`.
+
+**No repin of checkpoint_1a:** single-seat behaviour and hashes unchanged
+(verified `aede4f551034a311`).
+
+**Gate:** `./test.sh` → 83/83 + spine + checkpoint + collision Luau parity OK.
+
+**MILESTONE 3 COMPLETE.** **Next:** slice-013 replay-dump-load, then Milestone 4
+(traffic collision + AI drivers + sim campaign), and client prediction (§21.2).

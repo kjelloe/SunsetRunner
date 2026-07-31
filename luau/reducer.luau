@@ -7,6 +7,7 @@ local copyState = require("./copy_state")
 local physics = require("./car_physics")
 local roadProgress = require("./road_progress")
 local trafficMod = require("./traffic")
+local collision = require("./collision")
 local car = require("./car_data")
 local road = require("./road_data")
 
@@ -58,6 +59,11 @@ local function apply(state, command, ctx)
 				seat.timedOut = 1
 				seat.speed = 0
 				table.insert(next.events, { type = "timeout", seatId = seat.id, tick = next.tick })
+			end
+		end
+		if ctx.rivalCollision then
+			for _, e in ipairs(collision.resolveRivalCollisions(next, next.tick)) do
+				table.insert(next.events, e)
 			end
 		end
 		trafficMod.advanceTraffic(next, ctx.courseSet)
