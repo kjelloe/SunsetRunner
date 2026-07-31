@@ -1,0 +1,15 @@
+{
+  "note": "slice-002 golden vectors. Repin is a conscious act — any change here means the deterministic contract moved.",
+  "mix32": {
+    "0": 0,
+    "1": 824515495,
+    "12345": 1747545881
+  },
+  "seedSfc32_12345": { "a": 1699593848, "b": 3214139262, "c": 2907709144, "d": 3177249767 },
+  "sfc32_first8_from_12345": [3796015581, 2499684369, 2102811611, 4285781916, 992344316, 90080499, 3064069682, 1521435739],
+  "fnv1a64": {
+    "empty": "cbf29ce484222325",
+    "bytes_1_to_10": "909856bd77277e52"
+  },
+  "hashState_spine0": "88ccfef8e9391fd8"
+}

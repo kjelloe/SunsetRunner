@@ -1,0 +1,10 @@
+{
+  "name": "sunset-runner",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Sunset Runner — a deterministic, server-authoritative arcade road racer. Fireline-derived stack (new IP).",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test --test-concurrency=4 test/*.test.js"
+  }
+}

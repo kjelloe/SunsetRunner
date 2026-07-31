@@ -1,0 +1,27 @@
+{
+  "name": "SunsetRunner",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$className": "Folder",
+        "$path": "../luau"
+      },
+      "GameData": {
+        "$path": { "optional": "../data" }
+      }
+    },
+    "ServerScriptService": {
+      "SunsetRunner": {
+        "$path": { "optional": "src/server" }
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "SunsetRunnerClient": {
+          "$path": { "optional": "src/client" }
+        }
+      }
+    }
+  }
+}
