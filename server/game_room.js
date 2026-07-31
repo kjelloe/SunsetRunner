@@ -43,17 +43,24 @@ function computeStandings(seats) {
 export function createRoom(ctx, opts = {}) {
   const courseId = opts.courseId ?? 1;
   const startTimeTicks = opts.startTimeTicks ?? 1500;
+  const seed = opts.seed ?? 12345;
+  const rivalCollision = opts.rivalCollision ? 1 : 0;
   const startSegment = getCourse(ctx.courseSet, courseId).startSegment;
   let state = createInitialState({
-    seed: opts.seed ?? 12345,
+    seed,
     courseSet: ctx.courseSet, carSet: ctx.carSet, courseId,
     seats: [], startTimeTicks, trafficConfig: ctx.trafficConfig,
     maxSeats: opts.maxSeats ?? 8,
   });
   // Room ctx for the sim; rivalCollision is a per-room toggle (§10/§11).
-  const simCtx = opts.rivalCollision ? { ...ctx, rivalCollision: 1 } : ctx;
+  const simCtx = rivalCollision ? { ...ctx, rivalCollision: 1 } : ctx;
   const inputs = new Map(); // seatId -> latest { steer, accel, brake }
   let nextSeatId = 1;
+
+  // Replay recording (slice-013): seats + input CHANGES, dumped as a scenario.
+  const seatsMeta = [];
+  const recordedInputs = [];
+  const lastInputKey = new Map();
 
   return {
     get tick() { return state.tick; },
@@ -64,6 +71,7 @@ export function createRoom(ctx, opts = {}) {
       if (this.seatCount >= state.race.maxSeats) return -1; // room full
       const id = nextSeatId++;
       state.seats.push(makeSeat(id, carId, startSegment, startTimeTicks));
+      seatsMeta.push({ id, carId });
       return id;
     },
 
@@ -74,7 +82,30 @@ export function createRoom(ctx, opts = {}) {
     },
 
     setInput(seatId, input) {
+      // Record only changes; the effect first lands on the next tick produced.
+      const key = `${input.steer},${input.accel},${input.brake}`;
+      if (lastInputKey.get(seatId) !== key) {
+        recordedInputs.push({ tick: state.tick + 1, seatId, steer: input.steer, accel: input.accel, brake: input.brake });
+        lastInputKey.set(seatId, key);
+      }
       inputs.set(seatId, input);
+    },
+
+    // Dump the game so far as a re-runnable scenario (slice-013).
+    dumpReplay() {
+      return {
+        meta: { seed, courseId, startTimeTicks, rivalCollision, endedTick: state.tick },
+        scenario: {
+          name: "replay",
+          seed, courseId, startTimeTicks, rivalCollision,
+          maxTicks: state.tick,
+          maxSeats: state.race.maxSeats,
+          runToMaxTicks: 1, // reproduce the exact tick count, don't early-stop
+          seats: seatsMeta.map((s) => ({ ...s })),
+          hashTicks: [],
+          inputs: recordedInputs.map((i) => ({ ...i })),
+        },
+      };
     },
 
     // One authoritative sim step: drain queued inputs, then advance a tick.

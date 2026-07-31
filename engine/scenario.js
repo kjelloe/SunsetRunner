@@ -39,6 +39,7 @@ export function runScenario(scenario, ctx) {
     seats,
     startTimeTicks: scenario.startTimeTicks,
     trafficConfig: ctx.trafficConfig,
+    maxSeats: scenario.maxSeats, // undefined -> defaults to seat count
   });
 
   const hashTicks = new Set(scenario.hashTicks || []);
@@ -59,7 +60,8 @@ export function runScenario(scenario, ctx) {
     }
     if (hashTicks.has(t)) hashes[t] = hashSnapshot(state);
     lastTick = t;
-    if (allDone(state)) break;
+    // Replays reproduce an exact tick count; scenarios stop when the race is over.
+    if (!scenario.runToMaxTicks && allDone(state)) break;
   }
 
   return { state, hashes, census, finalHash: hashSnapshot(state), lastTick };
