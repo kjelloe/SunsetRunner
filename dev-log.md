@@ -107,3 +107,31 @@ snapshot-hash fixture.
 
 **Next:** slice-005 canvas-road-renderer (first client) or slice-006
 checkpoint-timer — the timer completes the solo-run gameplay loop.
+
+---
+
+## marker-0004 — slice-005 canvas-road-renderer (2026-07-31)
+
+**Goal:** first client — a Canvas 2D pseudo-3D road, player car, speed HUD,
+keyboard driving, and a local session driving the real reducer.
+
+**Built (`client/`):** `projection.js` (pure pseudo-3D projection — floats live
+CLIENT-side, out of the integer/Luau core), `road_renderer.js` (`forwardStrips`
+pure geometry walk + `drawRoad`), `renderer_canvas.js`, `hud.js`, `input.js`
+(keyboard → integer frame), `session_local.js` (setInput/tick/getState seam),
+`main.js` (20 Hz accumulator + rAF render, DOM-guarded boot), `index.html`.
+Plus `specs/04`, `RUNNING.md`.
+
+**Tests:** `test/projection.test.js` (projection monotonicity/centre-x,
+forwardStrips course walk + finish + curve accumulation) and
+`test/client_imports.test.js` (headless import gate, readInput integers, local
+session determinism).
+
+**Verified vs not:** engine-driving + pure helpers are gated headlessly. Visual
+feel/camera tuning is NOT verified — needs a native browser (brief §17);
+Playwright is still deferred. `projection.js` magnitudes are a first pass.
+
+**Gate:** `./test.sh` → 50/50 + Luau spine parity OK.
+
+**Next:** slice-006 checkpoint-timer — extends engine state (repins the physics
+golden) and closes the solo gameplay loop.

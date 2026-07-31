@@ -1,0 +1,23 @@
+// client/input.js — keyboard → input frame (CLIENT ONLY).
+// Maintains a held-key set and reduces it to the integer input command the
+// reducer expects. Import-safe: listeners are only attached when installed.
+
+const keys = new Set();
+
+export function installKeyboard(target) {
+  target.addEventListener("keydown", (e) => keys.add(e.code));
+  target.addEventListener("keyup", (e) => keys.delete(e.code));
+}
+
+// Reduce current keys to { steer, accel, brake } (all integers).
+export function readInput() {
+  const left = keys.has("ArrowLeft") || keys.has("KeyA");
+  const right = keys.has("ArrowRight") || keys.has("KeyD");
+  const accel = keys.has("ArrowUp") || keys.has("KeyW");
+  const brake = keys.has("ArrowDown") || keys.has("KeyS");
+  return {
+    steer: (right ? 1 : 0) - (left ? 1 : 0),
+    accel: accel ? 1 : 0,
+    brake: brake ? 1 : 0,
+  };
+}

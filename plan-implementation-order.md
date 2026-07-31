@@ -11,7 +11,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-002 prng-fixed-hash  *(spine + first golden fixture)*
 - [x] slice-003 road-data-loader  *(sunset_coast course + validation)*
 - [x] slice-004 single-car-physics  *(engine state + pure reducer + snapshot hash)*
-- [ ] slice-005 canvas-road-renderer
+- [x] slice-005 canvas-road-renderer  *(client: pseudo-3D road + car + HUD + local session)*
 - [ ] slice-006 checkpoint-timer
 - [ ] slice-007 traffic-spawn
 - [ ] slice-008 local-race-loop  *(+ `checkpoint_1a` golden hash fixture)*
