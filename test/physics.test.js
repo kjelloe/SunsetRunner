@@ -76,21 +76,64 @@ test("advance_tick is pure — source state hash is unchanged", () => {
   assert.equal(hashSnapshot(s0), h);
 });
 
-test("golden: accel-only run matches pinned hashes and finish tick", () => {
+test("golden: accel-only run matches pinned hashes, checkpoint and finish", () => {
+  const g = golden.accelRun;
   let s = createInitialState({
     seed: golden.seed, courseSet, carSet, courseId: golden.courseId,
     seats: [{ id: 1, carId: golden.carId }],
   });
   s = apply(s, { type: "input", seatId: 1, steer: 0, accel: 1, brake: 0 }, ctx);
   let finishTick = -1;
+  let checkpointTick = -1;
   for (let t = 1; t <= 400; t++) {
     s = apply(s, { type: "advance_tick" }, ctx);
-    if (t === 10) assert.equal(hashSnapshot(s), golden.accelRun.hashAtTick10);
-    if (t === 100) assert.equal(hashSnapshot(s), golden.accelRun.hashAtTick100);
+    if (t === 10) assert.equal(hashSnapshot(s), g.hashAtTick10);
+    if (t === 100) assert.equal(hashSnapshot(s), g.hashAtTick100);
+    const cp = s.events.find((e) => e.type === "checkpoint");
+    if (cp && checkpointTick < 0) {
+      checkpointTick = t;
+      assert.equal(cp.bonus, g.checkpointBonus);
+    }
     if (finishTick < 0 && s.events.some((e) => e.type === "finish")) finishTick = t;
   }
-  assert.equal(finishTick, golden.accelRun.finishTick);
-  assert.equal(s.seats[0].finishTicks, golden.accelRun.finishTick);
+  assert.equal(checkpointTick, g.checkpointTick);
+  assert.equal(finishTick, g.finishTick);
+  assert.equal(s.seats[0].finishTicks, g.finishTick);
   assert.equal(s.seats[0].segmentId, -1);
-  assert.equal(hashSnapshot(s), golden.accelRun.hashAtTick400);
+  assert.equal(s.seats[0].timerTicks, g.finalTimerTicks);
+  assert.equal(hashSnapshot(s), g.hashAtTick400);
+});
+
+test("passing the checkpoint extends the timer by the segment bonus", () => {
+  let s = createInitialState({
+    seed: 12345, courseSet, carSet, courseId: 1, seats: [{ id: 1, carId: 1 }],
+    startTimeTicks: 1500,
+  });
+  s = apply(s, { type: "input", seatId: 1, steer: 0, accel: 1, brake: 0 }, ctx);
+  let before = -1;
+  for (let t = 1; t <= 130; t++) {
+    const prev = s.seats[0].timerTicks;
+    s = apply(s, { type: "advance_tick" }, ctx);
+    if (s.events.some((e) => e.type === "checkpoint")) { before = prev; break; }
+  }
+  // timer went up across the checkpoint tick despite the -1 tick bleed
+  assert.ok(before >= 0);
+  assert.equal(s.seats[0].timerTicks, before - 1 + golden.accelRun.checkpointBonus);
+});
+
+test("timer reaching zero times the seat out and stops it", () => {
+  let s = createInitialState({
+    seed: golden.seed, courseSet, carSet, courseId: golden.courseId,
+    seats: [{ id: 1, carId: golden.carId }], startTimeTicks: golden.timeout.startTimeTicks,
+  });
+  s = apply(s, { type: "input", seatId: 1, steer: 0, accel: 1, brake: 0 }, ctx);
+  let timeoutTick = -1;
+  for (let t = 1; t <= 60; t++) {
+    s = apply(s, { type: "advance_tick" }, ctx);
+    if (timeoutTick < 0 && s.events.some((e) => e.type === "timeout")) timeoutTick = t;
+  }
+  assert.equal(timeoutTick, golden.timeout.timeoutTick);
+  assert.equal(s.seats[0].timedOut, 1);
+  assert.equal(s.seats[0].speed, 0);
+  assert.equal(s.seats[0].finishTicks, -1); // timed out, not finished
 });

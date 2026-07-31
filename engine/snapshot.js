@@ -29,6 +29,8 @@ export function serializeSnapshot(state) {
     w.writeU8(s.accelHeld);
     w.writeU8(s.brakeHeld);
     w.writeI32LE(s.finishTicks);
+    w.writeI32LE(s.timerTicks);
+    w.writeU8(s.timedOut);
   }
   return w.toBytes();
 }

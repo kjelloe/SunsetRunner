@@ -16,8 +16,8 @@ See `specs/game-design.md` for the full technical brief and
 ## Layout
 
 ```
-data/     roads.json (courses/segments), cars.json (roster)
-shared/   fixedmath, prng, canonical, statehash, constants, road_data, car_data  (Luau-portable)
+data/     roads.json (courses/segments), cars.json (roster), checkpoints.json (start time)
+shared/   fixedmath, prng, canonical, statehash, constants, road_data, car_data, checkpoint_data  (Luau-portable)
 engine/   reducer, state, car_physics, road_progress, copy_state, snapshot, commands
 client/   index.html, main, projection, road_renderer, renderer_canvas, hud, input, session_local
 server/   node http + ws race rooms                         (added later)

@@ -12,11 +12,14 @@ function segmentLength(courseSet, segmentId) {
 
 // Step 6 (+7 finish): advance roadZ by speed, carrying across segment
 // boundaries. On reaching a segment whose next is -1, the seat finishes.
+// Returns the ids of any segments newly ENTERED this tick so the reducer can
+// award checkpoint bonuses (step 7).
 export function advanceRoad(seat, courseSet, tick) {
-  if (seat.finishTicks >= 0) return { finished: false };
+  if (seat.finishTicks >= 0) return { finished: false, entered: [] };
 
   seat.roadZ += seat.speed;
   let segLen = segmentLength(courseSet, seat.segmentId);
+  const entered = [];
 
   while (seat.roadZ >= segLen) {
     seat.roadZ -= segLen;
@@ -26,10 +29,11 @@ export function advanceRoad(seat, courseSet, tick) {
       seat.finishTicks = tick;
       seat.roadZ = 0;
       seat.speed = 0; // arcade: stop at the line
-      return { finished: true };
+      return { finished: true, entered };
     }
     seat.segmentId = nxt;
+    entered.push(nxt);
     segLen = segmentLength(courseSet, nxt);
   }
-  return { finished: false };
+  return { finished: false, entered };
 }

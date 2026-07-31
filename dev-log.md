@@ -135,3 +135,37 @@ Playwright is still deferred. `projection.js` magnitudes are a first pass.
 
 **Next:** slice-006 checkpoint-timer — extends engine state (repins the physics
 golden) and closes the solo gameplay loop.
+
+---
+
+## marker-0005 — slice-006 checkpoint-timer (2026-07-31)
+
+**Goal:** classic arcade checkpoint timer — start budget, checkpoint top-up,
+timeout at zero — closing the solo gameplay loop.
+
+**Built:**
+- `data/checkpoints.json` (`startTimeTicks 1500`) + `shared/checkpoint_data.js`.
+- `engine/state.js` — seat gains `timerTicks` + `timedOut`; `createInitialState`
+  takes `startTimeTicks` (fallback `DEFAULT_START_TIME_TICKS`).
+- `engine/road_progress.js` — `advanceRoad` now returns the `entered` segment
+  ids so the reducer can award checkpoint bonuses.
+- `engine/reducer.js` — step 7 checkpoints (bonus + `checkpoint` event on
+  entering a segment with `checkpointTicks > 0`), step 11 timer bleed +
+  `timeout` (zero speed, `timedOut = 1`); finish this tick skips timer.
+- `engine/snapshot.js` — serializes `timerTicks` + `timedOut`.
+- `client/hud.js` timer readout (red < 5 s, `TIME UP` banner);
+  `client/main.js` + `session_local.js` thread the start time.
+- `test/checkpoint_data.test.js` + physics golden extended (checkpoint tick 119
+  +600, timeout scenario). `specs/05`.
+
+**REPIN:** `test/fixtures/physics_1a.json` snapshot hashes were repinned because
+`timerTicks`/`timedOut` joined the hashed seat state (conscious act). Behaviour
+unchanged — finish still tick 215.
+
+**Gate:** `./test.sh` → 54/54 + Luau spine parity OK (spine hash untouched; the
+engine-state hash `engine/snapshot.js` is the one that grew — twin post-M1).
+
+**Next:** Milestone 1 is functionally complete (solo checkpoint run). Remaining
+M1 polish: slice-007 traffic-spawn, slice-008 local-race-loop (promote the
+golden to `checkpoint_1a`). Then the batched Luau engine twin, then Milestone 2
+(server room).

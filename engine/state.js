@@ -10,8 +10,10 @@ import { getCar } from "../shared/car_data.js";
 
 export const RACE_RUNNING = 1;
 
+export const DEFAULT_START_TIME_TICKS = 1500; // 75 s at 20 Hz (fallback)
+
 // Seat flags kept as 0/1 ints, not booleans, for a clean byte layout.
-export function makeSeat(id, carId, startSegment) {
+export function makeSeat(id, carId, startSegment, startTimeTicks) {
   return {
     id,
     active: 1,
@@ -25,15 +27,18 @@ export function makeSeat(id, carId, startSegment) {
     accelHeld: 0,
     brakeHeld: 0,
     finishTicks: -1, // -1 = not finished; else the tick the seat crossed the line
+    timerTicks: startTimeTicks, // remaining checkpoint time; 0 + timedOut = timeout
+    timedOut: 0,
   };
 }
 
 // opts: { seed, courseSet, carSet, courseId, seats: [{ id, carId }], maxSeats }
 export function createInitialState(opts) {
   const course = getCourse(opts.courseSet, opts.courseId);
+  const startTimeTicks = opts.startTimeTicks ?? DEFAULT_START_TIME_TICKS;
   const seats = (opts.seats || []).map((s) => {
     getCar(opts.carSet, s.carId); // validate the car exists up front
-    return makeSeat(s.id, s.carId, course.startSegment);
+    return makeSeat(s.id, s.carId, course.startSegment, startTimeTicks);
   });
   return {
     version: STATE_VERSION,
