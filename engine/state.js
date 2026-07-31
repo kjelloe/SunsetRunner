@@ -14,7 +14,7 @@ export const RACE_RUNNING = 1;
 export const DEFAULT_START_TIME_TICKS = 1500; // 75 s at 20 Hz (fallback)
 
 // Seat flags kept as 0/1 ints, not booleans, for a clean byte layout.
-export function makeSeat(id, carId, startSegment, startTimeTicks) {
+export function makeSeat(id, carId, startSegment, startTimeTicks, laneX = CENTER_LANE) {
   return {
     id,
     active: 1,
@@ -22,7 +22,7 @@ export function makeSeat(id, carId, startSegment, startTimeTicks) {
     carId,
     segmentId: startSegment,
     roadZ: 0,
-    laneX: CENTER_LANE,
+    laneX,
     speed: 0,
     steerHeld: 0,
     accelHeld: 0,
@@ -39,7 +39,7 @@ export function createInitialState(opts) {
   const startTimeTicks = opts.startTimeTicks ?? DEFAULT_START_TIME_TICKS;
   const seats = (opts.seats || []).map((s) => {
     getCar(opts.carSet, s.carId); // validate the car exists up front
-    return makeSeat(s.id, s.carId, course.startSegment, startTimeTicks);
+    return makeSeat(s.id, s.carId, course.startSegment, startTimeTicks, s.laneX ?? CENTER_LANE);
   });
   const state = {
     version: STATE_VERSION,
