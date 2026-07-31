@@ -34,9 +34,10 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 ## Milestone 4 — Collision, traffic, AI
 
-- [ ] slice-013 replay-dump-load
-- [ ] slice-014 ai-driver
-- [ ] slice-015 sim-campaign
+- [x] slice-013 replay-dump-load  *(room dumps a re-runnable scenario)*
+- [x] slice-014 ai-driver  *(deterministic hold-lane AI + AI race runner)*
+- [x] slice-015 sim-campaign  *(5-seed "do systems fire?" gate)*
+- [ ] traffic collision (player vs traffic — will repin checkpoint_1a both langs)
 
 ## Milestone 5 — Content and feel
 

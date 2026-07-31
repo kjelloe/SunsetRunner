@@ -355,3 +355,55 @@ twinned in Luau. Completes Milestone 3.
 
 **MILESTONE 3 COMPLETE.** **Next:** slice-013 replay-dump-load, then Milestone 4
 (traffic collision + AI drivers + sim campaign), and client prediction (§21.2).
+
+---
+
+## marker-0013 — slice-013 replay-dump-load (2026-08-01)
+
+**Goal:** dump a live room's play as a re-runnable scenario; loading it
+reproduces the exact final hash.
+
+**Built:** `server/game_room.js` records seats + input changes and `dumpReplay()`s
+a scenario (with `maxSeats` + `runToMaxTicks`); `engine/scenario.js` honours both;
+`engine/replay.js` `runReplay` = thin `runScenario` wrapper. `test/replay.test.js`.
+`specs/13`. **Gotcha caught:** dropping `maxSeats` from the dump diverged the hash
+(race.maxSeats is hashed) — every hashed field must survive the dump.
+
+**Gate:** `./test.sh` → 86/86 + 3 Luau gates OK.
+
+---
+
+## marker-0014 — slice-014 ai-driver (2026-08-01)
+
+**Goal:** a deterministic AI command source (§14).
+
+**Built:** `engine/ai_driver.js` `chooseInput` — accel-always, HOLD-lane (dodge
+traffic ahead / recover off-road); an earlier centre-seeking policy piled the
+field up, so lane-holding is deliberate. `engine/state.js` `makeSeat`/
+`createInitialState` gain optional per-seat `laneX` (default centre — goldens
+unchanged); `engine/sim.js` `runAiRace`/`staggeredSeats`/`runCampaign`.
+`test/ai_driver.test.js` pins a JS-only solo AI golden (finish 215,
+`65793a01af08c340`). AI is a command source → intentionally NOT Luau-twinned.
+`specs/14`.
+
+**Gate:** `./test.sh` → 90/90 + 3 Luau gates OK.
+
+---
+
+## marker-0015 — slice-015 sim-campaign (2026-08-01)
+
+**Goal:** the AI-only "do systems fire?" gate.
+
+**Built:** `debugging/sim_campaign.mjs` (5 pinned seeds, AI field, event census +
+`systems fired` summary) + `test/sim_campaign.test.js`. `specs/15`.
+
+**Finding (recorded):** the race seed is currently **inert** — traffic is
+segment-seeded (constant) and the AI deterministic, so all seeds produce an
+identical race. Pinned as a tripwire test; fix direction (race-seeded traffic)
+noted for a balance slice. 6-car run: finish/checkpoint/collision fire, timeout
+does not (short course).
+
+**Gate:** `./test.sh` → 93/93 + 3 Luau gates OK.
+
+**Next:** traffic collision (repins `checkpoint_1a` both languages), sweep
+battery + fairness tools (§16), client prediction/reconciliation (§21.2).
