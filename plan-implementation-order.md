@@ -27,7 +27,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 ## Milestone 3 — 8-player ghost race
 
-- [ ] slice-011 ghost-players
+- [x] slice-011 ghost-players  *(filtered ghost views + collisionActive + standings)*
 - [ ] slice-012 same-segment-collision
 
 ## Milestone 4 — Collision, traffic, AI

@@ -299,3 +299,27 @@ slice). First runtime dependency: `ws`.
 **MILESTONE 2 COMPLETE** (server room). **Next:** Milestone 3 — 8-player ghost
 race (ghost filtering + finish ordering + server replay), plus client-side
 prediction/reconciliation (§21.2).
+
+---
+
+## marker-0011 — slice-011 ghost-players (2026-08-01)
+
+**Goal:** rivals as filtered ghosts + race standings (first Milestone 3 slice).
+
+**Built:**
+- `shared/collision.js` — pure integer collision geometry (`CAR_LENGTH 512`,
+  `CAR_WIDTH 200`, `inCollisionWindow`, `overlapping`). Same-segment-only, so
+  context is projection- and iteration-order-independent.
+- `server/game_room.js` — `viewFor` sends filtered ghost state (§10 fields) +
+  `collisionActive`; adds deterministic `standings` (finished-by-tick then
+  progress proxy, tie-broken by seatId).
+- `client/renderer_canvas.js` — `drawGhosts` (same-segment ahead, semi-transparent,
+  outlines collisionActive rivals).
+- `test/ghosts.test.js` + `specs/11`.
+
+**No repin:** all changes are view-level; engine hash untouched, `checkpoint_1a`
+and both Luau gates stay green.
+
+**Gate:** `./test.sh` → 77/77 + both Luau gates OK.
+
+**Next:** slice-012 same-segment-collision.

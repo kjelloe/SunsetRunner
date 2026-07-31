@@ -17,7 +17,7 @@ See `specs/game-design.md` for the full technical brief and
 
 ```
 data/     roads.json, cars.json, checkpoints.json, traffic.json
-shared/   fixedmath, prng, canonical, statehash, constants, road_data, car_data, checkpoint_data, traffic_data  (Luau-portable)
+shared/   fixedmath, prng, canonical, statehash, constants, road_data, car_data, checkpoint_data, traffic_data, collision  (Luau-portable)
 engine/   reducer, state, car_physics, road_progress, traffic, scenario, copy_state, snapshot, commands
 client/   index.html, main, projection, road_renderer, renderer_canvas, hud, input, session_local, session_remote
 server/   index (http static + ws), game_room, protocol

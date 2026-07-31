@@ -17,8 +17,36 @@ export function render(g, view, state, courseSet) {
 
   drawRoad(g, view, state.seats[0], courseSet);
   drawTraffic(g, view, state);
+  drawGhosts(g, view, state);
   drawPlayerCar(g, view, state.seats[0]);
   drawHud(g, view, state);
+}
+
+// Rival ghosts (remote play). Same-segment, ahead of the viewer, back-to-front.
+// collisionActive rivals are outlined so a same-segment bump reads on screen.
+function drawGhosts(g, view, state) {
+  const ghosts = state.ghosts || [];
+  if (ghosts.length === 0) return;
+  const seat = state.seats[0];
+  const ahead = ghosts
+    .filter((r) => r.segmentId === seat.segmentId && r.roadZ > seat.roadZ)
+    .sort((a, b) => b.roadZ - a.roadZ);
+  for (const r of ahead) {
+    const dz = r.roadZ - seat.roadZ;
+    if (dz < ROAD_UNIT) continue;
+    const p = projectPoint(view, seat.laneX, 0, r.laneX, 0, dz);
+    const w = Math.max(4, Math.abs(p.w) >> 3);
+    const h = Math.max(3, Math.floor(w * 0.6));
+    g.globalAlpha = 0.6;
+    g.fillStyle = "#9a5cff";
+    g.fillRect(p.x - w / 2, p.y - h, w, h);
+    g.globalAlpha = 1;
+    if (r.collisionActive) {
+      g.strokeStyle = "#ffffff";
+      g.lineWidth = 2;
+      g.strokeRect(p.x - w / 2, p.y - h, w, h);
+    }
+  }
 }
 
 // Approximate: draws traffic in the player's current segment that is ahead of
