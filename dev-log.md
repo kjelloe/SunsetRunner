@@ -72,3 +72,38 @@ have a graph of road segments to run on. Data loader only — no physics yet.
 batched post-Milestone-1 pass.
 
 **Next:** slice-004 single-car-physics — first real engine state + reducer.
+
+---
+
+## marker-0003 — slice-004 single-car-physics (2026-07-31)
+
+**Goal:** first real engine state and the pure reducer that drives it —
+accelerate, brake, steer, advance down the road graph, finish — with a pinned
+snapshot-hash fixture.
+
+**Built:**
+- `data/cars.json` + `shared/car_data.js` — one car (`red_sprint`, §13 stats),
+  parse-at-edge loader/validator mirroring road_data.
+- `engine/state.js` — array-shaped engine state (race + seats) + initial-state
+  factory; content threaded as context, not stored in hashed state.
+- `engine/commands.js` — `input` (held controls) and `advance_tick`, with
+  integer validation.
+- `engine/car_physics.js` — longitudinal (brake>accel>coast-drag, off-road
+  drag, clamp) and lateral (speed-tapered steer authority, clamp).
+- `engine/road_progress.js` — `roadZ += speed`, linear segment crossing, finish
+  at `next = -1`.
+- `engine/copy_state.js` — deep clone keeping the reducer pure.
+- `engine/reducer.js` — `apply(state, command, ctx)` in pinned tick order.
+- `engine/snapshot.js` — `hashSnapshot()` over version+tick+race+seats. Kept
+  SEPARATE from the spine `shared/statehash.js` so the spine hash and its
+  shipped Luau twin stay stable while the Luau engine twin is deferred. This is
+  the module the twin mirrors post-M1.
+- `test/{car_data,physics}.test.js` + `test/fixtures/physics_1a.json` — physics
+  units, reducer purity, invalid-command rejection, and a golden accel-only run
+  (hashes at t10/t100, finish at t215, terminal hash at t400).
+- `specs/03-car-physics-and-engine-state.md`.
+
+**Gate:** `./test.sh` → 41/41 + Luau spine parity OK (spine hash untouched).
+
+**Next:** slice-005 canvas-road-renderer (first client) or slice-006
+checkpoint-timer — the timer completes the solo-run gameplay loop.

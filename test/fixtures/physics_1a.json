@@ -1,0 +1,12 @@
+{
+  "note": "slice-004 single-car physics golden. Seed 12345, sunset_coast (course 1), red_sprint (car 1), one seat holding the accelerator from tick 1. Repin is a conscious act (dev-log.md).",
+  "seed": 12345,
+  "courseId": 1,
+  "carId": 1,
+  "accelRun": {
+    "hashAtTick10": "cf11c0ea89ed677e",
+    "hashAtTick100": "55a7ecd7684119e0",
+    "finishTick": 215,
+    "hashAtTick400": "c753b05a2fb1a55f"
+  }
+}

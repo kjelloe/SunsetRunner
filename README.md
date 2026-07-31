@@ -16,9 +16,9 @@ See `specs/game-design.md` for the full technical brief and
 ## Layout
 
 ```
-data/     roads.json — courses/segments (pseudo-3D strip graph)
-shared/   fixedmath, prng, canonical, statehash, constants, road_data  (Luau-portable)
-engine/   reducer + systems (added slice by slice)
+data/     roads.json (courses/segments), cars.json (roster)
+shared/   fixedmath, prng, canonical, statehash, constants, road_data, car_data  (Luau-portable)
+engine/   reducer, state, car_physics, road_progress, copy_state, snapshot, commands
 client/   canvas renderer, input, sessions                  (added later)
 server/   node http + ws race rooms                         (added later)
 luau/     Luau twins of shared/ (+ engine/ after Milestone 1)

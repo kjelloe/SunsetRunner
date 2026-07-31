@@ -1,0 +1,15 @@
+{
+  "cars": [
+    {
+      "id": 1,
+      "nameKey": "car.red_sprint",
+      "maxSpeed": 2400,
+      "accel": 22,
+      "brake": 45,
+      "offroadDrag": 60,
+      "steerLow": 18,
+      "steerHigh": 9,
+      "driftRecovery": 12
+    }
+  ]
+}
