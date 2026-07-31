@@ -5,6 +5,7 @@
 import { loadCourseSet } from "../shared/road_data.js";
 import { loadCarSet } from "../shared/car_data.js";
 import { loadCheckpointConfig } from "../shared/checkpoint_data.js";
+import { loadTrafficConfig } from "../shared/traffic_data.js";
 import { TICK_HZ } from "../shared/constants.js";
 import { createLocalSession } from "./session_local.js";
 import { installKeyboard, readInput } from "./input.js";
@@ -17,15 +18,17 @@ export async function boot(doc = document) {
   const g = canvas.getContext("2d");
   const view = { w: canvas.width, h: canvas.height };
 
-  const [roads, cars, checkpoints] = await Promise.all([
+  const [roads, cars, checkpoints, traffic] = await Promise.all([
     fetch("../data/roads.json").then((r) => r.json()),
     fetch("../data/cars.json").then((r) => r.json()),
     fetch("../data/checkpoints.json").then((r) => r.json()),
+    fetch("../data/traffic.json").then((r) => r.json()),
   ]);
   const courseSet = loadCourseSet(roads);
   const carSet = loadCarSet(cars);
   const { startTimeTicks } = loadCheckpointConfig(checkpoints);
-  const session = createLocalSession(courseSet, carSet, { seed: 12345, startTimeTicks });
+  const trafficConfig = loadTrafficConfig(traffic);
+  const session = createLocalSession(courseSet, carSet, { seed: 12345, startTimeTicks, trafficConfig });
 
   installKeyboard(doc);
 

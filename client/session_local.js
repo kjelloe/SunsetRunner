@@ -10,10 +10,10 @@ export function createLocalSession(courseSet, carSet, opts = {}) {
   const seed = (opts.seed ?? 12345) >>> 0;
   const courseId = opts.courseId ?? 1;
   const carId = opts.carId ?? 1;
-  const ctx = { courseSet, carSet };
+  const ctx = { courseSet, carSet, trafficConfig: opts.trafficConfig };
   let state = createInitialState({
     seed, courseSet, carSet, courseId, seats: [{ id: 1, carId }],
-    startTimeTicks: opts.startTimeTicks,
+    startTimeTicks: opts.startTimeTicks, trafficConfig: opts.trafficConfig,
   });
   let held = { steer: 0, accel: 0, brake: 0 };
 

@@ -1,16 +1,17 @@
 {
-  "note": "slice-004 single-car physics golden, REPINNED at marker-0005 when the checkpoint timer (timerTicks + timedOut) joined the hashed seat state. Seed 12345, sunset_coast (course 1), red_sprint (car 1), one seat holding the accelerator from tick 1, default startTimeTicks 1500. Repin is a conscious act (dev-log.md).",
+  "note": "single-car physics golden. REPINNED at marker-0006 when deterministic traffic (traffic array + spawnedSegments + nextTrafficId) joined the hashed state; previously repinned at marker-0005 for the checkpoint timer. Seed 12345, sunset_coast (course 1), red_sprint (car 1), one seat holding the accelerator from tick 1, default startTimeTicks 1500, data/traffic.json config. Repin is a conscious act (dev-log.md).",
   "seed": 12345,
   "courseId": 1,
   "carId": 1,
   "accelRun": {
-    "hashAtTick10": "4650b5d09b2f19d1",
-    "hashAtTick100": "65f8152812ba849d",
+    "hashAtTick10": "8d8602919ab2ba7b",
+    "hashAtTick100": "279d3a5cfd76219b",
     "finishTick": 215,
-    "hashAtTick400": "5c9ea135be89f5f4",
+    "hashAtTick400": "12640dd9cd82298a",
     "checkpointTick": 119,
     "checkpointBonus": 600,
-    "finalTimerTicks": 1886
+    "finalTimerTicks": 1886,
+    "initialTrafficCount": 4
   },
   "timeout": {
     "startTimeTicks": 30,

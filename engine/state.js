@@ -7,6 +7,7 @@ import { seedSfc32 } from "../shared/prng.js";
 import { CENTER_LANE, STATE_VERSION } from "../shared/constants.js";
 import { getCourse } from "../shared/road_data.js";
 import { getCar } from "../shared/car_data.js";
+import { spawnSegmentTraffic } from "./traffic.js";
 
 export const RACE_RUNNING = 1;
 
@@ -40,7 +41,7 @@ export function createInitialState(opts) {
     getCar(opts.carSet, s.carId); // validate the car exists up front
     return makeSeat(s.id, s.carId, course.startSegment, startTimeTicks);
   });
-  return {
+  const state = {
     version: STATE_VERSION,
     tick: 0,
     seed: opts.seed >>> 0,
@@ -51,6 +52,14 @@ export function createInitialState(opts) {
       maxSeats: opts.maxSeats || seats.length,
     },
     seats,
+    traffic: [],
+    spawnedSegments: [],
+    nextTrafficId: 1,
     events: [],
   };
+  // Seed the start segment's traffic up front when a traffic config is supplied.
+  if (opts.trafficConfig) {
+    spawnSegmentTraffic(state, opts.courseSet, opts.trafficConfig, course.startSegment);
+  }
+  return state;
 }

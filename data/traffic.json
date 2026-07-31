@@ -1,0 +1,8 @@
+{
+  "density": 4,
+  "lanes": [-256, 0, 256],
+  "kinds": [
+    { "id": 1, "nameKey": "traffic.sedan", "speed": 900 },
+    { "id": 2, "nameKey": "traffic.truck", "speed": 700 }
+  ]
+}

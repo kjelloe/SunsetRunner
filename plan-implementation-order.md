@@ -13,7 +13,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-004 single-car-physics  *(engine state + pure reducer + snapshot hash)*
 - [x] slice-005 canvas-road-renderer  *(client: pseudo-3D road + car + HUD + local session)*
 - [x] slice-006 checkpoint-timer  *(timer + checkpoint bonus + timeout; repinned physics golden)*
-- [ ] slice-007 traffic-spawn
+- [x] slice-007 traffic-spawn  *(deterministic segment-seeded traffic; repinned golden)*
 - [ ] slice-008 local-race-loop  *(+ `checkpoint_1a` golden hash fixture)*
 
 ## Milestone 2 — Server room

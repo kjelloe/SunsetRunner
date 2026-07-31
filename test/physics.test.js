@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { loadCourseSet } from "../shared/road_data.js";
 import { loadCarSet, getCar } from "../shared/car_data.js";
+import { loadTrafficConfig } from "../shared/traffic_data.js";
 import { createInitialState, makeSeat } from "../engine/state.js";
 import { stepLongitudinal, stepLateral, ROAD_HALF_WIDTH, NATURAL_DRAG } from "../engine/car_physics.js";
 import { apply } from "../engine/reducer.js";
@@ -10,8 +11,10 @@ import { hashSnapshot } from "../engine/snapshot.js";
 
 const courseSet = loadCourseSet(JSON.parse(readFileSync(new URL("../data/roads.json", import.meta.url))));
 const carSet = loadCarSet(JSON.parse(readFileSync(new URL("../data/cars.json", import.meta.url))));
+const trafficConfig = loadTrafficConfig(JSON.parse(readFileSync(new URL("../data/traffic.json", import.meta.url))));
 const golden = JSON.parse(readFileSync(new URL("./fixtures/physics_1a.json", import.meta.url)));
-const ctx = { courseSet, carSet };
+const ctx = { courseSet, carSet }; // no traffic — for isolated physics units
+const ctxT = { courseSet, carSet, trafficConfig }; // full context — for the golden
 const car = getCar(carSet, 1);
 
 function seatWith(over) {
@@ -80,13 +83,14 @@ test("golden: accel-only run matches pinned hashes, checkpoint and finish", () =
   const g = golden.accelRun;
   let s = createInitialState({
     seed: golden.seed, courseSet, carSet, courseId: golden.courseId,
-    seats: [{ id: 1, carId: golden.carId }],
+    seats: [{ id: 1, carId: golden.carId }], trafficConfig,
   });
-  s = apply(s, { type: "input", seatId: 1, steer: 0, accel: 1, brake: 0 }, ctx);
+  assert.equal(s.traffic.length, g.initialTrafficCount);
+  s = apply(s, { type: "input", seatId: 1, steer: 0, accel: 1, brake: 0 }, ctxT);
   let finishTick = -1;
   let checkpointTick = -1;
   for (let t = 1; t <= 400; t++) {
-    s = apply(s, { type: "advance_tick" }, ctx);
+    s = apply(s, { type: "advance_tick" }, ctxT);
     if (t === 10) assert.equal(hashSnapshot(s), g.hashAtTick10);
     if (t === 100) assert.equal(hashSnapshot(s), g.hashAtTick100);
     const cp = s.events.find((e) => e.type === "checkpoint");

@@ -7,6 +7,7 @@ import { CMD_INPUT, CMD_ADVANCE_TICK, validate } from "./commands.js";
 import { cloneState } from "./copy_state.js";
 import { stepLongitudinal, stepLateral } from "./car_physics.js";
 import { advanceRoad } from "./road_progress.js";
+import { spawnSegmentTraffic, advanceTraffic } from "./traffic.js";
 import { getCar } from "../shared/car_data.js";
 import { getSegment } from "../shared/road_data.js";
 
@@ -47,6 +48,8 @@ export function apply(state, command, ctx = {}) {
           seat.timerTicks += bonus;
           next.events.push({ type: "checkpoint", seatId: seat.id, segmentId: segId, bonus, tick: next.tick });
         }
+        // 8a. spawn the entered segment's traffic (deterministic, once).
+        if (ctx.trafficConfig) spawnSegmentTraffic(next, ctx.courseSet, ctx.trafficConfig, segId);
       }
       // 11. timer: time bleeds each tick; hitting zero times the seat out.
       seat.timerTicks -= 1;
@@ -57,6 +60,7 @@ export function apply(state, command, ctx = {}) {
         next.events.push({ type: "timeout", seatId: seat.id, tick: next.tick });
       }
     }
+    advanceTraffic(next, ctx.courseSet); // 8b. move/despawn traffic
     return next;
   }
 

@@ -169,3 +169,32 @@ engine-state hash `engine/snapshot.js` is the one that grew — twin post-M1).
 M1 polish: slice-007 traffic-spawn, slice-008 local-race-loop (promote the
 golden to `checkpoint_1a`). Then the batched Luau engine twin, then Milestone 2
 (server room).
+
+---
+
+## marker-0006 — slice-007 traffic-spawn (2026-07-31)
+
+**Goal:** deterministic, segment-seeded traffic — spawn + movement (no collision
+yet).
+
+**Built:**
+- `data/traffic.json` (density/lanes/kinds) + `shared/traffic_data.js`.
+- `engine/traffic.js` — `spawnSegmentTraffic` (seeded ONLY from
+  `segment.trafficSeed`, fixed roll order, spawn-once guard) and
+  `advanceTraffic` (move + despawn off-segment-end). Order-independent of seats
+  (§24, gotchas #12/#15).
+- Engine state gains `traffic[] / spawnedSegments[] / nextTrafficId`; wired into
+  `state.js` (start-segment spawn), `copy_state.js`, `snapshot.js`, and the
+  reducer (step 8a spawn on entered segments, 8b advance).
+- Client: `drawTraffic` (approx, same-segment ahead) + config threaded through
+  `main.js`/`session_local.js`.
+- `test/traffic.test.js` + `specs/06`.
+
+**REPIN:** `physics_1a` snapshot hashes repinned (traffic joined the hashed
+state). Accel run now starts with 4 cars; finish still tick 215, checkpoint tick
+119, timeout tick 30 — all unchanged. Verified reproducible across two runs.
+
+**Gate:** `./test.sh` → 60/60 + Luau spine parity OK.
+
+**Next:** slice-008 local-race-loop — formalize the scenario replay + promote the
+golden to `checkpoint_1a` with a repin tool.
