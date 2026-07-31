@@ -8,6 +8,7 @@ import { loadCheckpointConfig } from "../shared/checkpoint_data.js";
 import { loadTrafficConfig } from "../shared/traffic_data.js";
 import { TICK_HZ } from "../shared/constants.js";
 import { createLocalSession } from "./session_local.js";
+import { createRemoteSession } from "./session_remote.js";
 import { installKeyboard, readInput } from "./input.js";
 import { render } from "./renderer_canvas.js";
 
@@ -28,21 +29,30 @@ export async function boot(doc = document) {
   const carSet = loadCarSet(cars);
   const { startTimeTicks } = loadCheckpointConfig(checkpoints);
   const trafficConfig = loadTrafficConfig(traffic);
-  const session = createLocalSession(courseSet, carSet, { seed: 12345, startTimeTicks, trafficConfig });
+
+  // ?mode=remote joins the ws server room; default is an offline local race.
+  const remote = new URLSearchParams(location.search).get("mode") === "remote";
+  const session = remote
+    ? createRemoteSession(`ws://${location.host}`)
+    : createLocalSession(courseSet, carSet, { seed: 12345, startTimeTicks, trafficConfig });
+  if (remote) session.connect();
 
   installKeyboard(doc);
 
   let acc = 0;
   let last = performance.now();
   function frame(now) {
-    acc += now - last;
-    last = now;
-    while (acc >= SIM_DT) {
-      session.setInput(readInput());
-      session.tick();
-      acc -= SIM_DT;
+    session.setInput(readInput());
+    if (!remote) {
+      acc += now - last;
+      last = now;
+      while (acc >= SIM_DT) {
+        session.tick(); // local session owns advancement
+        acc -= SIM_DT;
+      }
     }
-    render(g, view, session.getState(), courseSet);
+    const state = session.getState();
+    if (state.seats.length) render(g, view, state, courseSet);
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);

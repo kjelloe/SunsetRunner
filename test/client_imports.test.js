@@ -11,6 +11,7 @@ test("client modules import cleanly and export their entry points", async () => 
   const hud = await import("../client/hud.js");
   const input = await import("../client/input.js");
   const session = await import("../client/session_local.js");
+  const remote = await import("../client/session_remote.js");
   const main = await import("../client/main.js");
 
   assert.equal(typeof projection.projectPoint, "function");
@@ -21,6 +22,7 @@ test("client modules import cleanly and export their entry points", async () => 
   assert.equal(typeof hud.displaySpeed, "function");
   assert.equal(typeof input.readInput, "function");
   assert.equal(typeof session.createLocalSession, "function");
+  assert.equal(typeof remote.createRemoteSession, "function");
   assert.equal(typeof main.boot, "function");
 });
 

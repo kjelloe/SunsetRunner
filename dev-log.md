@@ -274,3 +274,28 @@ slice). First runtime dependency: `ws`.
 **Gate:** `./test.sh` → 71/71 + both Luau gates OK.
 
 **Next:** slice-010 remote-session-seam (client remote session).
+
+---
+
+## marker-0010 — slice-010 remote-session-seam (2026-08-01)
+
+**Goal:** one interchangeable client seam for offline (local) and online
+(server-authoritative) play — completing Milestone 2.
+
+**Built:**
+- `client/session_remote.js` — `createRemoteSession`: connect/join, send held
+  input at 20 Hz, track the latest `view`; `getState()` exposes `seats[0]=self`
+  (+ ghosts/traffic), empty until the first view. Import-safe; WebSocket
+  injectable for headless tests.
+- `client/main.js` — `?mode=remote` joins the ws room; default stays local. The
+  frame loop advances locally only in local mode, renders the server view in
+  remote mode.
+- `test/remote_session.test.js` — end-to-end headless: remote session (node ws)
+  joins a real server room and tracks the moving view. Import gate covers
+  `session_remote`. `specs/10`.
+
+**Gate:** `./test.sh` → 73/73 + both Luau gates OK.
+
+**MILESTONE 2 COMPLETE** (server room). **Next:** Milestone 3 — 8-player ghost
+race (ghost filtering + finish ordering + server replay), plus client-side
+prediction/reconciliation (§21.2).
