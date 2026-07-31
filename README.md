@@ -1,0 +1,44 @@
+# Sunset Runner
+
+A deterministic, server-authoritative arcade road racer — a real-time sibling of
+Fireline Command, with a Roblox/Luau twin (the RetroMultiCiv discipline). New IP.
+
+- JavaScript / Node.js / ESM. **No build step. No framework.**
+- Dependency-free `shared/` and `engine/` (integer fixed-point, no floats).
+- Server owns truth; the client renders views and predicts locally.
+- Canvas 2D pseudo-3D road renderer (WebGL only if profiling forces it).
+- Headless simulation, replay-first debugging, golden-hash fixtures.
+- Luau twin of the deterministic core, verified byte-identical via `lune`.
+
+See `specs/game-design.md` for the full technical brief and
+`specs/01-determinism-contract.md` for the pinned determinism contract.
+
+## Layout
+
+```
+shared/   fixedmath, prng, canonical, statehash, constants  (Luau-portable)
+engine/   reducer + systems (added slice by slice)
+client/   canvas renderer, input, sessions                  (added later)
+server/   node http + ws race rooms                         (added later)
+luau/     Luau twins of shared/ (+ engine/ after Milestone 1)
+roblox/   Rojo project mounting luau/ into ReplicatedStorage.Shared
+test/     node --test suites + pinned fixtures
+```
+
+## Running the gates
+
+```bash
+npm test        # node --test — unit suites, golden fixtures, Luau parity gate
+./test.sh       # full self-test: JS suite + Luau (lune) parity, with a summary
+```
+
+The Luau parity gate shells out to `lune`; if `lune` is not installed the JS
+suite still passes and that one gate is skipped.
+
+## Development discipline
+
+- Slices land as one commit tagged `marker-NNNN` in the message; each is logged
+  in `dev-log.md`. The slice roadmap lives in `plan-implementation-order.md`.
+- Determinism is the contract: no floats in `shared/`/`engine/`, no wall-clock
+  in engine state, pinned reducer tick order. Repinning a golden fixture is a
+  conscious act, recorded in the dev log.
