@@ -45,3 +45,30 @@ proven via `lune 0.10.5`.
 **Next:** slice-003 road-data-loader → slice-004 single-car-physics, which
 introduces the first real engine state and its first reducer hash fixture
 (`checkpoint_1a`).
+
+---
+
+## marker-0002 — slice-003 road-data-loader (2026-07-31)
+
+**Goal:** load and validate course geometry so later slices (physics, renderer)
+have a graph of road segments to run on. Data loader only — no physics yet.
+
+**Built:**
+- `data/roads.json` — a minimal `sunset_coast` course (§8 schema): three linear
+  segments (1→2→3→finish) with the checkpoint on segment 2 (checkpointTicks 600
+  = 30 s), integer curve/hill profiles, per-segment traffic seeds and scenery.
+- `shared/road_data.js` — pure, parse-at-edge loader (`loadCourseSet` takes
+  already-parsed JSON so the fs read stays out of Luau-portable code). Validates
+  integer-only fields, positive ids, referential integrity of `next`/`forkLeft`/
+  `forkRight`/`startSegment`, and the fork-vs-linear exclusivity rule (a fork
+  routes via both branches with `next = -1`; a linear segment routes via `next`).
+  Exposes `getCourse`, `getSegment`, `nextSegment(cs, id, choice)` — forks honour
+  FORK_LEFT/FORK_RIGHT and default LEFT deterministically when no choice is given.
+- `test/road_data.test.js` — load/index, linear chaining, checkpoint placement,
+  fork routing + default, and eight negative cases (dangling refs, malformed
+  forks, floats in profiles, unknown startSegment).
+
+**Gate:** `npm test` → 27/27 green. Luau twin of the loader is deferred to the
+batched post-Milestone-1 pass.
+
+**Next:** slice-004 single-car-physics — first real engine state + reducer.

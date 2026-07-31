@@ -9,7 +9,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 - [x] slice-001 project-skeleton
 - [x] slice-002 prng-fixed-hash  *(spine + first golden fixture)*
-- [ ] slice-003 road-data-loader
+- [x] slice-003 road-data-loader  *(sunset_coast course + validation)*
 - [ ] slice-004 single-car-physics
 - [ ] slice-005 canvas-road-renderer
 - [ ] slice-006 checkpoint-timer
