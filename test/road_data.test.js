@@ -5,6 +5,7 @@ import {
   loadCourseSet, getCourse, getSegment, nextSegment,
 } from "../shared/road_data.js";
 import { FORK_LEFT, FORK_RIGHT } from "../shared/constants.js";
+import { createByteWriter, computeFnv1a64, hashToHex64 } from "../shared/canonical.js";
 
 const roadsJson = JSON.parse(
   readFileSync(new URL("../data/roads.json", import.meta.url))
@@ -86,4 +87,28 @@ test("rejects an unknown startSegment", () => {
     courses: [{ id: 1, nameKey: "c", startSegment: 7 }],
     segments: [baseSegment({ id: 1 })],
   }), /startSegment -> unknown 7/);
+});
+
+// Content-drift pin (§18 doctrine): a fingerprint of data/roads.json so an
+// accidental edit to the shipped course can't silently pass. Repin is a
+// conscious act — recorded in dev-log.md — never a quiet side effect.
+test("sunset_coast course content hash is pinned", () => {
+  const cs = loadCourseSet(roadsJson);
+  const w = createByteWriter();
+  for (const s of cs.segments) {
+    for (const f of ["id", "stripCount", "checkpointTicks", "next", "forkLeft", "forkRight", "trafficSeed", "scenerySet"]) {
+      w.writeI32LE(s[f]);
+    }
+    w.writeU16LE(s.curveProfile.length);
+    for (const v of s.curveProfile) w.writeI32LE(v);
+    w.writeU16LE(s.hillProfile.length);
+    for (const v of s.hillProfile) w.writeI32LE(v);
+  }
+  for (const c of cs.courses) {
+    w.writeI32LE(c.id);
+    w.writeI32LE(c.startSegment);
+    w.writeUtf8U16(c.nameKey);
+  }
+  const h = computeFnv1a64(w.toBytes());
+  assert.equal(hashToHex64(h.hashHi, h.hashLo), "9ce3b09a51d60a88");
 });

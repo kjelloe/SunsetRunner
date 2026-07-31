@@ -16,13 +16,15 @@ See `specs/game-design.md` for the full technical brief and
 ## Layout
 
 ```
-shared/   fixedmath, prng, canonical, statehash, constants  (Luau-portable)
+data/     roads.json — courses/segments (pseudo-3D strip graph)
+shared/   fixedmath, prng, canonical, statehash, constants, road_data  (Luau-portable)
 engine/   reducer + systems (added slice by slice)
 client/   canvas renderer, input, sessions                  (added later)
 server/   node http + ws race rooms                         (added later)
 luau/     Luau twins of shared/ (+ engine/ after Milestone 1)
 roblox/   Rojo project mounting luau/ into ReplicatedStorage.Shared
 test/     node --test suites + pinned fixtures
+specs/    game-design (brief), 01 determinism contract, 02 road & course model
 ```
 
 ## Running the gates
