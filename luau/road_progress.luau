@@ -13,6 +13,17 @@ local function isFork(seg): boolean
 	return seg.forkLeft >= 0 or seg.forkRight >= 0
 end
 
+local function curveAt(courseSet, segmentId: number, roadZ: number): number
+	if segmentId == -1 then
+		return 0
+	end
+	local seg = road.getSegment(courseSet, segmentId)
+	local m = #seg.curveProfile
+	local stripIdx = math.min(math.floor(roadZ / ROAD_UNIT), seg.stripCount - 1)
+	local idx = math.min(math.floor((stripIdx * m) / seg.stripCount), m - 1)
+	return seg.curveProfile[idx + 1] -- 1-indexed
+end
+
 local function advanceRoad(seat, courseSet, tick: number)
 	if seat.finishTicks >= 0 then
 		return { finished = false, entered = {} }
@@ -41,4 +52,4 @@ local function advanceRoad(seat, courseSet, tick: number)
 	return { finished = false, entered = entered }
 end
 
-return { advanceRoad = advanceRoad }
+return { advanceRoad = advanceRoad, curveAt = curveAt }

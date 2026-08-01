@@ -50,6 +50,7 @@ local function apply(state, command, ctx)
 			local c = car.getCar(ctx.carSet, seat.carId)
 			physics.stepLongitudinal(seat, c)
 			physics.stepLateral(seat, c)
+			physics.applyCurvePush(seat, roadProgress.curveAt(ctx.courseSet, seat.segmentId, seat.roadZ))
 			local r = roadProgress.advanceRoad(seat, ctx.courseSet, next.tick)
 			if r.finished then
 				table.insert(next.events, { type = "finish", seatId = seat.id, tick = next.tick })

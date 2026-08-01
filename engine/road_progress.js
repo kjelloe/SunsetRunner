@@ -14,6 +14,17 @@ function isFork(seg) {
   return seg.forkLeft >= 0 || seg.forkRight >= 0;
 }
 
+// Curvature under the car right now — the integer curveProfile value at the
+// car's position in its segment. Drives the centrifugal push (car_physics).
+export function curveAt(courseSet, segmentId, roadZ) {
+  if (segmentId === -1) return 0;
+  const seg = getSegment(courseSet, segmentId);
+  const m = seg.curveProfile.length;
+  const stripIdx = Math.min(Math.floor(roadZ / ROAD_UNIT), seg.stripCount - 1);
+  const idx = Math.min(Math.floor((stripIdx * m) / seg.stripCount), m - 1);
+  return seg.curveProfile[idx];
+}
+
 // Step 6 (+7 finish): advance roadZ by speed, carrying across segment
 // boundaries. On reaching a segment whose next is -1, the seat finishes.
 // Returns the ids of any segments newly ENTERED this tick so the reducer can

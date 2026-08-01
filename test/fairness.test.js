@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { loadCourseSet } from "../shared/road_data.js";
 import { loadCarSet } from "../shared/car_data.js";
 import { loadTrafficConfig } from "../shared/traffic_data.js";
-import { seatOrderFairness, carSwap } from "../engine/fairness.js";
+import { seatOrderFairness, carSwap, mirrorFairness } from "../engine/fairness.js";
 import { runAiRace } from "../engine/sim.js";
 
 const read = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url)));
@@ -35,6 +35,17 @@ test("car-swap isolates car strength (both cars finish, comparable)", () => {
   const r = carSwap(ctx, seeds, 1, 2);
   assert.ok(r.avgFinishTicksA > 0 && r.avgFinishTicksB > 0);
   assert.ok(Math.abs(r.avgFinishTicksA - r.avgFinishTicksB) < 100); // roughly balanced roster
+});
+
+test("route-mirror fairness: mirrored branches finish equal, drift opposite", () => {
+  // mirror_valley (course 3) has geometrically mirrored branches; with symmetric
+  // curve physics (truncDivI32) an accel-only car must finish each in the same
+  // time and drift equal-and-opposite. A floored curve divide would fail this.
+  const m = mirrorFairness(ctx, 3);
+  assert.equal(m.leftFinish, m.rightFinish, "mirrored branches finish in equal time");
+  assert.equal(m.leftLaneX, -m.rightLaneX, "drift is equal-and-opposite");
+  assert.ok(m.fair);
+  assert.notEqual(m.leftLaneX, 0, "the curve actually pushed the car (physics, not cosmetic)");
 });
 
 test("fairness measurements are deterministic", () => {

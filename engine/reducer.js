@@ -5,8 +5,8 @@
 
 import { CMD_INPUT, CMD_ADVANCE_TICK, CMD_FORK_CHOICE, validate } from "./commands.js";
 import { cloneState } from "./copy_state.js";
-import { stepLongitudinal, stepLateral } from "./car_physics.js";
-import { advanceRoad } from "./road_progress.js";
+import { stepLongitudinal, stepLateral, applyCurvePush } from "./car_physics.js";
+import { advanceRoad, curveAt } from "./road_progress.js";
 import { spawnSegmentTraffic, advanceTraffic } from "./traffic.js";
 import { resolveTrafficCollisions, resolveRivalCollisions } from "./collision.js";
 import { getCar } from "../shared/car_data.js";
@@ -43,6 +43,7 @@ export function apply(state, command, ctx = {}) {
       const car = getCar(ctx.carSet, seat.carId);
       stepLongitudinal(seat, car);    // 4. accel / brake / drag
       stepLateral(seat, car);         // 5. steer / lane
+      applyCurvePush(seat, curveAt(ctx.courseSet, seat.segmentId, seat.roadZ)); // 5b. curve drift
       const r = advanceRoad(seat, ctx.courseSet, next.tick); // 6. road
       if (r.finished) {
         next.events.push({ type: "finish", seatId: seat.id, tick: next.tick });

@@ -7,7 +7,7 @@ import { dirname, resolve } from "node:path";
 import { loadCourseSet } from "../shared/road_data.js";
 import { loadCarSet } from "../shared/car_data.js";
 import { loadTrafficConfig } from "../shared/traffic_data.js";
-import { seatOrderFairness, carSwap } from "../engine/fairness.js";
+import { seatOrderFairness, carSwap, mirrorFairness } from "../engine/fairness.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => JSON.parse(readFileSync(resolve(root, p)));
@@ -31,3 +31,7 @@ if (Math.abs(w1 - seat.contested / 2) > seat.contested * 0.2) {
 const cs = carSwap(ctx, seeds, 1, 2);
 console.log(`car-swap car ${cs.carA} vs ${cs.carB} (avg finish tick, lower=faster):`);
 console.log(`  car ${cs.carA}: ${cs.avgFinishTicksA}   car ${cs.carB}: ${cs.avgFinishTicksB}`);
+
+const mv = mirrorFairness(ctx, 3);
+console.log(`route-mirror fairness (course 3 mirror_valley, no traffic):`);
+console.log(`  left finish ${mv.leftFinish} / right ${mv.rightFinish}; drift ${mv.leftLaneX} / ${mv.rightLaneX} -> ${mv.fair ? "FAIR" : "BIASED"}`);

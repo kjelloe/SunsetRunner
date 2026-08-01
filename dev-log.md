@@ -580,3 +580,29 @@ engine change → no repin.
 
 **Next:** curve physics (centrifugal) — makes curves push the car and turns
 route-mirror fairness into a real instrument.
+
+---
+
+## marker-0023 — curve physics & route-mirror fairness (2026-08-01)
+
+**Goal:** make curves push the car (they were renderer-only), then a
+mirror-fairness instrument that proves the push is symmetric.
+
+**Built:**
+- `engine/road_progress.js` `curveAt`; `engine/car_physics.js` `applyCurvePush`
+  (step 5b, outward `curve*speed/4096`, **truncDivI32** so mirrors are fair);
+  reducer calls it after steering. Luau-twinned.
+- `data/roads.json` course 3 `mirror_valley` (equal-length mirrored branches).
+- `engine/fairness.js` `mirrorFairness` + `debugging/fairness.mjs` line +
+  `test/fairness.test.js` case. Measured **FAIR**: left/right finish 183=183,
+  drift −18=−(+18).
+
+**REPINS (conscious):** `physics_1a`/`checkpoint_1a` (`cb23ee95e6f36118`, finish
+266), `fork_1a` finalHash (`d09dbb310569a237`), AI golden (finish 343,
+`6a4803fb66324a7b`), roads content-hash `7844aea058de58fc`. `collision_1a`
+unchanged (flat lead-in). 4 Luau gates re-verified.
+
+**Gate:** `./test.sh` → 113/113 + 4 Luau gates OK.
+
+**Next:** traffic-swap fairness (§16.3), seat/lane-skew fix, and the rest of
+Milestone 5 (music, mobile touch, asset pipeline).

@@ -1,13 +1,13 @@
 {
-  "note": "single-car physics golden. REPINNED at marker-0021 for the seat forkChoice field (fork support); behaviour unchanged (finish 266). Seed 12345, sunset_coast, red_sprint, accel from tick 1.",
+  "note": "single-car physics golden. REPINNED at marker-0023 for curve physics (centrifugal push); finish 266 unchanged. Seed 12345, sunset_coast, red_sprint, accel from tick 1.",
   "seed": 12345,
   "courseId": 1,
   "carId": 1,
   "accelRun": {
     "hashAtTick10": "5c99fe9776975cdd",
-    "hashAtTick100": "6966349cdae2c187",
+    "hashAtTick100": "5a46a52e95edb432",
     "finishTick": 266,
-    "hashAtTick500": "0bb82c2636fdf44f",
+    "hashAtTick500": "89ddeef96e9c2990",
     "checkpointTick": 143,
     "checkpointBonus": 600,
     "finalTimerTicks": 1835,

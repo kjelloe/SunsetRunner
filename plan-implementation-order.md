@@ -45,7 +45,9 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 - [x] branching forks (marker-0021) — course 2 canyon_split, forkChoice command, Luau-twinned
 - [x] client fork UI (Q/E + ?course select, local+remote) (marker-0022)
-- [ ] curve physics (centrifugal push) → then route-mirror fairness (§16.1)
+- [x] curve physics (centrifugal push, truncDiv-symmetric) (marker-0023)
+- [x] route-mirror fairness (§16.1) — mirror_valley course + mirrorFairness (marker-0023)
+- [ ] traffic-swap fairness (§16.3), seat/lane-skew fix
 - [ ] slice-016 client-smoke
 - [ ] slice-017 mobile-touch-controls
 - [ ] slice-018 asset-strip-pipeline

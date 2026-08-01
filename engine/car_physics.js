@@ -2,11 +2,12 @@
 // Integer only. Operates in place on a seat that the reducer has already cloned
 // (never on shared state). Tuning constants live here; car stats come from data.
 
-import { clampI32, floorDivI32 } from "../shared/fixedmath.js";
+import { clampI32, floorDivI32, truncDivI32 } from "../shared/fixedmath.js";
 
 export const NATURAL_DRAG = 8;       // coast deceleration when neither pedal held
 export const ROAD_HALF_WIDTH = 512;  // |laneX| beyond this is off-road
 export const MAX_LANE_OFFSET = 1024; // hard clamp on lateral position
+export const CURVE_PUSH_DEN = 4096;  // divides curve*speed into a per-tick shove
 
 // Step 4 of the tick order: accel / brake / drag, then off-road drag, clamped.
 export function stepLongitudinal(seat, car) {
@@ -30,4 +31,13 @@ export function stepLateral(seat, car) {
   const steerRate = car.steerLow - floorDivI32((car.steerLow - car.steerHigh) * seat.speed, car.maxSpeed);
   const laneX = seat.laneX + seat.steerHeld * steerRate;
   seat.laneX = clampI32(laneX, -MAX_LANE_OFFSET, MAX_LANE_OFFSET);
+}
+
+// Step 5b: centrifugal drift. A curve throws the car OUTWARD (a right bend,
+// curve>0, pushes the car left) proportional to curve*speed. truncDivI32 (round
+// toward zero) keeps left/right curves exactly equal-and-opposite, so mirrored
+// routes are fair (a floored divide would bias one direction — specs/23).
+export function applyCurvePush(seat, curve) {
+  const push = truncDivI32(curve * seat.speed, CURVE_PUSH_DEN);
+  seat.laneX = clampI32(seat.laneX - push, -MAX_LANE_OFFSET, MAX_LANE_OFFSET);
 }

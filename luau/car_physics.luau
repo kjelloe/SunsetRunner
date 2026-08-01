@@ -7,6 +7,7 @@ local fixed = require("./fixedmath")
 local NATURAL_DRAG = 8
 local ROAD_HALF_WIDTH = 512
 local MAX_LANE_OFFSET = 1024
+local CURVE_PUSH_DEN = 4096
 
 local function stepLongitudinal(seat, car)
 	local speed = seat.speed
@@ -29,10 +30,16 @@ local function stepLateral(seat, car)
 	seat.laneX = fixed.clampI32(laneX, -MAX_LANE_OFFSET, MAX_LANE_OFFSET)
 end
 
+local function applyCurvePush(seat, curve: number)
+	local push = fixed.truncDivI32(curve * seat.speed, CURVE_PUSH_DEN)
+	seat.laneX = fixed.clampI32(seat.laneX - push, -MAX_LANE_OFFSET, MAX_LANE_OFFSET)
+end
+
 return {
 	NATURAL_DRAG = NATURAL_DRAG,
 	ROAD_HALF_WIDTH = ROAD_HALF_WIDTH,
 	MAX_LANE_OFFSET = MAX_LANE_OFFSET,
 	stepLongitudinal = stepLongitudinal,
 	stepLateral = stepLateral,
+	applyCurvePush = applyCurvePush,
 }

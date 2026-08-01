@@ -1,5 +1,5 @@
 {
-  "note": "checkpoint_1a milestone fixture. Last repinned: seat forkChoice field added (marker-0021); accel-only finish 266 unchanged",
+  "note": "checkpoint_1a milestone fixture. Last repinned: curve physics (marker-0023); accel-only finish 266 unchanged",
   "scenario": {
     "name": "checkpoint_1a",
     "seed": 12345,
@@ -24,10 +24,10 @@
   "expected": {
     "hashes": {
       "10": "5c99fe9776975cdd",
-      "100": "6966349cdae2c187",
-      "215": "d51639c96db79dd2"
+      "100": "5a46a52e95edb432",
+      "215": "a448327c4ea838c5"
     },
-    "finalHash": "f817fa6fe43aaf43",
+    "finalHash": "cb23ee95e6f36118",
     "finishTick": 266,
     "census": [
       {
