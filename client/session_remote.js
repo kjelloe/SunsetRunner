@@ -6,7 +6,7 @@
 // tests; in the browser it uses the global WebSocket.
 
 import { TICK_HZ } from "../shared/constants.js";
-import { C2S, S2C } from "../server/protocol.js";
+import { C2S, S2C } from "../shared/protocol.js";
 
 export function createRemoteSession(url, opts = {}) {
   const WebSocketImpl = opts.WebSocket || (typeof WebSocket !== "undefined" ? WebSocket : null);

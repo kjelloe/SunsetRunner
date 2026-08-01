@@ -16,7 +16,7 @@ import { loadCheckpointConfig } from "../shared/checkpoint_data.js";
 import { loadTrafficConfig } from "../shared/traffic_data.js";
 import { TICK_HZ } from "../shared/constants.js";
 import { createRoom } from "./game_room.js";
-import { C2S, S2C, parseMessage } from "./protocol.js";
+import { C2S, S2C, parseMessage } from "../shared/protocol.js";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 

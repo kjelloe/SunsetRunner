@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import WebSocket from "ws";
 import { startServer } from "../server/index.js";
-import { C2S, S2C } from "../server/protocol.js";
+import { C2S, S2C } from "../shared/protocol.js";
 
 function nextMessage(ws, pred) {
   return new Promise((resolve, reject) => {

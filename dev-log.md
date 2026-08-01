@@ -484,3 +484,30 @@ sim/fairness are read-only over the engine.
 **Next:** the seat/lane-skew investigation, `analyze_sweep.py` for large-N,
 client prediction/reconciliation (§21.2), and Milestone 5 content (forks +
 multi-checkpoint courses → route-mirror fairness, music, mobile).
+
+---
+
+## marker-0019 — client/server import boundary (playtest bugfix) (2026-08-01)
+
+**Reported:** `npm start` → localhost showed a blank square;
+`GET /server/protocol.js` failed with `NS_ERROR_CORRUPTED_CONTENT` / disallowed
+MIME.
+
+**Cause:** `client/session_remote.js` imported `../server/protocol.js`, but the
+static host only serves `client/shared/engine/data` — the browser 404'd it with
+an empty MIME, blocking the whole (eager, static) module graph, so `boot()` never
+ran.
+
+**Fix:** moved the protocol (a shared contract, pure) to `shared/protocol.js`;
+deleted `server/protocol.js`; updated server + client + ws-test imports. The
+client no longer imports from `server/`.
+
+**Self-tests added (`test/serve_static.test.js`):** scan every client import and
+fail on any that resolves outside a served dir; and start the real server and
+`fetch` client modules over HTTP asserting 200 + JS MIME — reproducing the exact
+failure. `specs/19`.
+
+**Gate:** `./test.sh` → 101/101 + 3 Luau gates OK.
+
+**Not verified:** on-screen visuals still need a native browser (§17); this fix
+only restores module loading + `boot()`.

@@ -1,6 +1,9 @@
-// server/protocol.js — wire message types + light validation.
+// shared/protocol.js — wire message types + light validation.
+// PURE (no node deps): lives in shared/ because it is a contract BOTH the server
+// and the browser client use — neither should import from the other's directory
+// (the static host only serves client/shared/engine/data, so a client import of
+// server/* fails to load in the browser). See specs/19.
 // Client -> server: JOIN, INPUT.  Server -> client: WELCOME, VIEW, ERROR.
-// All input payload fields are integers (the same contract the reducer enforces).
 
 export const C2S = { JOIN: "join", INPUT: "input" };
 export const S2C = { WELCOME: "welcome", VIEW: "view", ERROR: "error" };

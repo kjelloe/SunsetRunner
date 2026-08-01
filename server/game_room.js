@@ -10,7 +10,7 @@ import { CMD_INPUT, CMD_ADVANCE_TICK } from "../engine/commands.js";
 import { hashSnapshot } from "../engine/snapshot.js";
 import { getCourse } from "../shared/road_data.js";
 import { inCollisionWindow } from "../shared/collision.js";
-import { S2C } from "./protocol.js";
+import { S2C } from "../shared/protocol.js";
 
 // Filtered rival state (§10): only what a client needs to render a ghost, plus
 // collisionActive (1 when in the same segment/window as the viewer).
