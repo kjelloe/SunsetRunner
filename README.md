@@ -10,8 +10,10 @@ Fireline Command, with a Roblox/Luau twin (the RetroMultiCiv discipline). New IP
 - Headless simulation, replay-first debugging, golden-hash fixtures.
 - Luau twin of the deterministic core, verified byte-identical via `lune`.
 
-See `specs/game-design.md` for the full technical brief and
-`specs/01-determinism-contract.md` for the pinned determinism contract.
+See `specs/game-design.md` for the full technical brief,
+`specs/01-determinism-contract.md` for the pinned determinism contract, and
+`PLAYTEST.md` for the manual playtest checklist (what the automated suite can't
+cover — visual feel, touch, real-network multiplayer).
 
 ## Layout
 
