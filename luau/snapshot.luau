@@ -31,6 +31,7 @@ local function serializeSnapshot(state): { number }
 		w.writeI32LE(s.timerTicks)
 		w.writeU8(s.timedOut)
 		w.writeI32LE(s.forkChoice)
+		w.writeI32LE(s.crashedTicks)
 	end
 
 	w.writeU32LE(state.nextTrafficId)

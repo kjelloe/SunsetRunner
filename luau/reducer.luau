@@ -47,6 +47,9 @@ local function apply(state, command, ctx)
 			if seat.active == 0 or seat.finishTicks >= 0 or seat.timedOut ~= 0 then
 				continue
 			end
+			if seat.crashedTicks > 0 then
+				seat.crashedTicks -= 1
+			end
 			local c = car.getCar(ctx.carSet, seat.carId)
 			physics.stepLongitudinal(seat, c)
 			physics.stepLateral(seat, c)

@@ -7,7 +7,7 @@ local fixed = require("./fixedmath")
 local NATURAL_DRAG = 8
 local ROAD_HALF_WIDTH = 512
 local MAX_LANE_OFFSET = 1024
-local CURVE_PUSH_DEN = 4096
+local CURVE_PUSH_DEN = 320
 
 local function stepLongitudinal(seat, car)
 	local speed = seat.speed

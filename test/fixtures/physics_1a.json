@@ -1,16 +1,16 @@
 {
-  "note": "single-car physics golden. REPINNED at marker-0023 for curve physics (centrifugal push); finish 266 unchanged. Seed 12345, sunset_coast, red_sprint, accel from tick 1.",
+  "note": "single-car physics golden. REPINNED at marker-0032 (driving-feel pass: crash stun/immunity + stronger curve/steer). Seed 12345, sunset_coast, red_sprint, accel from tick 1.",
   "seed": 12345,
   "courseId": 1,
   "carId": 1,
   "accelRun": {
-    "hashAtTick10": "5c99fe9776975cdd",
-    "hashAtTick100": "5a46a52e95edb432",
-    "finishTick": 266,
-    "hashAtTick500": "89ddeef96e9c2990",
-    "checkpointTick": 143,
+    "hashAtTick10": "170aa301c509796d",
+    "hashAtTick100": "d2b020b8ab35cf64",
+    "finishTick": 279,
+    "hashAtTick500": "9d47b716b3de26af",
+    "checkpointTick": 119,
     "checkpointBonus": 600,
-    "finalTimerTicks": 1835,
+    "finalTimerTicks": 1822,
     "initialTrafficCount": 4
   },
   "timeout": {

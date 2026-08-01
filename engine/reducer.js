@@ -40,6 +40,7 @@ export function apply(state, command, ctx = {}) {
     // 2/3. input already applied via input commands (queued per seat).
     for (const seat of next.seats) {  // deterministic array order
       if (!seat.active || seat.finishTicks >= 0 || seat.timedOut) continue;
+      if (seat.crashedTicks > 0) seat.crashedTicks -= 1; // recover from a crash stun
       const car = getCar(ctx.carSet, seat.carId);
       stepLongitudinal(seat, car);    // 4. accel / brake / drag
       stepLateral(seat, car);         // 5. steer / lane

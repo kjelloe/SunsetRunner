@@ -40,9 +40,9 @@ test("a finished seat gets a neutral input", () => {
 
 test("AI-driven solo race finishes and is pinned (JS-only golden)", () => {
   const r = runAiRace(ctx, { seed: 12345, numSeats: 1 });
-  assert.equal(r.lastTick, 343); // dodges most traffic (7 crashes) and finishes
+  assert.equal(r.lastTick, 238); // dodges most traffic (7 crashes) and finishes
   assert.equal(r.census.finishes.length, 1);
   assert.equal(r.census.checkpoints, 1);
-  assert.equal(r.finalHash, "6a4803fb66324a7b");
+  assert.equal(r.finalHash, "1d6b97a6d0cda2d2");
   assert.equal(runAiRace(ctx, { seed: 12345, numSeats: 1 }).finalHash, r.finalHash); // deterministic
 });

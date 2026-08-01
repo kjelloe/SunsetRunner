@@ -10,6 +10,7 @@ local CAR_WIDTH = 200
 local BUMP_SLOW = 200
 local BUMP_PUSH = 64
 local TRAFFIC_CRASH_DEN = 3
+local CRASH_STUN_TICKS = 30
 local MAX_LANE_OFFSET = 1024
 
 local function overlapping(a, b): boolean
@@ -22,10 +23,11 @@ end
 local function resolveTrafficCollisions(state, tick: number)
 	local events = {}
 	for _, seat in ipairs(state.seats) do
-		if seat.active ~= 0 and seat.finishTicks < 0 and seat.timedOut == 0 then
+		if seat.active ~= 0 and seat.finishTicks < 0 and seat.timedOut == 0 and seat.crashedTicks == 0 then
 			for _, t in ipairs(state.traffic) do
 				if overlapping(seat, t) then
 					seat.speed = fixed.floorDivI32(seat.speed, TRAFFIC_CRASH_DEN)
+					seat.crashedTicks = CRASH_STUN_TICKS
 					table.insert(events, { type = "collision", kind = "traffic", seatId = seat.id, tick = tick })
 					break
 				end

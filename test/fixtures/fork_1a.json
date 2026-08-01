@@ -36,17 +36,16 @@
   },
   "expected": {
     "hashes": {
-      "10": "0939ec2660ba74c6",
-      "60": "505c9725870ad690",
-      "120": "a7f29753b8a85381"
+      "10": "72a5b170daaadec6",
+      "60": "6a35fe2a58929630",
+      "120": "211cd8f11ed974c1"
     },
-    "finalHash": "d09dbb310569a237",
-    "finishTick": 227,
+    "finalHash": "24bb509ea5326409",
+    "finishTick": 199,
     "census": [
       "checkpoint@119",
-      "collision@174",
-      "collision@175",
-      "finish@227"
+      "collision@189",
+      "finish@199"
     ]
   }
 }

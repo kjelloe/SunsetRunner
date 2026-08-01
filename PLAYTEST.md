@@ -46,10 +46,13 @@ Open `http://localhost:8000/client/index.html`.
 
 ## 2. Curves & drift — feel
 
-- [ ] **[unverified]** On a curve the car is pushed sideways (centrifugal, curve
-  physics marker-0023). Do you have to counter-steer to hold the line?
-- [ ] **[feel]** Is the curve push too strong / too weak? (`CURVE_PUSH_DEN` = 4096
-  is a guess.)
+- [ ] **[bug]** Holding forward now BUILDS speed on straights and you can recover
+  after a traffic crash (marker-0032 crash-stun; was: crashed every tick / speed
+  bled to nothing).
+- [ ] **[feel]** Flat-out through a sharp curve should tip you onto the grass
+  (speed dip) — **braking before the turn** keeps you on; **steering** holds the
+  line. Does braking/steering feel worth it? Too harsh / too weak? (`CURVE_PUSH_DEN`
+  320, steerHigh 14 are sim-tuned first passes.)
 
 ## 3. Forks & course select — course 2 (canyon_split)
 

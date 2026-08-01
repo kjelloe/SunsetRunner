@@ -790,3 +790,29 @@ fixed per screen row regardless of the car's roadZ — the road never scrolled.
 
 **Playtest items addressed:** speed (30-static-road fix), gfx polish, WASD+arrows,
 finish splash, mobile arrows. Remaining: curve/camera feel + DPR (native-only), music.
+
+---
+
+## marker-0032 — driving feel: crash stun + cornering (2026-08-02)
+
+**From playtest:** speed drops in corners, does steering matter, brake before turns.
+
+**Diagnosis (tick trace):** the drops were TRAFFIC CRASHES, firing every tick you
+overlapped a car (1760->800->274->98 on ticks 113/114/115); corners were cosmetic.
+
+**Fixes (engine, repin):**
+- crash stun/immunity: hitting traffic sets seat.crashedTicks=30 (immune while
+  counting down) -> one crash per encounter, recoverable (accel-only 9->2 crashes).
+- cornering: CURVE_PUSH_DEN 4096->320 (truncDiv-symmetric) + car steer 18/9->22/14;
+  sim-tuned so flat-out tips off-road in the sharp curve (peak ~517>512), braking
+  stays on (0 off ticks), steering holds the line -> brake-before-turn + steering
+  both matter.
+- Luau twin updated (crashedTicks + DEN). mirrorFairness still exact (183=183,
+  -396/396). Two fairness tests updated for the new physics (same-lane tie;
+  traffic-swap relative residual). specs/31 (+27 note).
+
+**REPINS:** physics_1a, checkpoint_1a 815e8a04c44fc59a (finish 279), collision_1a
+ea720799d79d2321, fork_1a 24bb509ea5326409 (finish 199), AI 1d6b97a6d0cda2d2
+(finish 238). 4 Luau gates re-verified.
+
+**Gate:** `./test.sh` -> 138/138 + 4 Luau gates OK.

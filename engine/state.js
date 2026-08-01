@@ -31,6 +31,7 @@ export function makeSeat(id, carId, startSegment, startTimeTicks, laneX = CENTER
     timerTicks: startTimeTicks, // remaining checkpoint time; 0 + timedOut = timeout
     timedOut: 0,
     forkChoice: 0, // pending fork direction (-1 left / 1 right / 0 none), applied at the next fork
+    crashedTicks: 0, // post-traffic-crash stun/immunity countdown
   };
 }
 

@@ -1,5 +1,5 @@
 {
-  "note": "checkpoint_1a milestone fixture. Last repinned: curve physics (marker-0023); accel-only finish 266 unchanged",
+  "note": "checkpoint_1a milestone fixture. Last repinned: driving-feel pass marker-0032 (crash stun + stronger curve/steer); accel-only finish 279",
   "scenario": {
     "name": "checkpoint_1a",
     "seed": 12345,
@@ -23,32 +23,28 @@
   },
   "expected": {
     "hashes": {
-      "10": "5c99fe9776975cdd",
-      "100": "5a46a52e95edb432",
-      "215": "a448327c4ea838c5"
+      "10": "170aa301c509796d",
+      "100": "d2b020b8ab35cf64",
+      "215": "8cc21e22e251b289"
     },
-    "finalHash": "cb23ee95e6f36118",
-    "finishTick": 266,
+    "finalHash": "815e8a04c44fc59a",
+    "finishTick": 279,
     "census": [
       {
-        "type": "collision",
-        "tick": 113
-      },
-      {
-        "type": "collision",
-        "tick": 114
-      },
-      {
-        "type": "collision",
-        "tick": 115
-      },
-      {
         "type": "checkpoint",
-        "tick": 143
+        "tick": 119
+      },
+      {
+        "type": "collision",
+        "tick": 164
+      },
+      {
+        "type": "collision",
+        "tick": 214
       },
       {
         "type": "finish",
-        "tick": 266
+        "tick": 279
       }
     ]
   }

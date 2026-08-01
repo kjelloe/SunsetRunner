@@ -41,11 +41,11 @@
   },
   "expected": {
     "hashes": {
-      "10": "701d5f04990b3f62",
-      "30": "84c23bcdf6bf23c7",
-      "60": "0e231a34e0f33f71"
+      "10": "04dea8359a86b1d2",
+      "30": "2d2d6f0a0b3501d7",
+      "60": "ea720799d79d2321"
     },
-    "finalHash": "0e231a34e0f33f71",
+    "finalHash": "ea720799d79d2321",
     "census": [
       {
         "type": "collision",

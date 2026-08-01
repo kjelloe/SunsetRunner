@@ -7,8 +7,8 @@
       "accel": 22,
       "brake": 45,
       "offroadDrag": 60,
-      "steerLow": 18,
-      "steerHigh": 9,
+      "steerLow": 22,
+      "steerHigh": 14,
       "driftRecovery": 12
     },
     {

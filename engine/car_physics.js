@@ -7,7 +7,10 @@ import { clampI32, floorDivI32, truncDivI32 } from "../shared/fixedmath.js";
 export const NATURAL_DRAG = 8;       // coast deceleration when neither pedal held
 export const ROAD_HALF_WIDTH = 512;  // |laneX| beyond this is off-road
 export const MAX_LANE_OFFSET = 1024; // hard clamp on lateral position
-export const CURVE_PUSH_DEN = 4096;  // divides curve*speed into a per-tick shove
+export const CURVE_PUSH_DEN = 320;   // divides curve*speed into a per-tick shove
+                                     // (lower = stronger; tuned so flat-out through
+                                     // the sharpest curve just tips you off-road,
+                                     // while braking or counter-steering holds the line)
 
 // Step 4 of the tick order: accel / brake / drag, then off-road drag, clamped.
 export function stepLongitudinal(seat, car) {
