@@ -674,3 +674,25 @@ IDs, not hand-coords (§18). The last numbered slice.
 **MILESTONE 5 mostly complete** (forks, curve physics, fork UI, touch, assets).
 Remaining feel: music select, native visual/perf tuning (§17). Open: traffic-swap
 fairness (§16.3), client prediction (§21.2).
+
+---
+
+## marker-0027 — traffic-swap fairness (§16.3) (2026-08-01)
+
+**Goal:** does traffic accidentally favour a fork branch? Completes the §16
+fairness trio.
+
+**Built:** `engine/fairness.js` `trafficSwapFairness` — walks the course to its
+fork, measures the left−right finish delta with traffic, swaps the two branches'
+`trafficSeed`s, re-measures; `residual = deltaNormal + deltaSwapped` (≈0 ⇒ all
+difference is traffic ⇒ geometry fair). `test/fairness.test.js` +
+`debugging/fairness.mjs` line.
+
+**Findings:** mirror_valley residual **0** (traffic-only, geometry fair —
+`11.9 → −11.9`); canyon_split residual **44.8** (geometry bias survives swap, its
+branches are 500 vs 400 strips). Instrument cleanly separates luck from geometry.
+
+**Gate:** `./test.sh` → 125/125 + 4 Luau gates. Measurement only, no repin. §16
+fairness trio (mirror/car-swap/traffic-swap) + tie fix all in.
+
+**Next:** client prediction/reconciliation (§21.2); music; native visual/perf.

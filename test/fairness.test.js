@@ -4,12 +4,13 @@ import { readFileSync } from "node:fs";
 import { loadCourseSet } from "../shared/road_data.js";
 import { loadCarSet } from "../shared/car_data.js";
 import { loadTrafficConfig } from "../shared/traffic_data.js";
-import { seatOrderFairness, carSwap, mirrorFairness } from "../engine/fairness.js";
+import { seatOrderFairness, carSwap, mirrorFairness, trafficSwapFairness } from "../engine/fairness.js";
 import { runAiRace } from "../engine/sim.js";
 
 const read = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url)));
+const roadsJson = read("../data/roads.json");
 const ctx = {
-  courseSet: loadCourseSet(read("../data/roads.json")),
+  courseSet: loadCourseSet(roadsJson),
   carSet: loadCarSet(read("../data/cars.json")),
   trafficConfig: loadTrafficConfig(read("../data/traffic.json")),
 };
@@ -58,6 +59,22 @@ test("route-mirror fairness: mirrored branches finish equal, drift opposite", ()
   assert.equal(m.leftLaneX, -m.rightLaneX, "drift is equal-and-opposite");
   assert.ok(m.fair);
   assert.notEqual(m.leftLaneX, 0, "the curve actually pushed the car (physics, not cosmetic)");
+});
+
+test("traffic-swap fairness: mirror course is geometry-fair (residual 0)", () => {
+  // Swapping the two branches' traffic seeds exactly negates the left/right
+  // finish delta -> the whole asymmetry was traffic, the geometry is fair.
+  const r = trafficSwapFairness(roadsJson, ctx.carSet, ctx.trafficConfig, 3, seeds);
+  assert.equal(r.forkSegment, 21);
+  assert.equal(r.deltaSwapped, -r.deltaNormal);
+  assert.equal(r.residual, 0);
+});
+
+test("traffic-swap fairness: the asymmetric course keeps its geometry bias", () => {
+  // canyon_split's branches are different lengths (500 vs 400 strips); the bias
+  // survives a traffic-seed swap -> a real geometry difference, not traffic luck.
+  const r = trafficSwapFairness(roadsJson, ctx.carSet, ctx.trafficConfig, 2, seeds);
+  assert.ok(Math.abs(r.residual) > 20, `geometry bias should survive the swap: ${r.residual}`);
 });
 
 test("fairness measurements are deterministic", () => {

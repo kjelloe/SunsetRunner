@@ -7,7 +7,7 @@ import { dirname, resolve } from "node:path";
 import { loadCourseSet } from "../shared/road_data.js";
 import { loadCarSet } from "../shared/car_data.js";
 import { loadTrafficConfig } from "../shared/traffic_data.js";
-import { seatOrderFairness, carSwap, mirrorFairness } from "../engine/fairness.js";
+import { seatOrderFairness, carSwap, mirrorFairness, trafficSwapFairness } from "../engine/fairness.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => JSON.parse(readFileSync(resolve(root, p)));
@@ -35,3 +35,9 @@ console.log(`  car ${cs.carA}: ${cs.avgFinishTicksA}   car ${cs.carB}: ${cs.avgF
 const mv = mirrorFairness(ctx, 3);
 console.log(`route-mirror fairness (course 3 mirror_valley, no traffic):`);
 console.log(`  left finish ${mv.leftFinish} / right ${mv.rightFinish}; drift ${mv.leftLaneX} / ${mv.rightLaneX} -> ${mv.fair ? "FAIR" : "BIASED"}`);
+
+for (const cid of [3, 2]) {
+  const ts = trafficSwapFairness(read("data/roads.json"), ctx.carSet, ctx.trafficConfig, cid, seeds);
+  console.log(`traffic-swap fairness (course ${cid}, fork seg ${ts.forkSegment} branches ${ts.branches}):`);
+  console.log(`  delta ${ts.deltaNormal} -> swapped ${ts.deltaSwapped}; residual ${ts.residual} -> ${Math.abs(ts.residual) <= 2 ? "geometry FAIR (traffic-only)" : "geometry BIAS survives swap"}`);
+}
