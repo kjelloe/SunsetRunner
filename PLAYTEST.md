@@ -1,6 +1,6 @@
 # Playtest checklist — Sunset Runner
 
-The automated suite (`./test.sh`, 129 tests + 4 Luau parity gates) covers engine
+The automated suite (`./test.sh`, 138 tests + 4 Luau parity gates) covers engine
 determinism, the reducer, server room, fairness, and client module loading. It
 does **NOT** cover anything you can only judge with a real browser: visual feel,
 frame rate, camera tuning, touch ergonomics, audio, and real-network multiplayer.
@@ -12,7 +12,7 @@ fail, **[unverified]** = never seen working, watch closely.
 ## 0. Setup
 
 ```bash
-npm test            # expect 129 pass + 3 "LUAU ... PARITY OK" lines
+npm test            # expect all pass + 3 "LUAU ... PARITY OK" lines
 python3 -m http.server 8000   # from repo root (or `npm start` for the ws server)
 ```
 Open `http://localhost:8000/client/index.html`.
@@ -107,12 +107,12 @@ Open TWO browser tabs at `http://localhost:8000/client/index.html?mode=remote`.
 
 ## 7. Determinism / regression sanity
 
-- [ ] **[bug]** `node debugging/replay.mjs` prints a race report ending at tick
-  266 with `finish@266`.
+- [ ] **[bug]** `node debugging/replay.mjs` prints a race report ending with a
+  `finish` event (checkpoint_1a accel-only finishes at tick 279).
 - [ ] **[bug]** `node debugging/sim_campaign.mjs` prints 5 seeds, all finishing,
   "systems fired" true for finish/checkpoint/collision.
 - [ ] **[bug]** `node debugging/fairness.mjs` prints mirror = FAIR and
-  traffic-swap course-3 residual 0.
+  traffic-swap: course-3 residual much smaller than course-2 (geometry fair).
 
 ## 8. Audio
 
