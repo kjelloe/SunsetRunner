@@ -9,7 +9,7 @@ import { loadTrafficConfig } from "../shared/traffic_data.js";
 import { TICK_HZ } from "../shared/constants.js";
 import { createLocalSession } from "./session_local.js";
 import { createRemoteSession } from "./session_remote.js";
-import { installKeyboard, readInput } from "./input.js";
+import { installKeyboard, readInput, readForkChoice } from "./input.js";
 import { render } from "./renderer_canvas.js";
 
 const SIM_DT = 1000 / TICK_HZ;
@@ -31,10 +31,13 @@ export async function boot(doc = document) {
   const trafficConfig = loadTrafficConfig(traffic);
 
   // ?mode=remote joins the ws server room; default is an offline local race.
-  const remote = new URLSearchParams(location.search).get("mode") === "remote";
+  // ?course=N selects the course for a local race (default 1).
+  const params = new URLSearchParams(location.search);
+  const remote = params.get("mode") === "remote";
+  const courseId = Number(params.get("course")) || 1;
   const session = remote
     ? createRemoteSession(`ws://${location.host}`)
-    : createLocalSession(courseSet, carSet, { seed: 12345, startTimeTicks, trafficConfig });
+    : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig });
   if (remote) session.connect();
 
   installKeyboard(doc);
@@ -43,6 +46,8 @@ export async function boot(doc = document) {
   let last = performance.now();
   function frame(now) {
     session.setInput(readInput());
+    const fc = readForkChoice();
+    if (fc !== 0) session.setForkChoice(fc);
     if (!remote) {
       acc += now - last;
       last = now;

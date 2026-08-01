@@ -44,7 +44,8 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 ## Milestone 5 — Content and feel
 
 - [x] branching forks (marker-0021) — course 2 canyon_split, forkChoice command, Luau-twinned
-- [ ] client fork UI (key + course select) + route-mirror fairness (§16.1)
+- [x] client fork UI (Q/E + ?course select, local+remote) (marker-0022)
+- [ ] curve physics (centrifugal push) → then route-mirror fairness (§16.1)
 - [ ] slice-016 client-smoke
 - [ ] slice-017 mobile-touch-controls
 - [ ] slice-018 asset-strip-pipeline

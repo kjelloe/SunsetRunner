@@ -39,6 +39,9 @@ export function createRemoteSession(url, opts = {}) {
     connect,
     get seatId() { return seatId; },
     setInput(input) { held = input; },
+    setForkChoice(choice) {
+      if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.FORK, choice }));
+    },
     // Renderable state assembled from the latest view (self as seats[0]).
     getState() {
       if (!latest || !latest.self) return { tick: 0, seats: [], ghosts: [], traffic: [], events: [] };

@@ -3,10 +3,22 @@
 // reducer expects. Import-safe: listeners are only attached when installed.
 
 const keys = new Set();
+const forkQueue = []; // edge-triggered fork presses (-1 left / 1 right)
 
 export function installKeyboard(target) {
-  target.addEventListener("keydown", (e) => keys.add(e.code));
+  target.addEventListener("keydown", (e) => {
+    if (!keys.has(e.code)) {
+      if (e.code === "KeyQ") forkQueue.push(-1);
+      else if (e.code === "KeyE") forkQueue.push(1);
+    }
+    keys.add(e.code);
+  });
   target.addEventListener("keyup", (e) => keys.delete(e.code));
+}
+
+// Pop the next queued fork press (0 if none) — discrete, not held.
+export function readForkChoice() {
+  return forkQueue.length ? forkQueue.shift() : 0;
 }
 
 // Reduce current keys to { steer, accel, brake } (all integers).

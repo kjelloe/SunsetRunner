@@ -6,7 +6,7 @@
 
 import { createInitialState, makeSeat } from "../engine/state.js";
 import { apply } from "../engine/reducer.js";
-import { CMD_INPUT, CMD_ADVANCE_TICK } from "../engine/commands.js";
+import { CMD_INPUT, CMD_ADVANCE_TICK, CMD_FORK_CHOICE } from "../engine/commands.js";
 import { hashSnapshot } from "../engine/snapshot.js";
 import { getCourse } from "../shared/road_data.js";
 import { inCollisionWindow } from "../shared/collision.js";
@@ -60,6 +60,7 @@ export function createRoom(ctx, opts = {}) {
   // Replay recording (slice-013): seats + input CHANGES, dumped as a scenario.
   const seatsMeta = [];
   const recordedInputs = [];
+  const recordedForks = [];
   const lastInputKey = new Map();
 
   return {
@@ -91,6 +92,11 @@ export function createRoom(ctx, opts = {}) {
       inputs.set(seatId, input);
     },
 
+    setForkChoice(seatId, choice) {
+      state = apply(state, { type: CMD_FORK_CHOICE, seatId, choice }, simCtx);
+      recordedForks.push({ tick: state.tick + 1, seatId, choice });
+    },
+
     // Dump the game so far as a re-runnable scenario (slice-013).
     dumpReplay() {
       return {
@@ -104,6 +110,7 @@ export function createRoom(ctx, opts = {}) {
           seats: seatsMeta.map((s) => ({ ...s })),
           hashTicks: [],
           inputs: recordedInputs.map((i) => ({ ...i })),
+          forkChoices: recordedForks.map((f) => ({ ...f })),
         },
       };
     },

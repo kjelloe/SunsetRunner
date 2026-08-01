@@ -18,7 +18,12 @@ python3 -m http.server 8000     # run from the repo root
 ```
 
 Drive with the arrow keys (or WASD): up = accelerate, down = brake, left/right =
-steer. The road, player car, and speed HUD render at 60 fps over a 20 Hz sim.
+steer. At a fork, press **Q** (left) or **E** (right). The road, player car,
+speed/timer HUD, and a fork prompt render at 60 fps over a 20 Hz sim.
+
+Course select (local): `?course=2` drives the branching `canyon_split` course,
+e.g. `http://localhost:8000/client/index.html?course=2`. `?mode=remote` joins
+the ws server room instead.
 
 Visual feel/perf tuning is a native-browser task (brief §17); WSL/SwiftShader is
 correctness-only.

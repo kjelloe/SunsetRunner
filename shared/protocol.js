@@ -5,11 +5,12 @@
 // server/* fails to load in the browser). See specs/19.
 // Client -> server: JOIN, INPUT.  Server -> client: WELCOME, VIEW, ERROR.
 
-export const C2S = { JOIN: "join", INPUT: "input" };
+export const C2S = { JOIN: "join", INPUT: "input", FORK: "forkChoice" };
 export const S2C = { WELCOME: "welcome", VIEW: "view", ERROR: "error" };
 
 const TRISTATE = new Set([-1, 0, 1]);
 const BINARY = new Set([0, 1]);
+const FORK_DIR = new Set([-1, 1]);
 
 export function parseMessage(raw) {
   let msg;
@@ -29,6 +30,10 @@ export function parseMessage(raw) {
     if (!BINARY.has(msg.accel)) return { ok: false, reason: "accel must be 0|1" };
     if (!BINARY.has(msg.brake)) return { ok: false, reason: "brake must be 0|1" };
     return { ok: true, msg: { type: C2S.INPUT, steer: msg.steer, accel: msg.accel, brake: msg.brake } };
+  }
+  if (msg.type === C2S.FORK) {
+    if (!FORK_DIR.has(msg.choice)) return { ok: false, reason: "choice must be -1|1" };
+    return { ok: true, msg: { type: C2S.FORK, choice: msg.choice } };
   }
   return { ok: false, reason: `unknown type: ${msg.type}` };
 }

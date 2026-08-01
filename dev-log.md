@@ -559,3 +559,24 @@ behaviour unchanged):** `checkpoint_1a f817fa6fe43aaf43`, `physics_1a`,
 
 **Next:** client fork UI + course select, route-mirror fairness (§16.1), and the
 rest of Milestone 5 (multi-checkpoint content, music, mobile, asset pipeline).
+
+---
+
+## marker-0022 — client fork UI & course select (2026-08-01)
+
+**Goal:** drive the fork in-browser (local + remote) and pick the course. No
+engine change → no repin.
+
+**Built:**
+- `client/input.js` — edge-triggered Q/E fork queue (`readForkChoice`).
+- `session_local`/`session_remote` — `setForkChoice` (local applies the reducer
+  command; remote sends a protocol message); `main.js` pumps it + `?course=N`.
+- `client/renderer_canvas.js` — fork prompt when the current/next segment forks.
+- `shared/protocol.js` `C2S.FORK`; `server/index.js` + `game_room.setForkChoice`
+  (applies + records → replays carry `forkChoices`).
+- `test/client_fork.test.js`; RUNNING.md controls. `specs/22`.
+
+**Gate:** `./test.sh` → 112/112 + 4 Luau gates OK.
+
+**Next:** curve physics (centrifugal) — makes curves push the car and turns
+route-mirror fairness into a real instrument.

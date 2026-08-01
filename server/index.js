@@ -76,6 +76,9 @@ export async function startServer(port = 8000, roomOpts = {}) {
       } else if (msg.type === C2S.INPUT) {
         const seatId = clients.get(ws);
         if (seatId != null) room.setInput(seatId, msg);
+      } else if (msg.type === C2S.FORK) {
+        const seatId = clients.get(ws);
+        if (seatId != null) room.setForkChoice(seatId, msg.choice);
       }
     });
     ws.on("close", () => {

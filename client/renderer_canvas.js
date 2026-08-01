@@ -6,6 +6,7 @@ import { drawHud } from "./hud.js";
 import { projectPoint } from "./projection.js";
 import { MAX_LANE_OFFSET } from "../engine/car_physics.js";
 import { ROAD_UNIT } from "../shared/constants.js";
+import { getSegment } from "../shared/road_data.js";
 
 export function render(g, view, state, courseSet) {
   // sky
@@ -20,6 +21,21 @@ export function render(g, view, state, courseSet) {
   drawGhosts(g, view, state);
   drawPlayerCar(g, view, state.seats[0]);
   drawHud(g, view, state);
+  drawForkHint(g, view, state.seats[0], courseSet);
+}
+
+// Show a fork prompt when the current or next segment is a fork.
+function drawForkHint(g, view, seat, courseSet) {
+  if (seat.segmentId === -1) return;
+  const cur = getSegment(courseSet, seat.segmentId);
+  const isFork = (s) => s && (s.forkLeft >= 0 || s.forkRight >= 0);
+  const nextSeg = cur.next > 0 ? getSegment(courseSet, cur.next) : null;
+  if (!isFork(cur) && !isFork(nextSeg)) return;
+  g.font = "24px monospace";
+  g.textAlign = "center";
+  g.fillStyle = "#ffe14d";
+  g.fillText("◄ Q     FORK     E ►", view.w / 2, 72);
+  g.textAlign = "left";
 }
 
 // Rival ghosts (remote play). Same-segment, ahead of the viewer, back-to-front.

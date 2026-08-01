@@ -4,7 +4,7 @@
 
 import { createInitialState } from "../engine/state.js";
 import { apply } from "../engine/reducer.js";
-import { CMD_INPUT, CMD_ADVANCE_TICK } from "../engine/commands.js";
+import { CMD_INPUT, CMD_ADVANCE_TICK, CMD_FORK_CHOICE } from "../engine/commands.js";
 
 export function createLocalSession(courseSet, carSet, opts = {}) {
   const seed = (opts.seed ?? 12345) >>> 0;
@@ -19,6 +19,9 @@ export function createLocalSession(courseSet, carSet, opts = {}) {
 
   return {
     setInput(input) { held = input; },
+    setForkChoice(choice) {
+      state = apply(state, { type: CMD_FORK_CHOICE, seatId: 1, choice }, ctx);
+    },
     // One authoritative sim step: apply held input, then advance one tick.
     tick() {
       state = apply(state, { type: CMD_INPUT, seatId: 1, ...held }, ctx);
