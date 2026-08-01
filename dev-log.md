@@ -719,3 +719,29 @@ fairness trio (mirror/car-swap/traffic-swap) + tie fix all in.
 **Gate:** `./test.sh` → 129/129 + 4 Luau gates OK. No repin.
 
 **Next:** reconcile smoothing (visual), music, native visual/perf tuning.
+
+---
+
+## marker-0029 — mobile touch compatibility fix + self-tests (2026-08-01)
+
+**Reported:** "look into mobile controls and compatibility."
+
+**Bug found:** `installTouch` mapped taps as `offsetX / bufferWidth` (960),
+correct only at native size. On a phone the canvas is CSS-scaled to fit, so every
+touch hit the wrong button (gotcha #9).
+
+**Fixes (client-only, no repin):**
+- `touch_controls.js` `eventFraction(canvas, e)` maps via the bounding rect +
+  clientX/Y (scale/offset independent; offset fallback kept); `installTouch(canvas)`.
+- `index.html` responsive canvas (`min(100vw,177.78vh)`, `aspect-ratio 16/9`),
+  `touch-action: none`, `user-select: none`, no pinch-zoom.
+
+**Self-tests added (`test/touch_controls.test.js`, now 8):** eventFraction rect +
+fallback, correct hit-testing on a CSS-scaled + offset canvas (the exact bug),
+multi-touch on a scaled canvas, button-layout sanity (unique/in-bounds/no-overlap).
+`specs/25` updated; PLAYTEST.md touch items sharpened.
+
+**Gate:** `./test.sh` → 133/133 + 4 Luau gates OK.
+
+**Still native-only:** on-device ergonomics + high-DPR crispness (960 buffer is
+CSS-upscaled; a DPR buffer resize is later polish).

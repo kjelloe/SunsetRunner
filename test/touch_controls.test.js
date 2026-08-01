@@ -1,50 +1,113 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { installTouch, readTouchInput, readTouchFork, BUTTONS } from "../client/touch_controls.js";
+import { installTouch, readTouchInput, readTouchFork, eventFraction, BUTTONS } from "../client/touch_controls.js";
 
-const view = { w: 960, h: 540 };
-const handlers = {};
-const target = { addEventListener: (ev, fn) => { (handlers[ev] ||= []).push(fn); } };
-installTouch(target, view);
+// A fake canvas: captures listeners and reports a bounding rect, so we can
+// simulate a canvas that the browser has CSS-scaled to fit a phone.
+function makeCanvas(rect) {
+  const handlers = {};
+  return {
+    width: 960, height: 540,
+    getBoundingClientRect: () => rect,
+    addEventListener: (ev, fn) => { (handlers[ev] ||= []).push(fn); },
+    fire(type, clientX, clientY, pointerId = 1) {
+      for (const fn of handlers[type] || []) fn({ type, pointerId, clientX, clientY, preventDefault() {} });
+    },
+  };
+}
 
-// Fire a synthetic pointer event at the CENTRE of a named button.
-function fire(type, buttonId, pointerId = 1) {
+function centerOf(rect, buttonId) {
   const b = BUTTONS.find((x) => x.id === buttonId);
-  const offsetX = ((b.x0 + b.x1) / 2) * view.w;
-  const offsetY = ((b.y0 + b.y1) / 2) * view.h;
-  for (const fn of handlers[type] || []) fn({ type, pointerId, offsetX, offsetY, preventDefault() {} });
+  return { x: rect.left + ((b.x0 + b.x1) / 2) * rect.width, y: rect.top + ((b.y0 + b.y1) / 2) * rect.height };
 }
 
 function drain() { while (readTouchFork() !== 0) {} }
 
-test("holding a steer button produces steer input until release", () => {
-  fire("pointerdown", "steerR");
+test("eventFraction maps via the bounding rect, independent of CSS scale/offset", () => {
+  const canvas = { width: 960, height: 540, getBoundingClientRect: () => ({ left: 100, top: 50, width: 480, height: 270 }) };
+  // a point at 25% / 50% of the DISPLAYED rect
+  const f = eventFraction(canvas, { clientX: 100 + 0.25 * 480, clientY: 50 + 0.5 * 270 });
+  assert.ok(Math.abs(f.fx - 0.25) < 1e-9);
+  assert.ok(Math.abs(f.fy - 0.5) < 1e-9);
+});
+
+test("eventFraction falls back to offset/buffer when no rect is available", () => {
+  const f = eventFraction({ width: 960, height: 540 }, { offsetX: 240, offsetY: 270 });
+  assert.equal(f.fx, 0.25);
+  assert.equal(f.fy, 0.5);
+});
+
+test("holding a steer button steers, release stops (full-size canvas)", () => {
+  const rect = { left: 0, top: 0, width: 960, height: 540 };
+  const c = makeCanvas(rect);
+  installTouch(c);
+  const p = centerOf(rect, "steerR");
+  c.fire("pointerdown", p.x, p.y);
   assert.deepEqual(readTouchInput(), { steer: 1, accel: 0, brake: 0 });
-  fire("pointerup", "steerR");
+  c.fire("pointerup", p.x, p.y);
   assert.deepEqual(readTouchInput(), { steer: 0, accel: 0, brake: 0 });
 });
 
-test("multi-touch: steer left + gas at once", () => {
-  fire("pointerdown", "steerL", 1);
-  fire("pointerdown", "accel", 2);
+test("touch hit-testing is correct on a CSS-SCALED canvas (mobile)", () => {
+  // Canvas displayed at 360x202.5 (shrunk) and offset — the old offsetX/buffer
+  // math would land in the wrong button; rect-based mapping stays correct.
+  const rect = { left: 24, top: 80, width: 360, height: 202.5 };
+  const c = makeCanvas(rect);
+  installTouch(c);
+  const gas = centerOf(rect, "accel");
+  c.fire("pointerdown", gas.x, gas.y, 2);
+  assert.deepEqual(readTouchInput(), { steer: 0, accel: 1, brake: 0 });
+  c.fire("pointerup", gas.x, gas.y, 2);
+  assert.deepEqual(readTouchInput(), { steer: 0, accel: 0, brake: 0 });
+});
+
+test("multi-touch: steer + gas on a scaled canvas", () => {
+  const rect = { left: 0, top: 0, width: 480, height: 270 };
+  const c = makeCanvas(rect);
+  installTouch(c);
+  const l = centerOf(rect, "steerL");
+  const g = centerOf(rect, "accel");
+  c.fire("pointerdown", l.x, l.y, 1);
+  c.fire("pointerdown", g.x, g.y, 2);
   assert.deepEqual(readTouchInput(), { steer: -1, accel: 1, brake: 0 });
-  fire("pointerup", "steerL", 1);
-  fire("pointerup", "accel", 2);
-  assert.deepEqual(readTouchInput(), { steer: 0, accel: 0, brake: 0 });
+  c.fire("pointerup", l.x, l.y, 1);
+  c.fire("pointerup", g.x, g.y, 2);
 });
 
-test("fork buttons are edge-triggered (one tap = one choice)", () => {
+test("fork buttons are edge-triggered and leave no held input", () => {
   drain();
-  fire("pointerdown", "forkR");
-  fire("pointerdown", "forkL");
-  assert.equal(readTouchFork(), 1);   // forkR first
-  assert.equal(readTouchFork(), -1);  // then forkL
-  assert.equal(readTouchFork(), 0);   // queue drained
-  // a fork tap does not leave a held input
+  const rect = { left: 0, top: 0, width: 960, height: 540 };
+  const c = makeCanvas(rect);
+  installTouch(c);
+  const fr = centerOf(rect, "forkR");
+  const fl = centerOf(rect, "forkL");
+  c.fire("pointerdown", fr.x, fr.y, 3);
+  c.fire("pointerdown", fl.x, fl.y, 4);
+  assert.equal(readTouchFork(), 1);
+  assert.equal(readTouchFork(), -1);
+  assert.equal(readTouchFork(), 0);
   assert.deepEqual(readTouchInput(), { steer: 0, accel: 0, brake: 0 });
 });
 
-test("a touch outside any button is ignored", () => {
-  for (const fn of handlers.pointerdown) fn({ type: "pointerdown", pointerId: 9, offsetX: view.w / 2, offsetY: 10, preventDefault() {} });
+test("a touch outside every button is ignored", () => {
+  const rect = { left: 0, top: 0, width: 960, height: 540 };
+  const c = makeCanvas(rect);
+  installTouch(c);
+  c.fire("pointerdown", 480, 20, 9); // top-centre, no button
   assert.deepEqual(readTouchInput(), { steer: 0, accel: 0, brake: 0 });
+});
+
+test("button layout: unique ids, in-bounds, no overlap", () => {
+  const ids = BUTTONS.map((b) => b.id);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const b of BUTTONS) {
+    assert.ok(b.x0 >= 0 && b.x1 <= 1 && b.y0 >= 0 && b.y1 <= 1 && b.x0 < b.x1 && b.y0 < b.y1, `${b.id} in bounds`);
+  }
+  for (let i = 0; i < BUTTONS.length; i++) {
+    for (let j = i + 1; j < BUTTONS.length; j++) {
+      const a = BUTTONS[i], b = BUTTONS[j];
+      const overlap = a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+      assert.ok(!overlap, `${a.id} and ${b.id} must not overlap`);
+    }
+  }
 });

@@ -74,9 +74,13 @@ On a phone (or desktop with `...index.html?touch=1`):
 - [ ] **[bug]** Hold a steer button → car steers; release → stops.
 - [ ] **[bug]** Two fingers at once (steer + GAS) both register.
 - [ ] **[bug]** Tapping a fork button chooses that branch (one tap = one choice).
-- [ ] **[unverified]** Button sizes/positions are usable on a real phone; canvas
-  fills the screen without weird scaling (gotchas #9/#10).
-- [ ] **[feel]** Are the buttons in reachable spots?
+- [ ] **[bug]** Canvas fills the screen keeping 16:9 (no overflow / page scroll);
+  buttons are hit-tested correctly at that scale (marker-0029 fixed the CSS-scale
+  mapping bug — verify a tap actually triggers the button under your finger).
+- [ ] **[bug]** Page does not scroll or pinch-zoom while you drag on the canvas.
+- [ ] **[unverified]** High-DPR crispness (the 960 buffer is CSS-upscaled) — is it
+  acceptably sharp on a retina phone?
+- [ ] **[feel]** Are the buttons in reachable spots / big enough?
 
 ## 6. Multiplayer — server room
 

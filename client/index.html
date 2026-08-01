@@ -2,12 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Sunset Runner</title>
   <style>
-    html, body { margin: 0; height: 100%; background: #12071f; }
+    html, body { margin: 0; height: 100%; background: #12071f; overflow: hidden; }
     body { display: flex; align-items: center; justify-content: center; }
-    canvas { background: #000; image-rendering: pixelated; box-shadow: 0 0 40px #000; }
+    /* The 960x540 drawing buffer is CSS-scaled to fit any screen while keeping
+       16:9; touch mapping uses the bounding rect so it stays correct. */
+    canvas {
+      background: #000;
+      image-rendering: pixelated;
+      box-shadow: 0 0 40px #000;
+      width: min(100vw, 177.78vh);
+      height: auto;
+      aspect-ratio: 16 / 9;
+      touch-action: none;   /* no scroll/zoom while driving on touch */
+      user-select: none;
+    }
   </style>
 </head>
 <body>

@@ -43,7 +43,7 @@ export async function boot(doc = document) {
   if (remote) session.connect();
 
   installKeyboard(doc);
-  installTouch(canvas, view);
+  installTouch(canvas);
   const showTouch = touchDetected() || params.get("touch") === "1";
 
   let acc = 0;

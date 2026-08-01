@@ -24,9 +24,26 @@ function hitButton(fx, fy) {
   return null;
 }
 
-export function installTouch(target, view) {
+// Map a pointer event to canvas-fraction coords. Uses the canvas bounding rect +
+// clientX/Y so it is correct even when the canvas is CSS-scaled to fit a phone
+// (the drawing buffer size differs from the displayed CSS size — gotcha #9).
+// Falls back to offsetX/buffer-size when no rect is available (older paths/tests).
+export function eventFraction(canvas, e) {
+  if (e.clientX != null && typeof canvas.getBoundingClientRect === "function") {
+    const r = canvas.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0) {
+      return { fx: (e.clientX - r.left) / r.width, fy: (e.clientY - r.top) / r.height };
+    }
+  }
+  const w = canvas.width || 1;
+  const h = canvas.height || 1;
+  return { fx: (e.offsetX || 0) / w, fy: (e.offsetY || 0) / h };
+}
+
+export function installTouch(canvas) {
   const down = (e) => {
-    const b = hitButton(e.offsetX / view.w, e.offsetY / view.h);
+    const { fx, fy } = eventFraction(canvas, e);
+    const b = hitButton(fx, fy);
     if (!b) return;
     if (e.preventDefault) e.preventDefault();
     if (b.id === "forkL") forkQueue.push(-1);
@@ -34,10 +51,10 @@ export function installTouch(target, view) {
     else active.set(e.pointerId, b.id);
   };
   const up = (e) => active.delete(e.pointerId);
-  target.addEventListener("pointerdown", down);
-  target.addEventListener("pointerup", up);
-  target.addEventListener("pointercancel", up);
-  target.addEventListener("pointerleave", up);
+  canvas.addEventListener("pointerdown", down);
+  canvas.addEventListener("pointerup", up);
+  canvas.addEventListener("pointercancel", up);
+  canvas.addEventListener("pointerleave", up);
 }
 
 // Reduce currently-held buttons to an input frame (integers).
