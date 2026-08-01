@@ -1,0 +1,65 @@
+{
+  "stripWidth": 264,
+  "stripHeight": 96,
+  "sprites": {
+    "player_car": {
+      "x": 0,
+      "y": 0,
+      "w": 64,
+      "h": 32,
+      "kind": "car",
+      "palette": [
+        "#d02b2b",
+        "#8a1c1c",
+        "#141414"
+      ]
+    },
+    "traffic_sedan": {
+      "x": 66,
+      "y": 0,
+      "w": 48,
+      "h": 28,
+      "kind": "car",
+      "palette": [
+        "#e0c040",
+        "#a08820",
+        "#141414"
+      ]
+    },
+    "traffic_truck": {
+      "x": 116,
+      "y": 0,
+      "w": 56,
+      "h": 36,
+      "kind": "car",
+      "palette": [
+        "#3a6ea5",
+        "#254b73",
+        "#141414"
+      ]
+    },
+    "palm": {
+      "x": 174,
+      "y": 0,
+      "w": 48,
+      "h": 96,
+      "kind": "palm",
+      "palette": [
+        "#6b4a2a",
+        "#2e8b3d"
+      ]
+    },
+    "sign": {
+      "x": 224,
+      "y": 0,
+      "w": 40,
+      "h": 48,
+      "kind": "sign",
+      "palette": [
+        "#cccccc",
+        "#c02020",
+        "#555555"
+      ]
+    }
+  }
+}

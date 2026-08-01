@@ -649,3 +649,28 @@ hold/release, multi-touch, edge-fork, out-of-bounds). `specs/25`, RUNNING.md.
 **Gate:** `./test.sh` → 118/118 + 4 Luau gates OK.
 
 **Next:** slice-018 asset-strip pipeline, music, traffic-swap fairness (§16.3).
+
+---
+
+## marker-0026 — slice-018 asset / sprite pipeline (2026-08-01)
+
+**Goal:** procedural sprites via a pinned manifest; renderer references sprite
+IDs, not hand-coords (§18). The last numbered slice.
+
+**Built:**
+- `tools/build_assets.mjs` → `data/assets.json` (packed catalog: player_car,
+  traffic sedan/truck, palm, sign; strip 264x96). `npm run assets`.
+- `client/sprite_renderer.js` `drawSprite` (by kind); `renderer_canvas` draws
+  player + traffic + roadside scenery from the manifest (rect fallback);
+  `main.js` fetches `data/assets.json`.
+- `tools/render_asset_strip.mjs` — dependency-free P6 PPM of the strip
+  (`debugging/logs/`, gitignored). `npm run strip`.
+- `test/assets.test.js` — strip width (264) + manifest hash (09f1ccd63280f8c8)
+  pinned (§18/gotcha #16), build determinism vs shipped file, non-overlap
+  packing, referenced-sprite existence, drawSprite kind dispatch. `specs/26`.
+
+**Gate:** `./test.sh` → 123/123 + 4 Luau gates OK. Client-only, no repin.
+
+**MILESTONE 5 mostly complete** (forks, curve physics, fork UI, touch, assets).
+Remaining feel: music select, native visual/perf tuning (§17). Open: traffic-swap
+fairness (§16.3), client prediction (§21.2).

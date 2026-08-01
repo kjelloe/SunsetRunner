@@ -51,7 +51,8 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [ ] traffic-swap fairness (§16.3), residual traffic/course lean pass
 - [ ] slice-016 client-smoke
 - [x] slice-017 mobile-touch-controls  *(on-screen touch + fork buttons, synthetic-pointer tested)*
-- [ ] slice-018 asset-strip-pipeline
+- [x] slice-018 asset-strip-pipeline  *(procedural sprite manifest + width-pin + sprite renderer)*
+- [ ] music select; native visual/perf tuning (§17)
 
 ## Luau twin (batched — after Milestone 1 lands)
 

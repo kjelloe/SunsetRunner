@@ -16,16 +16,16 @@ See `specs/game-design.md` for the full technical brief and
 ## Layout
 
 ```
-data/     roads.json (sunset_coast + canyon_split fork), cars.json, checkpoints.json, traffic.json
+data/     roads.json (3 courses), cars.json, checkpoints.json, traffic.json, assets.json (sprite manifest)
 shared/   fixedmath, prng, canonical, statehash, constants, road_data, car_data, checkpoint_data, traffic_data, collision, protocol
 engine/ + shared/ are pure and dependency-free; the client may import ONLY from client/shared/engine/data (served dirs).
 engine/   reducer, state, car_physics, road_progress, traffic, collision, scenario, replay, ai_driver, sim, fairness, copy_state, snapshot, commands
-client/   index.html, main, projection, road_renderer, renderer_canvas, hud, input, touch_controls, session_local, session_remote
+client/   index.html, main, projection, road_renderer, renderer_canvas, sprite_renderer, hud, input, touch_controls, session_local, session_remote
 server/   index (http static + ws), game_room  (protocol lives in shared/)
 luau/     Luau twins of shared/ (+ engine/ after Milestone 1)
 roblox/   Rojo project mounting luau/ into ReplicatedStorage.Shared
 test/     node --test suites + pinned fixtures
-tools/    repin_checkpoint_1a.mjs (golden repin), sim_sweep.mjs (balance CSV)
+tools/    repin_checkpoint_1a.mjs (golden repin), sim_sweep.mjs (balance CSV), build_assets.mjs, render_asset_strip.mjs
 debugging/ replay.mjs (race report), sim_campaign.mjs (systems gate), fairness.mjs
 specs/    game-design (brief) + 01 determinism … 07 local race loop
 ```

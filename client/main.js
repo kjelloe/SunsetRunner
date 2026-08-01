@@ -20,11 +20,12 @@ export async function boot(doc = document) {
   const g = canvas.getContext("2d");
   const view = { w: canvas.width, h: canvas.height };
 
-  const [roads, cars, checkpoints, traffic] = await Promise.all([
+  const [roads, cars, checkpoints, traffic, assets] = await Promise.all([
     fetch("../data/roads.json").then((r) => r.json()),
     fetch("../data/cars.json").then((r) => r.json()),
     fetch("../data/checkpoints.json").then((r) => r.json()),
     fetch("../data/traffic.json").then((r) => r.json()),
+    fetch("../data/assets.json").then((r) => r.json()),
   ]);
   const courseSet = loadCourseSet(roads);
   const carSet = loadCarSet(cars);
@@ -66,7 +67,7 @@ export async function boot(doc = document) {
       }
     }
     const state = session.getState();
-    if (state.seats.length) render(g, view, state, courseSet);
+    if (state.seats.length) render(g, view, state, courseSet, assets);
     if (showTouch) drawTouchControls(g, view);
     requestAnimationFrame(frame);
   }

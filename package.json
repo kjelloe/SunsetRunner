@@ -6,7 +6,11 @@
   "license": "MIT",
   "scripts": {
     "test": "node --test --test-concurrency=4 test/*.test.js",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "assets": "node tools/build_assets.mjs",
+    "strip": "node tools/render_asset_strip.mjs",
+    "sweep": "node tools/sim_sweep.mjs",
+    "campaign": "node debugging/sim_campaign.mjs"
   },
   "dependencies": {
     "ws": "^8.18.0"
