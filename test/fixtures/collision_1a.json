@@ -19,11 +19,11 @@
   },
   "expected": {
     "hashes": {
-      "10": "0f27711fa4f7bb30",
-      "30": "062cc628acefec26",
-      "60": "28f01c18c272da59"
+      "10": "2d2b5f3cc7c95272",
+      "30": "0154c452fce9e4b7",
+      "60": "de2c16e61a6abd81"
     },
-    "finalHash": "28f01c18c272da59",
+    "finalHash": "de2c16e61a6abd81",
     "census": [
       { "type": "collision", "tick": 1 },
       { "type": "collision", "tick": 1 },

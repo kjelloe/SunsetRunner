@@ -1,5 +1,5 @@
 {
-  "note": "checkpoint_1a milestone fixture. Last repinned: traffic collision is now always-on (marker-0016): accel-only car crashes 9x and finishes at tick 404 instead of 215",
+  "note": "checkpoint_1a milestone fixture. Last repinned: race-seeded traffic (marker-0017): traffic now varies with race seed; accel-only finishes tick 266",
   "scenario": {
     "name": "checkpoint_1a",
     "seed": 12345,
@@ -23,56 +23,32 @@
   },
   "expected": {
     "hashes": {
-      "10": "8d8602919ab2ba7b",
-      "100": "279d3a5cfd76219b",
-      "215": "40ad48e317398b12"
+      "10": "48f0187944e1ba0d",
+      "100": "ae88145cfc9f5df7",
+      "215": "27dedf0088249eb2"
     },
-    "finalHash": "0e884b18cd3c2126",
-    "finishTick": 404,
+    "finalHash": "18d3231cfe065ab3",
+    "finishTick": 266,
     "census": [
       {
+        "type": "collision",
+        "tick": 113
+      },
+      {
+        "type": "collision",
+        "tick": 114
+      },
+      {
+        "type": "collision",
+        "tick": 115
+      },
+      {
         "type": "checkpoint",
-        "tick": 119
-      },
-      {
-        "type": "collision",
-        "tick": 123
-      },
-      {
-        "type": "collision",
-        "tick": 124
-      },
-      {
-        "type": "collision",
-        "tick": 161
-      },
-      {
-        "type": "collision",
-        "tick": 191
-      },
-      {
-        "type": "collision",
-        "tick": 223
-      },
-      {
-        "type": "collision",
-        "tick": 254
-      },
-      {
-        "type": "collision",
-        "tick": 285
-      },
-      {
-        "type": "collision",
-        "tick": 339
-      },
-      {
-        "type": "collision",
-        "tick": 373
+        "tick": 143
       },
       {
         "type": "finish",
-        "tick": 404
+        "tick": 266
       }
     ]
   }

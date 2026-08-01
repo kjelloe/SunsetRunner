@@ -24,7 +24,9 @@ export function spawnSegmentTraffic(state, courseSet, cfg, segmentId) {
   if (segmentId === -1 || state.spawnedSegments.includes(segmentId)) return;
   const segLen = segmentLength(courseSet, segmentId);
   const seg = getSegment(courseSet, segmentId);
-  let rng = seedSfc32(seg.trafficSeed >>> 0);
+  // Segment-seeded (stable per segment within a race) AND race-seeded (so
+  // different race seeds produce different traffic — the basis for sweeps).
+  let rng = seedSfc32((seg.trafficSeed + state.seed) >>> 0);
   for (let i = 0; i < cfg.density; i++) {
     let r = roll(rng, segLen); const roadZ = r.value; rng = r.rng;
     r = roll(rng, cfg.lanes.length); const laneX = cfg.lanes[r.value]; rng = r.rng;

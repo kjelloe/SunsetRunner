@@ -30,13 +30,11 @@ test("each seed is internally deterministic", () => {
   assert.equal(a.finalHash, b.finalHash);
 });
 
-// Documented finding (surfaced by the campaign, like Fireline's): the race seed
-// is currently inert — traffic is seeded from segment.trafficSeed (constant) and
-// the AI is deterministic, so all seeds produce the same race. Recorded here as a
-// tripwire: if seed variation is later wired in (e.g. race-seeded traffic), this
-// flips and the assertion below must be revisited.
-test("KNOWN: race seed is inert (traffic is segment-seeded, not race-seeded)", () => {
+// The race seed now varies the traffic (marker-0017 made traffic race-seeded),
+// so different seeds produce different races — the basis for balance sweeps.
+// (This flipped the earlier "seed is inert" tripwire.)
+test("race seed varies the outcome (traffic is race-seeded)", () => {
   const s1 = runCampaign(ctx, { seeds: [1], numSeats: 6, rivalCollision: 1 })[0];
   const s2 = runCampaign(ctx, { seeds: [999999], numSeats: 6, rivalCollision: 1 })[0];
-  assert.equal(s1.finalHash, s2.finalHash);
+  assert.notEqual(s1.finalHash, s2.finalHash);
 });

@@ -1,16 +1,16 @@
 {
-  "note": "single-car physics golden. REPINNED at marker-0016 for always-on traffic collision (accel-only car crashes into traffic and now finishes at tick 404); earlier repins: marker-0006 traffic, marker-0005 timer. Seed 12345, sunset_coast (course 1), red_sprint (car 1), one seat holding the accelerator from tick 1, default startTimeTicks 1500. Repin is a conscious act (dev-log.md).",
+  "note": "single-car physics golden. REPINNED at marker-0017 for race-seeded traffic (traffic now depends on race seed + segment seed); earlier repins: marker-0016 traffic collision, marker-0006 traffic, marker-0005 timer. Seed 12345, sunset_coast (course 1), red_sprint (car 1), one seat holding the accelerator from tick 1, default startTimeTicks 1500. Repin is a conscious act (dev-log.md).",
   "seed": 12345,
   "courseId": 1,
   "carId": 1,
   "accelRun": {
-    "hashAtTick10": "8d8602919ab2ba7b",
-    "hashAtTick100": "279d3a5cfd76219b",
-    "finishTick": 404,
-    "hashAtTick500": "329553379ae8d646",
-    "checkpointTick": 119,
+    "hashAtTick10": "48f0187944e1ba0d",
+    "hashAtTick100": "ae88145cfc9f5df7",
+    "finishTick": 266,
+    "hashAtTick500": "5ac4f2772b6563bf",
+    "checkpointTick": 143,
     "checkpointBonus": 600,
-    "finalTimerTicks": 1697,
+    "finalTimerTicks": 1835,
     "initialTrafficCount": 4
   },
   "timeout": {

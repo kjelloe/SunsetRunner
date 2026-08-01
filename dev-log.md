@@ -434,3 +434,24 @@ All verified in Luau (both engine gates green). `specs/16`.
 
 **MILESTONE 4 COMPLETE.** **Next:** sweep battery + fairness tools (§16 brief:
 mirror / car-swap / traffic-swap / seat-order), client prediction (§21.2).
+
+---
+
+## marker-0017 — race-seeded traffic (2026-08-01)
+
+**Goal:** resolve the sim-campaign finding — make the race seed matter — so
+balance sweeps have something to sweep.
+
+**Built:** `engine/traffic.js` + `luau/traffic.luau` seed `spawnSegmentTraffic`
+with `(segment.trafficSeed + state.seed)` instead of the segment seed alone.
+Still segment-stable within a race; now race-varying.
+
+**REPINS (conscious):** all traffic-bearing goldens — `physics_1a`/`checkpoint_1a`
+(accel-only finish 404 → **266**; `checkpoint_1a 18d3231cfe065ab3`), `collision_1a`
+(hashes changed, census same, `de2c16e61a6abd81`), AI golden (finish **339**,
+`fef5f12dc746ecba`). Luau gates re-verified. The `sim_campaign` "seed inert"
+tripwire flipped to "race seed varies the outcome." `specs/17`.
+
+**Gate:** `./test.sh` → 95/95 + 3 Luau gates OK.
+
+**Next:** sweep battery + fairness tools (marker-0018).

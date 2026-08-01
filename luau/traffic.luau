@@ -28,7 +28,8 @@ local function spawnSegmentTraffic(state, courseSet, cfg, segmentId: number)
 	end
 	local segLen = segmentLength(courseSet, segmentId)
 	local seg = road.getSegment(courseSet, segmentId)
-	local rng = prng.seedSfc32(seg.trafficSeed % 4294967296)
+	-- segment-seeded AND race-seeded (mirrors engine/traffic.js).
+	local rng = prng.seedSfc32((seg.trafficSeed + state.seed) % 4294967296)
 	for _ = 1, cfg.density do
 		local r = prng.sfc32Next(rng)
 		local roadZ = if segLen > 0 then r.value % segLen else 0
