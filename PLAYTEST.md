@@ -33,7 +33,10 @@ Open `http://localhost:8000/client/index.html`.
   feel like an arcade racer? (camera magnitudes are untuned first-pass values.)
 - [ ] **[bug]** TIME counts down; passing the checkpoint (~⅓ in) adds time (watch
   TIME jump up).
-- [ ] **[bug]** Reaching the end shows FINISH.
+- [ ] **[bug]** Reaching the end triggers a **FINISH! splash with confetti +
+  fireworks** (marker-0031).
+- [ ] **[feel]** The road **scrolls** and objects whip past — you should now feel
+  speed (marker-0030 fixed the static-road bug). Faster = faster scroll?
 - [ ] **[bug]** Idle (don't accelerate) until TIME hits 0 → TIME UP banner, car
   stops.
 - [ ] **[feel]** Traffic cars appear ahead; hitting one visibly crashes/slows you
@@ -69,8 +72,8 @@ Open `...index.html?course=3`.
 
 On a phone (or desktop with `...index.html?touch=1`):
 
-- [ ] **[bug]** On-screen buttons appear: `◄`/`►` (steer), `BRK`/`GAS`, `Q`/`E`
-  (fork).
+- [ ] **[bug]** On-screen **arrow pad** appears: `◄`/`►` (steer, left thumb),
+  `▲`/`▼` (accel/brake, right thumb), `↰`/`↱` (fork, top corners).
 - [ ] **[bug]** Hold a steer button → car steers; release → stops.
 - [ ] **[bug]** Two fingers at once (steer + GAS) both register.
 - [ ] **[bug]** Tapping a fork button chooses that branch (one tap = one choice).

@@ -12,6 +12,7 @@ import { createRemoteSession } from "./session_remote.js";
 import { installKeyboard, readInput, readForkChoice } from "./input.js";
 import { installTouch, readTouchInput, readTouchFork, drawTouchControls, touchDetected } from "./touch_controls.js";
 import { render } from "./renderer_canvas.js";
+import { createCelebration } from "./celebration.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -45,6 +46,7 @@ export async function boot(doc = document) {
   installKeyboard(doc);
   installTouch(canvas);
   const showTouch = touchDetected() || params.get("touch") === "1";
+  const celebration = createCelebration();
 
   let acc = 0;
   let last = performance.now();
@@ -68,6 +70,10 @@ export async function boot(doc = document) {
     }
     const state = session.getState();
     if (state.seats.length) render(g, view, state, courseSet, assets);
+    // Finish splash: confetti + fireworks once the local car crosses the line.
+    if (state.seats.length && state.seats[0].finishTicks >= 0) celebration.trigger(view);
+    celebration.update(view);
+    celebration.draw(g, view);
     if (showTouch) drawTouchControls(g, view);
     requestAnimationFrame(frame);
   }

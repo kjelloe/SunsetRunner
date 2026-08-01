@@ -4,14 +4,15 @@
 // fork buttons are edge-triggered (one tap = one choice). Import-safe; tested
 // headlessly with synthetic pointer events (brief §17, gotcha #10).
 
-// Button zones as fractions of the canvas (x0..x1, y0..y1).
+// On-screen arrow pad (fractions of the canvas). Left thumb steers ◄ ►, right
+// thumb accelerates/brakes ▲ ▼; fork arrows sit in the top corners.
 export const BUTTONS = [
-  { id: "steerL", x0: 0.00, x1: 0.16, y0: 0.55, y1: 1.0, label: "◄" },
-  { id: "steerR", x0: 0.16, x1: 0.32, y0: 0.55, y1: 1.0, label: "►" },
-  { id: "brake",  x0: 0.68, x1: 0.84, y0: 0.55, y1: 1.0, label: "BRK" },
-  { id: "accel",  x0: 0.84, x1: 1.00, y0: 0.55, y1: 1.0, label: "GAS" },
-  { id: "forkL",  x0: 0.00, x1: 0.14, y0: 0.00, y1: 0.14, label: "Q" },
-  { id: "forkR",  x0: 0.86, x1: 1.00, y0: 0.00, y1: 0.14, label: "E" },
+  { id: "steerL", x0: 0.02, x1: 0.17, y0: 0.62, y1: 0.95, label: "◄" },
+  { id: "steerR", x0: 0.19, x1: 0.34, y0: 0.62, y1: 0.95, label: "►" },
+  { id: "accel",  x0: 0.83, x1: 0.98, y0: 0.48, y1: 0.71, label: "▲" },
+  { id: "brake",  x0: 0.83, x1: 0.98, y0: 0.73, y1: 0.96, label: "▼" },
+  { id: "forkL",  x0: 0.02, x1: 0.16, y0: 0.03, y1: 0.15, label: "↰" },
+  { id: "forkR",  x0: 0.84, x1: 0.98, y0: 0.03, y1: 0.15, label: "↱" },
 ];
 
 const active = new Map(); // pointerId -> held button id

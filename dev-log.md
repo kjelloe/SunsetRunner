@@ -770,3 +770,23 @@ fixed per screen row regardless of the car's roadZ — the road never scrolled.
 **Gate:** `./test.sh` → 135/135 + 4 Luau gates OK. `specs/29`.
 
 **Next (same playtest):** finish celebration (confetti/fireworks), mobile arrow-pad.
+
+---
+
+## marker-0031 — finish celebration + mobile arrow pad (2026-08-02)
+
+**From playtest:** finish needs confetti/fireworks; mobile needs arrows on screen.
+
+**Built (client-only, no repin):**
+- `client/celebration.js` — confetti (180 rotating pieces) + fireworks (radial
+  spark bursts, ~1/s) + gradient FINISH! banner; triggered on finishTicks>=0.
+  main.js triggers/updates/draws each frame. Cosmetic (Math.random OK).
+- `client/touch_controls.js` — on-screen ARROW pad: ◄►(steer) ▲▼(accel/brake)
+  ↰↱(fork), replacing GAS/BRK text; zones non-overlapping (layout test),
+  rect-based hit-testing (marker-0029).
+- `test/celebration.test.js` + import gate; specs/30, PLAYTEST.md updated.
+
+**Gate:** `./test.sh` → 139/139 + 4 Luau gates OK.
+
+**Playtest items addressed:** speed (30-static-road fix), gfx polish, WASD+arrows,
+finish splash, mobile arrows. Remaining: curve/camera feel + DPR (native-only), music.
