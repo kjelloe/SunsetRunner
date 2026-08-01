@@ -12,6 +12,8 @@ export const CAR_WIDTH = 200;  // laneX proximity — narrower than a lane (256)
 export const BUMP_SLOW = 200;  // speed shed by each car in a rival bump
 export const BUMP_PUSH = 64;   // lateral shove applied to each car, apart
 
+export const TRAFFIC_CRASH_DEN = 3; // hitting traffic cuts speed to 1/3 (crash stun)
+
 // Same segment and close enough along the road to be "near" (ghost highlight).
 export function inCollisionWindow(a, b) {
   return a.segmentId === b.segmentId && a.segmentId !== -1

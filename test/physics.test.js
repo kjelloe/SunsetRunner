@@ -89,10 +89,11 @@ test("golden: accel-only run matches pinned hashes, checkpoint and finish", () =
   s = apply(s, { type: "input", seatId: 1, steer: 0, accel: 1, brake: 0 }, ctxT);
   let finishTick = -1;
   let checkpointTick = -1;
-  for (let t = 1; t <= 400; t++) {
+  for (let t = 1; t <= 500; t++) {
     s = apply(s, { type: "advance_tick" }, ctxT);
     if (t === 10) assert.equal(hashSnapshot(s), g.hashAtTick10);
     if (t === 100) assert.equal(hashSnapshot(s), g.hashAtTick100);
+    if (t === 500) assert.equal(hashSnapshot(s), g.hashAtTick500);
     const cp = s.events.find((e) => e.type === "checkpoint");
     if (cp && checkpointTick < 0) {
       checkpointTick = t;
@@ -101,11 +102,10 @@ test("golden: accel-only run matches pinned hashes, checkpoint and finish", () =
     if (finishTick < 0 && s.events.some((e) => e.type === "finish")) finishTick = t;
   }
   assert.equal(checkpointTick, g.checkpointTick);
-  assert.equal(finishTick, g.finishTick);
+  assert.equal(finishTick, g.finishTick); // crashes into traffic delay the finish to 404
   assert.equal(s.seats[0].finishTicks, g.finishTick);
   assert.equal(s.seats[0].segmentId, -1);
-  assert.equal(s.seats[0].timerTicks, g.finalTimerTicks);
-  assert.equal(hashSnapshot(s), g.hashAtTick400);
+  assert.equal(hashSnapshot(s), g.hashAtTick500);
 });
 
 test("passing the checkpoint extends the timer by the segment bonus", () => {

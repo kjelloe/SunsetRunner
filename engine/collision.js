@@ -5,9 +5,27 @@
 // seat iteration order (§24, gotcha #15). Runs only when the room enables
 // rivalCollision; with 0/1 seats it is a no-op (so checkpoint_1a is untouched).
 
-import { overlapping, BUMP_SLOW, BUMP_PUSH } from "../shared/collision.js";
-import { clampI32 } from "../shared/fixedmath.js";
+import { overlapping, BUMP_SLOW, BUMP_PUSH, TRAFFIC_CRASH_DEN } from "../shared/collision.js";
+import { clampI32, floorDivI32 } from "../shared/fixedmath.js";
 import { MAX_LANE_OFFSET } from "./car_physics.js";
+
+// Step 9: traffic collision. Hitting a traffic car is an arcade crash — a big
+// speed cut. Always on (not gated like rival collision). One crash per seat per
+// tick; no pile-up physics, no lateral shove (traffic holds its lane).
+export function resolveTrafficCollisions(state, tick) {
+  const events = [];
+  for (const seat of state.seats) {
+    if (!seat.active || seat.finishTicks >= 0 || seat.timedOut) continue;
+    for (const t of state.traffic) {
+      if (overlapping(seat, t)) {
+        seat.speed = floorDivI32(seat.speed, TRAFFIC_CRASH_DEN);
+        events.push({ type: "collision", kind: "traffic", seatId: seat.id, tick });
+        break;
+      }
+    }
+  }
+  return events;
+}
 
 export function resolveRivalCollisions(state, tick) {
   const seats = state.seats.filter((s) => s.active && s.finishTicks < 0 && !s.timedOut);

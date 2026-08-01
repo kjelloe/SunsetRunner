@@ -1,12 +1,12 @@
 {
-  "note": "checkpoint_1a milestone fixture. Last repinned: initial pin at slice-008 (marker-0007)",
+  "note": "checkpoint_1a milestone fixture. Last repinned: traffic collision is now always-on (marker-0016): accel-only car crashes 9x and finishes at tick 404 instead of 215",
   "scenario": {
     "name": "checkpoint_1a",
     "seed": 12345,
     "courseId": 1,
     "carId": 1,
     "startTimeTicks": 1500,
-    "maxTicks": 400,
+    "maxTicks": 500,
     "hashTicks": [
       10,
       100,
@@ -25,18 +25,54 @@
     "hashes": {
       "10": "8d8602919ab2ba7b",
       "100": "279d3a5cfd76219b",
-      "215": "aede4f551034a311"
+      "215": "40ad48e317398b12"
     },
-    "finalHash": "aede4f551034a311",
-    "finishTick": 215,
+    "finalHash": "0e884b18cd3c2126",
+    "finishTick": 404,
     "census": [
       {
         "type": "checkpoint",
         "tick": 119
       },
       {
+        "type": "collision",
+        "tick": 123
+      },
+      {
+        "type": "collision",
+        "tick": 124
+      },
+      {
+        "type": "collision",
+        "tick": 161
+      },
+      {
+        "type": "collision",
+        "tick": 191
+      },
+      {
+        "type": "collision",
+        "tick": 223
+      },
+      {
+        "type": "collision",
+        "tick": 254
+      },
+      {
+        "type": "collision",
+        "tick": 285
+      },
+      {
+        "type": "collision",
+        "tick": 339
+      },
+      {
+        "type": "collision",
+        "tick": 373
+      },
+      {
         "type": "finish",
-        "tick": 215
+        "tick": 404
       }
     ]
   }

@@ -6,6 +6,7 @@ import { loadCarSet } from "../shared/car_data.js";
 import { loadTrafficConfig } from "../shared/traffic_data.js";
 import { runScenario } from "../engine/scenario.js";
 import { createRoom } from "../server/game_room.js";
+import { resolveTrafficCollisions } from "../engine/collision.js";
 import { BUMP_SLOW } from "../shared/collision.js";
 
 const read = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url)));
@@ -39,6 +40,23 @@ test("a bump sheds speed and shoves the cars apart", () => {
   // each car lost at least one BUMP_SLOW worth relative to an accel-only lead
   assert.ok(a.speed < 3 * 22, `bumped speed ${a.speed} below unimpeded accel`);
   assert.ok(BUMP_SLOW > 0);
+});
+
+test("hitting a traffic car cuts speed to a third and emits a traffic collision", () => {
+  const seat = { id: 1, active: 1, finishTicks: -1, timedOut: 0, segmentId: 1, roadZ: 1000, laneX: 0, speed: 900 };
+  const state = { seats: [seat], traffic: [{ id: 7, segmentId: 1, roadZ: 1000, laneX: 0, speed: 300, kind: 1 }] };
+  const events = resolveTrafficCollisions(state, 5);
+  assert.equal(seat.speed, 300); // floor(900 / 3)
+  assert.equal(events.length, 1);
+  assert.equal(events[0].kind, "traffic");
+});
+
+test("traffic collision ignores a car in a different lane or segment", () => {
+  const base = { id: 1, active: 1, finishTicks: -1, timedOut: 0, segmentId: 1, roadZ: 1000, speed: 900 };
+  const otherLane = { ...base, laneX: 256 };
+  const s1 = { seats: [otherLane], traffic: [{ id: 7, segmentId: 1, roadZ: 1000, laneX: -256, speed: 300, kind: 1 }] };
+  assert.equal(resolveTrafficCollisions(s1, 1).length, 0);
+  assert.equal(otherLane.speed, 900);
 });
 
 test("a room with rivalCollision on emits collision events for co-located seats", () => {

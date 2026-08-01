@@ -407,3 +407,30 @@ does not (short course).
 
 **Next:** traffic collision (repins `checkpoint_1a` both languages), sweep
 battery + fairness tools (§16), client prediction/reconciliation (§21.2).
+
+---
+
+## marker-0016 — traffic collision (2026-08-01)
+
+**Goal:** always-on player/AI vs traffic crash — traffic becomes a real hazard.
+Completes Milestone 4's collision picture.
+
+**Built:**
+- `engine/collision.js` `resolveTrafficCollisions` (step 9): overlapping a
+  traffic car cuts speed to 1/3 and emits a `collision {kind:"traffic"}`. No new
+  state field, no pile-up. Reducer runs it (always) before the gated rival pass.
+- Luau twin: `luau/collision.luau` + `luau/reducer.luau` updated.
+- `test/collision.test.js` — speed-cut + event, lane/segment misses ignored.
+
+**REPINS (conscious):**
+- `physics_1a` + `checkpoint_1a` (accel-only, never steers → crashes ~9×):
+  finish moves 215 → **404**; t10/t100 unchanged (no crash pre-123);
+  checkpoint_1a `finalHash 0e884b18cd3c2126`, maxTicks → 500.
+- AI solo golden: AI dodges (4 crashes), finishes **307**, `518f6d9c4f188ae3`.
+- `collision_1a` UNCHANGED (those cars never reach traffic).
+All verified in Luau (both engine gates green). `specs/16`.
+
+**Gate:** `./test.sh` → 95/95 + 3 Luau gates OK.
+
+**MILESTONE 4 COMPLETE.** **Next:** sweep battery + fairness tools (§16 brief:
+mirror / car-swap / traffic-swap / seat-order), client prediction (§21.2).

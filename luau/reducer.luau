@@ -61,6 +61,9 @@ local function apply(state, command, ctx)
 				table.insert(next.events, { type = "timeout", seatId = seat.id, tick = next.tick })
 			end
 		end
+		for _, e in ipairs(collision.resolveTrafficCollisions(next, next.tick)) do
+			table.insert(next.events, e)
+		end
 		if ctx.rivalCollision then
 			for _, e in ipairs(collision.resolveRivalCollisions(next, next.tick)) do
 				table.insert(next.events, e)
