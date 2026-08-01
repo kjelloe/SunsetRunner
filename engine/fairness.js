@@ -10,15 +10,18 @@ import { runScenario } from "./scenario.js";
 // skew would mean seat iteration order (or start-lane geometry) favours a seat.
 export function seatOrderFairness(ctx, seeds) {
   const wins = new Map();
-  let contested = 0;
+  let decisive = 0;
+  let ties = 0;
   for (const seed of seeds) {
     const r = runAiRace(ctx, { seed, seats: staggeredSeats(2, 1), rivalCollision: 1 });
-    if (r.winnerSeat > 0) {
+    if (r.tie) {
+      ties++; // a same-tick dead heat favours no seat (§24)
+    } else if (r.winnerSeat > 0) {
       wins.set(r.winnerSeat, (wins.get(r.winnerSeat) || 0) + 1);
-      contested++;
+      decisive++;
     }
   }
-  return { contested, wins: Object.fromEntries(wins) };
+  return { decisive, ties, wins: Object.fromEntries(wins) };
 }
 
 // Route-mirror fairness (§16.1): on a course whose two branches are geometric

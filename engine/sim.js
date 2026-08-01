@@ -56,15 +56,26 @@ export function runAiRace(ctx, opts = {}) {
     if (state.seats.every((s) => s.finishTicks >= 0 || s.timedOut)) break;
   }
 
-  const winner = census.finishes[0] || null; // earliest finish
+  // Winner = the seat with the earliest finish tick. A same-tick dead heat is an
+  // explicit TIE (winnerSeat -1, tie true) — NOT silently awarded to the lowest
+  // seatId, which biased earlier seat-order fairness runs (§24).
+  let winnerSeat = -1;
+  let tie = false;
+  if (census.finishes.length) {
+    const minTick = Math.min(...census.finishes.map((f) => f.tick));
+    const atMin = census.finishes.filter((f) => f.tick === minTick);
+    if (atMin.length === 1) winnerSeat = atMin[0].seatId;
+    else tie = true;
+  }
   const avgFinishTicks = census.finishes.length
     ? Math.round(census.finishes.reduce((n, f) => n + f.tick, 0) / census.finishes.length)
     : -1;
   return {
     seed: opts.seed ?? 12345,
     census,
-    winnerSeat: winner ? winner.seatId : -1,
-    winnerCar: winner ? carOf.get(winner.seatId) : -1,
+    winnerSeat,
+    winnerCar: winnerSeat > 0 ? carOf.get(winnerSeat) : -1,
+    tie,
     avgFinishTicks,
     maxSpeed,
     finalHash: hashSnapshot(state),

@@ -47,7 +47,8 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] client fork UI (Q/E + ?course select, local+remote) (marker-0022)
 - [x] curve physics (centrifugal push, truncDiv-symmetric) (marker-0023)
 - [x] route-mirror fairness (§16.1) — mirror_valley course + mirrorFairness (marker-0023)
-- [ ] traffic-swap fairness (§16.3), seat/lane-skew fix
+- [x] seat/lane-skew: same-tick-tie fix + symmetric AI dodge (marker-0024)
+- [ ] traffic-swap fairness (§16.3), residual traffic/course lean pass
 - [ ] slice-016 client-smoke
 - [ ] slice-017 mobile-touch-controls
 - [ ] slice-018 asset-strip-pipeline

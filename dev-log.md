@@ -606,3 +606,30 @@ unchanged (flat lead-in). 4 Luau gates re-verified.
 
 **Next:** traffic-swap fairness (§16.3), seat/lane-skew fix, and the rest of
 Milestone 5 (music, mobile touch, asset pipeline).
+
+---
+
+## marker-0024 — same-tick finish-tie fairness fix (2026-08-01)
+
+**Goal:** diagnose + fix the seat/left-lane skew (specs/18).
+
+**Diagnosis:** with traffic off, two identical cars finish the SAME tick every
+seed (215/215); `runAiRace` awarded the winner to `finishes[0]` (seat-array
+order) → seat 1 won every tie (§24 gap).
+
+**Fix (no engine hash change):**
+- `engine/sim.js` — earliest-tick winner; a shared minimum is `tie` (winnerSeat
+  -1), awarded to nobody.
+- `engine/fairness.js` `seatOrderFairness` → `{ decisive, ties, wins }`.
+- `engine/ai_driver.js` — symmetric dodge (right→left, left→right, ahead→centre);
+  no-op on goldens, removes latent AI bias.
+
+**Residual (recorded):** ~26/12 decisive lean remains — course-1 geometry +
+traffic on fixed lanes + AI, NOT engine unfairness (mirror-fairness proves the
+engine symmetric). Tests assert non-monopoly only. `specs/24`.
+
+**Gate:** `./test.sh` → 114/114 + 4 Luau gates OK. AI golden unchanged
+(`6a4803fb66324a7b`).
+
+**Next:** traffic-swap fairness (§16.3), rest of Milestone 5 (music, mobile,
+asset pipeline).

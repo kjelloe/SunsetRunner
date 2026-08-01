@@ -15,20 +15,32 @@ const ctx = {
 };
 const seeds = Array.from({ length: 30 }, (_, i) => 1000 + i);
 
-test("sweep census splits traffic vs rival collisions and picks a winner", () => {
+test("sweep census splits traffic vs rival collisions and picks a winner or tie", () => {
   const r = runAiRace(ctx, { seed: 1000, numSeats: 4, rivalCollision: 1 });
   assert.equal(r.census.collisions, r.census.collisionsTraffic + r.census.collisionsRival);
-  assert.ok(r.winnerSeat >= 1);
+  assert.ok(r.winnerSeat >= 1 || r.tie); // decisive winner OR an explicit tie
+  assert.equal(r.winnerSeat === -1 && r.census.finishes.length > 0, r.tie); // -1 with finishers == tie
   assert.ok(r.maxSpeed > 0);
   assert.ok(r.avgFinishTicks > 0);
 });
 
-test("seat-order fairness: both start seats win across seeds (no monopoly)", () => {
+test("same-tick dead heats are TIES, never awarded to seat 1 (the fixed bug)", () => {
+  // No traffic -> two identical cars finish the same tick every seed. Before the
+  // fix this silently awarded all wins to seat 1; now every one is a tie.
+  const noTraffic = { courseSet: ctx.courseSet, carSet: ctx.carSet };
+  const f = seatOrderFairness(noTraffic, seeds);
+  assert.equal(f.ties, seeds.length);
+  assert.deepEqual(f.wins, {}); // nobody is awarded a dead heat
+});
+
+test("seat-order fairness with traffic: both seats win decisively (no monopoly)", () => {
   const f = seatOrderFairness(ctx, seeds);
-  assert.equal(f.contested, seeds.length);
+  assert.equal(f.decisive + f.ties, seeds.length);
   assert.ok(f.wins[1] > 0 && f.wins[2] > 0, `both seats win: ${JSON.stringify(f.wins)}`);
-  // FINDING (recorded): a lean toward the left start lane (seat 1). Not a hard
-  // failure — flagged for a fairness pass; asserted only as non-monopoly here.
+  // FINDING (recorded, specs/24): a residual traffic/course lean remains among
+  // decisive races — a property of course-1 geometry + traffic on the fixed
+  // start lanes, NOT engine unfairness (the engine is proven symmetric by the
+  // mirror-fairness test). Asserted only as non-monopoly.
 });
 
 test("car-swap isolates car strength (both cars finish, comparable)", () => {

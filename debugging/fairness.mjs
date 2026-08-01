@@ -22,10 +22,10 @@ const seeds = Array.from({ length: N }, (_, i) => 1000 + i);
 
 const seat = seatOrderFairness(ctx, seeds);
 console.log(`seat-order fairness over ${N} seeds (2 identical cars, mirror lanes):`);
-console.log(`  wins ${JSON.stringify(seat.wins)} of ${seat.contested} contested`);
+console.log(`  wins ${JSON.stringify(seat.wins)} of ${seat.decisive} decisive (+ ${seat.ties} ties)`);
 const w1 = seat.wins[1] || 0;
-if (Math.abs(w1 - seat.contested / 2) > seat.contested * 0.2) {
-  console.log(`  NOTE: skew toward seat ${w1 > seat.contested / 2 ? 1 : 2} — investigate start-lane/seat-order bias.`);
+if (seat.decisive && Math.abs(w1 - seat.decisive / 2) > seat.decisive * 0.2) {
+  console.log(`  NOTE: residual lean toward seat ${w1 > seat.decisive / 2 ? 1 : 2} (traffic/course, not engine — mirror test is FAIR).`);
 }
 
 const cs = carSwap(ctx, seeds, 1, 2);

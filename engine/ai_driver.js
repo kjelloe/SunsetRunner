@@ -28,7 +28,12 @@ export function chooseInput(state, seatId) {
 
   let steer;
   if (threat) {
-    steer = threat.laneX >= seat.laneX ? -1 : 1; // dodge to the open side
+    // Dodge away from the threat; when it is dead-ahead (same lane), steer toward
+    // centre — a SYMMETRIC rule, so the AI itself doesn't favour a start lane
+    // (an earlier `>=` always dodged left, biasing seat-order fairness).
+    if (threat.laneX > seat.laneX) steer = -1;
+    else if (threat.laneX < seat.laneX) steer = 1;
+    else steer = seat.laneX > 0 ? -1 : 1;
   } else if (seat.laneX > ROAD_HALF_WIDTH) {
     steer = -1; // drifted off the right edge — steer back on
   } else if (seat.laneX < -ROAD_HALF_WIDTH) {
