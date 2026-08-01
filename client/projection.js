@@ -20,7 +20,11 @@ export function projectPoint(view, camX, camZ, worldX, worldY, worldZ) {
   const dz = Math.max(worldZ - camZ, CAMERA.near);
   const scale = CAMERA.depth / dz;
   const x = Math.round(view.w / 2 + scale * (worldX - camX) * (view.w / 2));
-  const y = Math.round(view.h / 2 - scale * (worldY - -CAMERA.height) * (view.h / 2));
+  // Camera sits CAMERA.height ABOVE the road, so a road point (worldY≈0) is
+  // BELOW the camera: camera-relative Y = worldY - CAMERA.height (negative),
+  // which lands the road below the horizon (y > h/2). The old `- -height` form
+  // flipped this and drew the road up in the sky. See specs/20.
+  const y = Math.round(view.h / 2 - scale * (worldY - CAMERA.height) * (view.h / 2));
   const w = Math.round(scale * CAMERA.roadWidth * (view.w / 2));
   return { x, y, w, scale };
 }

@@ -511,3 +511,24 @@ failure. `specs/19`.
 
 **Not verified:** on-screen visuals still need a native browser (§17); this fix
 only restores module loading + `boot()`.
+
+---
+
+## marker-0020 — projection flip fix (road in the sky) (2026-08-01)
+
+**Reported:** playtest screenshot showed the road as a downward-V in the sky
+(upper half), sunset in the lower half — vertically flipped.
+
+**Cause:** `client/projection.js` used `worldY - -CAMERA.height` (camera below
+road), so nearer road strips projected to negative y (top/sky).
+
+**Fix:** camera sits ABOVE the road → camera-relative Y = `worldY - CAMERA.height`
+(negative), landing the road below the horizon (`y > h/2`), nearer strips lower.
+Matches the standard pseudo-3D projection (Jake Gordon's JS Racer — the renderer
+reference; cited, not vendored, for licensing).
+
+**Self-test:** `test/projection.test.js` asserts road projects at `y >= h/2` and
+nearer < lower — the invariant the flip broke. `specs/20`.
+
+**Gate:** `./test.sh` → 102/102 + 3 Luau gates OK. Re-screenshot to confirm the
+road now sits below the horizon; camera magnitudes remain first-pass (§17).

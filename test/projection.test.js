@@ -20,6 +20,15 @@ test("nearer strips project wider than farther strips", () => {
   assert.ok(near.scale > far.scale);
 });
 
+test("road projects BELOW the horizon, nearer strips lower on screen", () => {
+  // Regression for the flipped-camera bug (road drawn up in the sky). Road
+  // points (worldY≈0) must land at y >= h/2, and nearer road lower than far.
+  const near = projectPoint(view, 0, 0, 0, 0, 512);
+  const far = projectPoint(view, 0, 0, 0, 0, 20000);
+  assert.ok(far.y >= view.h / 2, `road must sit at/below horizon, got ${far.y}`);
+  assert.ok(near.y > far.y, `nearer road must be lower on screen (${near.y} > ${far.y})`);
+});
+
 test("camera lateral offset shifts the projected point opposite", () => {
   const centered = projectPoint(view, 0, 0, 0, 0, 256);
   const shifted = projectPoint(view, 500, 0, 0, 0, 256);
