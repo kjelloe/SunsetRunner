@@ -20,6 +20,7 @@ export function render(g, view, state, courseSet, assets) {
   g.fillRect(0, 0, view.w, view.h);
 
   drawRoad(g, view, state.seats[0], courseSet);
+  drawHaze(g, view);
   if (assets) drawScenery(g, view, state.seats[0], courseSet, assets);
   drawTraffic(g, view, state, assets);
   drawGhosts(g, view, state);
@@ -28,22 +29,33 @@ export function render(g, view, state, courseSet, assets) {
   drawForkHint(g, view, state.seats[0], courseSet);
 }
 
-// Roadside palms/signs, placed deterministically every SCENERY_EVERY strips,
-// alternating sides, projected onto the shoulder. Back-to-front.
-const SCENERY_EVERY = 24;
+// Roadside palms/signs on the SCROLLING worldStrip index (so they whip past with
+// speed), alternating sides, projected onto the shoulder. Back-to-front.
+const SCENERY_EVERY = 10;
 function drawScenery(g, view, seat, courseSet, assets) {
-  const strips = forwardStrips(courseSet, seat.segmentId, seat.roadZ, 200);
+  const strips = forwardStrips(courseSet, seat.segmentId, seat.roadZ, 220);
   for (let i = strips.length - 1; i >= 0; i--) {
     const s = strips[i];
-    const stripNo = Math.floor(s.worldZ / ROAD_UNIT);
-    if (stripNo % SCENERY_EVERY !== 0) continue;
-    const side = (stripNo / SCENERY_EVERY) % 2 === 0 ? -1 : 1;
-    const worldX = s.curveX + side * (CAMERA.roadWidth * 1.6);
+    if (s.worldStrip % SCENERY_EVERY !== 0) continue;
+    const bucket = Math.floor(s.worldStrip / SCENERY_EVERY);
+    const side = bucket % 2 === 0 ? -1 : 1;
+    const worldX = s.curveX + side * (CAMERA.roadWidth * 1.7);
     const p = projectPoint(view, seat.laneX, 0, worldX, s.hillY, s.worldZ);
     if (p.scale <= 0) continue;
-    const sprite = assets.sprites[side < 0 ? "palm" : "sign"];
-    drawSprite(g, sprite, p.x, p.y, p.scale * 10);
+    const sprite = assets.sprites[bucket % 3 === 0 ? "sign" : "palm"];
+    drawSprite(g, sprite, p.x, p.y, p.scale * 11);
   }
+}
+
+// Warm haze at the horizon to soften the far road into the sunset.
+function drawHaze(g, view) {
+  const band = view.h * 0.12;
+  const grd = g.createLinearGradient(0, view.h / 2 - band, 0, view.h / 2 + band);
+  grd.addColorStop(0, "rgba(255,150,110,0.0)");
+  grd.addColorStop(0.5, "rgba(255,150,110,0.35)");
+  grd.addColorStop(1, "rgba(255,150,110,0.0)");
+  g.fillStyle = grd;
+  g.fillRect(0, view.h / 2 - band, view.w, band * 2);
 }
 
 // Show a fork prompt when the current or next segment is a fork.

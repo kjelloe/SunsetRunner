@@ -5,6 +5,13 @@
 const keys = new Set();
 const forkQueue = []; // edge-triggered fork presses (-1 left / 1 right)
 
+// Keys we drive with — both WASD and arrows. preventDefault stops the arrow keys
+// (and space) from scrolling the page while driving.
+const DRIVE_KEYS = new Set([
+  "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight",
+  "KeyW", "KeyA", "KeyS", "KeyD", "KeyQ", "KeyE", "Space",
+]);
+
 export function installKeyboard(target) {
   target.addEventListener("keydown", (e) => {
     if (!keys.has(e.code)) {
@@ -12,6 +19,7 @@ export function installKeyboard(target) {
       else if (e.code === "KeyE") forkQueue.push(1);
     }
     keys.add(e.code);
+    if (DRIVE_KEYS.has(e.code) && e.preventDefault) e.preventDefault();
   });
   target.addEventListener("keyup", (e) => keys.delete(e.code));
 }

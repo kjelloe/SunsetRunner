@@ -46,6 +46,22 @@ test("forwardStrips returns nothing for a finished seat", () => {
   assert.deepEqual(forwardStrips(courseSet, -1, 0, 50), []);
 });
 
+test("road SCROLLS: the nearest strip slides toward the camera as the car advances", () => {
+  // Advancing within a strip (roadZ 0 -> 100, same strip) must shrink the nearest
+  // strip's worldZ (it moves toward the camera) — the fix for "feels like standing
+  // still". worldStrip (band phase) is unchanged until a strip boundary is crossed.
+  const a = forwardStrips(courseSet, 1, 0, 5);
+  const b = forwardStrips(courseSet, 1, 100, 5);
+  assert.ok(b[0].worldZ < a[0].worldZ, `nearest strip should move nearer (${b[0].worldZ} < ${a[0].worldZ})`);
+  assert.equal(b[0].worldStrip, a[0].worldStrip);
+});
+
+test("crossing a strip boundary advances worldStrip (bands/scenery scroll)", () => {
+  const a = forwardStrips(courseSet, 1, 0, 5);
+  const c = forwardStrips(courseSet, 1, 300, 5); // 300 > ROAD_UNIT(256) -> next strip
+  assert.equal(c[0].worldStrip, a[0].worldStrip + 1);
+});
+
 test("forwardStrips accumulates curve across the profile", () => {
   // Segment 1's curve only begins past strip ~75 (profile [0,0,1,2,3,...] over
   // 600 strips), so sample deep enough to see curveX bend away from zero.

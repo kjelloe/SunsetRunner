@@ -745,3 +745,28 @@ multi-touch on a scaled canvas, button-layout sanity (unique/in-bounds/no-overla
 
 **Still native-only:** on-device ergonomics + high-DPR crispness (960 buffer is
 CSS-upscaled; a DPR buffer resize is later polish).
+
+---
+
+## marker-0030 — sense of speed + graphics pass (2026-08-02)
+
+**From playtest:** "feels like standing still", "graphics very blocky", WASD.
+
+**Root cause (the big one):** `forwardStrips` used `worldZ = (k+1)*ROAD_UNIT`,
+fixed per screen row regardless of the car's roadZ — the road never scrolled.
+
+**Fixes (client-only, no repin):**
+- `forwardStrips`: `worldZ = k*ROAD_UNIT + (ROAD_UNIT - roadZ%ROAD_UNIT)` (nearest
+  strip slides toward camera) + a scrolling `worldStrip` index for band/rumble/
+  dash/scenery phase. Proven by new projection.test scroll assertions.
+- road: scrolling tarmac + red/white rumble strips + dashed centre line; scenery
+  now scrolls (worldStrip) and is denser (palms+signs both sides); horizon haze.
+- `sprite_renderer.js`: shaped/shaded cars (gradient body, cabin, windshield,
+  wheels, tail-lights, shadow), layered palms, gradient signs; removed
+  `image-rendering: pixelated`.
+- `input.js`: preventDefault driving keys (arrows/WASD/Space) — no page scroll.
+  WASD + arrows both drive (always did; static road hid it).
+
+**Gate:** `./test.sh` → 135/135 + 4 Luau gates OK. `specs/29`.
+
+**Next (same playtest):** finish celebration (confetti/fireworks), mobile arrow-pad.

@@ -1,7 +1,18 @@
 // client/sprite_renderer.js — draw a manifest sprite procedurally (CLIENT ONLY).
 // The manifest (data/assets.json) defines each sprite's size/kind/palette; this
-// draws it by kind. No atlas image is needed — the "strip" is a logical layout
-// (tools/build_assets.mjs) whose width is pinned by test. Anchored bottom-centre.
+// draws it by kind with a bit of shape/shading so it reads less blocky. Anchored
+// bottom-centre. Paths are anti-aliased by the canvas.
+
+function roundRect(g, x, y, w, h, r) {
+  const rr = Math.min(r, w / 2, h / 2);
+  g.beginPath();
+  g.moveTo(x + rr, y);
+  g.arcTo(x + w, y, x + w, y + h, rr);
+  g.arcTo(x + w, y + h, x, y + h, rr);
+  g.arcTo(x, y + h, x, y, rr);
+  g.arcTo(x, y, x + w, y, rr);
+  g.closePath();
+}
 
 export function drawSprite(g, sprite, cx, cyBottom, scale) {
   const w = Math.max(2, sprite.w * scale);
@@ -9,24 +20,60 @@ export function drawSprite(g, sprite, cx, cyBottom, scale) {
   const x = cx - w / 2;
   const y = cyBottom - h;
   const p = sprite.palette;
+
   if (sprite.kind === "car") {
-    g.fillStyle = p[2]; g.fillRect(x, y + h * 0.82, w, h * 0.18);      // shadow / wheels
-    g.fillStyle = p[0]; g.fillRect(x, y, w, h * 0.85);                 // body
-    g.fillStyle = p[1]; g.fillRect(x + w * 0.18, y, w * 0.64, h * 0.42); // roof / window
-  } else if (sprite.kind === "palm") {
-    g.fillStyle = p[0]; g.fillRect(cx - w * 0.08, y + h * 0.3, w * 0.16, h * 0.7); // trunk
-    g.fillStyle = p[1];
+    // soft shadow
+    g.fillStyle = "rgba(0,0,0,0.28)";
     g.beginPath();
-    g.moveTo(cx, y);
-    g.lineTo(x, y + h * 0.35);
-    g.lineTo(x + w, y + h * 0.35);
-    g.closePath();
-    g.fill(); // canopy
+    g.ellipse(cx, cyBottom - h * 0.06, w * 0.52, h * 0.14, 0, 0, Math.PI * 2);
+    g.fill();
+    // wheels
+    g.fillStyle = p[2];
+    g.fillRect(x + w * 0.06, y + h * 0.72, w * 0.16, h * 0.26);
+    g.fillRect(x + w * 0.78, y + h * 0.72, w * 0.16, h * 0.26);
+    // body (rounded) with a top-lit gradient
+    const grd = g.createLinearGradient(x, y, x, y + h);
+    grd.addColorStop(0, p[0]);
+    grd.addColorStop(1, p[1]);
+    g.fillStyle = grd;
+    roundRect(g, x, y + h * 0.18, w, h * 0.62, h * 0.22);
+    g.fill();
+    // cabin / windshield
+    g.fillStyle = p[1];
+    roundRect(g, x + w * 0.2, y, w * 0.6, h * 0.34, h * 0.14);
+    g.fill();
+    g.fillStyle = "rgba(180,220,255,0.85)";
+    roundRect(g, x + w * 0.27, y + h * 0.05, w * 0.46, h * 0.2, h * 0.08);
+    g.fill();
+    // tail lights
+    g.fillStyle = "#ffdd55";
+    g.fillRect(x + w * 0.08, y + h * 0.5, w * 0.1, h * 0.12);
+    g.fillRect(x + w * 0.82, y + h * 0.5, w * 0.1, h * 0.12);
+  } else if (sprite.kind === "palm") {
+    g.fillStyle = p[0];
+    g.fillRect(cx - w * 0.06, y + h * 0.32, w * 0.12, h * 0.68); // trunk
+    g.fillStyle = p[1];
+    for (const dir of [-1, 1]) {
+      for (const spread of [0.5, 0.9]) {
+        g.beginPath();
+        g.moveTo(cx, y + h * 0.06);
+        g.quadraticCurveTo(cx + dir * w * spread * 0.7, y + h * 0.02, cx + dir * w * spread, y + h * 0.34);
+        g.quadraticCurveTo(cx + dir * w * spread * 0.5, y + h * 0.2, cx, y + h * 0.14);
+        g.closePath();
+        g.fill();
+      }
+    }
   } else if (sprite.kind === "sign") {
-    g.fillStyle = p[2]; g.fillRect(cx - w * 0.06, y + h * 0.5, w * 0.12, h * 0.5); // post
-    g.fillStyle = p[0]; g.fillRect(x, y, w, h * 0.5);                              // board
-    g.fillStyle = p[1]; g.fillRect(x + w * 0.15, y + h * 0.15, w * 0.7, h * 0.2);  // stripe
+    g.fillStyle = p[2];
+    g.fillRect(cx - w * 0.05, y + h * 0.45, w * 0.1, h * 0.55); // post
+    const grd = g.createLinearGradient(x, y, x, y + h * 0.5);
+    grd.addColorStop(0, p[0]);
+    grd.addColorStop(1, p[1]);
+    g.fillStyle = grd;
+    roundRect(g, x, y, w, h * 0.5, h * 0.08);
+    g.fill();
   } else {
-    g.fillStyle = p[0]; g.fillRect(x, y, w, h);
+    g.fillStyle = p[0];
+    g.fillRect(x, y, w, h);
   }
 }

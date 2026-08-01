@@ -37,7 +37,11 @@ test("every sprite the renderer references exists in the manifest", () => {
 test("drawSprite dispatches by kind without throwing (fake ctx)", () => {
   const calls = [];
   const g = new Proxy({}, {
-    get: (_, k) => (k === "fillStyle" ? "" : (...a) => calls.push([k, ...a])),
+    get: (_, k) => {
+      if (k === "createLinearGradient") return () => ({ addColorStop() {} });
+      if (["fillStyle", "strokeStyle", "font", "textAlign", "textBaseline", "globalAlpha", "lineWidth"].includes(k)) return "";
+      return (...a) => calls.push([k, ...a]);
+    },
     set: () => true,
   });
   for (const id of Object.keys(shipped.sprites)) drawSprite(g, shipped.sprites[id], 100, 200, 1);

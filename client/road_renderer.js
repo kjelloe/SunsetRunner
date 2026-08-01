@@ -1,20 +1,21 @@
 // client/road_renderer.js — build + draw the pseudo-3D road (CLIENT ONLY).
-// forwardStrips() is a pure function of course geometry (node-testable); drawRoad
-// touches the 2D context. Gameplay lives in the engine; this only presents it.
+// forwardStrips() is pure (node-testable); drawRoad touches the 2D context.
+// The road SCROLLS: each strip's forward distance folds in the car's sub-strip
+// position (roadZ % ROAD_UNIT), and a running worldStrip index gives the band /
+// rumble / lane-dash phase — so bands flow toward the camera with speed.
 
 import { ROAD_UNIT } from "../shared/constants.js";
 import { getSegment, nextSegment } from "../shared/road_data.js";
 import { projectPoint } from "./projection.js";
 
-// Walk `count` strips (one ROAD_UNIT each) forward from the camera, crossing
-// segment boundaries, accumulating integer curve/hill from the profiles.
-// Pure — no DOM, no engine mutation.
 export function forwardStrips(courseSet, segmentId, roadZ, count) {
   const out = [];
   if (segmentId === -1) return out;
   let segId = segmentId;
   let seg = getSegment(courseSet, segId);
   let stripIdx = Math.floor(roadZ / ROAD_UNIT);
+  const frac = roadZ - stripIdx * ROAD_UNIT; // position within the current strip
+  let worldStrip = stripIdx;                 // absolute-ish strip index (scrolls)
   let curveX = 0;
   let curveDx = 0;
   for (let k = 0; k < count; k++) {
@@ -31,19 +32,21 @@ export function forwardStrips(courseSet, segmentId, roadZ, count) {
     const hill = seg.hillProfile[Math.floor((stripIdx * hm) / seg.stripCount)] || 0;
     curveDx += curve;
     curveX += curveDx;
-    out.push({ k, worldZ: (k + 1) * ROAD_UNIT, curveX, hillY: hill * 40 });
+    // Sub-strip offset (ROAD_UNIT - frac) makes the nearest strip slide toward
+    // the camera as the car advances -> the road scrolls smoothly.
+    out.push({ k, worldStrip, worldZ: k * ROAD_UNIT + (ROAD_UNIT - frac), curveX, hillY: hill * 40 });
+    worldStrip++;
     stripIdx++;
   }
   return out;
 }
 
-const DRAW_STRIPS = 200;
+const DRAW_STRIPS = 220;
 
 export function drawRoad(g, view, seat, courseSet) {
   const strips = forwardStrips(courseSet, seat.segmentId, seat.roadZ, DRAW_STRIPS);
   const camX = seat.laneX;
 
-  // Back to front so nearer bands overpaint farther ones.
   for (let i = strips.length - 1; i >= 0; i--) {
     const s = strips[i];
     const p = projectPoint(view, camX, 0, s.curveX, s.hillY, s.worldZ);
@@ -51,18 +54,27 @@ export function drawRoad(g, view, seat, courseSet) {
       ? projectPoint(view, camX, 0, strips[i + 1].curveX, strips[i + 1].hillY, strips[i + 1].worldZ)
       : p;
     const top = Math.min(p.y, prev.y);
-    const bottom = Math.max(p.y, prev.y) + 1;
-    const band = Math.floor(s.worldZ / ROAD_UNIT) % 2 === 0;
+    const bh = Math.max(p.y, prev.y) - top + 1;
+    const band = s.worldStrip % 2 === 0;
 
-    // grass
-    g.fillStyle = band ? "#1f7a2e" : "#1a6b28";
-    g.fillRect(0, top, view.w, bottom - top);
+    // grass (two scrolling greens, whole width)
+    g.fillStyle = band ? "#2f9e42" : "#279137";
+    g.fillRect(0, top, view.w, bh);
+
+    // rumble: a red/white band wider than the road, then the road painted on top
+    const rw = Math.max(2, p.w * 0.18);
+    g.fillStyle = band ? "#d63a3a" : "#f4f4f4";
+    g.fillRect(p.x - p.w - rw, top, p.w * 2 + rw * 2, bh);
+
     // road
-    g.fillStyle = band ? "#4a4a4a" : "#454545";
-    g.fillRect(p.x - p.w, top, p.w * 2, bottom - top);
-    // lane edge lines
-    g.fillStyle = band ? "#e8e8e8" : "#c0c0c0";
-    g.fillRect(p.x - p.w, top, Math.max(1, Math.floor(p.w * 0.04)), bottom - top);
-    g.fillRect(p.x + p.w - Math.max(1, Math.floor(p.w * 0.04)), top, Math.max(1, Math.floor(p.w * 0.04)), bottom - top);
+    g.fillStyle = band ? "#5a5a62" : "#53535b";
+    g.fillRect(p.x - p.w, top, p.w * 2, bh);
+
+    // dashed centre line (dash every 8 strips)
+    if (s.worldStrip % 8 < 4) {
+      const dw = Math.max(1, p.w * 0.045);
+      g.fillStyle = "#f2e24a";
+      g.fillRect(p.x - dw, top, dw * 2, bh);
+    }
   }
 }
