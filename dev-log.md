@@ -633,3 +633,19 @@ engine symmetric). Tests assert non-monopoly only. `specs/24`.
 
 **Next:** traffic-swap fairness (§16.3), rest of Milestone 5 (music, mobile,
 asset pipeline).
+
+---
+
+## marker-0025 — slice-017 mobile touch controls (2026-08-01)
+
+**Goal:** playable on a phone. Client-only, no repin.
+
+**Built:** `client/touch_controls.js` — canvas-fraction buttons (◄►/BRK/GAS/QE),
+held steer/accel/brake via active pointers + edge-triggered fork; `drawTouchControls`
+overlay. `main.js` merges keyboard+touch each frame; overlay shows on touch
+devices or `?touch=1`. `test/touch_controls.test.js` (synthetic pointer events:
+hold/release, multi-touch, edge-fork, out-of-bounds). `specs/25`, RUNNING.md.
+
+**Gate:** `./test.sh` → 118/118 + 4 Luau gates OK.
+
+**Next:** slice-018 asset-strip pipeline, music, traffic-swap fairness (§16.3).

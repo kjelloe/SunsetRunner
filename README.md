@@ -20,7 +20,7 @@ data/     roads.json (sunset_coast + canyon_split fork), cars.json, checkpoints.
 shared/   fixedmath, prng, canonical, statehash, constants, road_data, car_data, checkpoint_data, traffic_data, collision, protocol
 engine/ + shared/ are pure and dependency-free; the client may import ONLY from client/shared/engine/data (served dirs).
 engine/   reducer, state, car_physics, road_progress, traffic, collision, scenario, replay, ai_driver, sim, fairness, copy_state, snapshot, commands
-client/   index.html, main, projection, road_renderer, renderer_canvas, hud, input, session_local, session_remote
+client/   index.html, main, projection, road_renderer, renderer_canvas, hud, input, touch_controls, session_local, session_remote
 server/   index (http static + ws), game_room  (protocol lives in shared/)
 luau/     Luau twins of shared/ (+ engine/ after Milestone 1)
 roblox/   Rojo project mounting luau/ into ReplicatedStorage.Shared

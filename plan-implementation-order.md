@@ -50,7 +50,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] seat/lane-skew: same-tick-tie fix + symmetric AI dodge (marker-0024)
 - [ ] traffic-swap fairness (§16.3), residual traffic/course lean pass
 - [ ] slice-016 client-smoke
-- [ ] slice-017 mobile-touch-controls
+- [x] slice-017 mobile-touch-controls  *(on-screen touch + fork buttons, synthetic-pointer tested)*
 - [ ] slice-018 asset-strip-pipeline
 
 ## Luau twin (batched — after Milestone 1 lands)

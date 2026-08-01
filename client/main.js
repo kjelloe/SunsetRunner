@@ -10,6 +10,7 @@ import { TICK_HZ } from "../shared/constants.js";
 import { createLocalSession } from "./session_local.js";
 import { createRemoteSession } from "./session_remote.js";
 import { installKeyboard, readInput, readForkChoice } from "./input.js";
+import { installTouch, readTouchInput, readTouchFork, drawTouchControls, touchDetected } from "./touch_controls.js";
 import { render } from "./renderer_canvas.js";
 
 const SIM_DT = 1000 / TICK_HZ;
@@ -41,12 +42,20 @@ export async function boot(doc = document) {
   if (remote) session.connect();
 
   installKeyboard(doc);
+  installTouch(canvas, view);
+  const showTouch = touchDetected() || params.get("touch") === "1";
 
   let acc = 0;
   let last = performance.now();
   function frame(now) {
-    session.setInput(readInput());
-    const fc = readForkChoice();
+    const kb = readInput();
+    const tc = readTouchInput();
+    session.setInput({
+      steer: kb.steer || tc.steer,
+      accel: kb.accel || tc.accel,
+      brake: kb.brake || tc.brake,
+    });
+    const fc = readForkChoice() || readTouchFork();
     if (fc !== 0) session.setForkChoice(fc);
     if (!remote) {
       acc += now - last;
@@ -58,6 +67,7 @@ export async function boot(doc = document) {
     }
     const state = session.getState();
     if (state.seats.length) render(g, view, state, courseSet);
+    if (showTouch) drawTouchControls(g, view);
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
