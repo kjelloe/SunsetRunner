@@ -49,7 +49,8 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] route-mirror fairness (§16.1) — mirror_valley course + mirrorFairness (marker-0023)
 - [x] seat/lane-skew: same-tick-tie fix + symmetric AI dodge (marker-0024)
 - [x] traffic-swap fairness (§16.3) — trafficSwapFairness (marker-0027)
-- [ ] residual traffic/course lean pass; client prediction (§21.2); music
+- [x] client prediction/reconciliation (§21.2) — predict local car + replay (marker-0028)
+- [ ] residual traffic/course lean pass; music; native visual/perf tuning
 - [ ] slice-016 client-smoke
 - [x] slice-017 mobile-touch-controls  *(on-screen touch + fork buttons, synthetic-pointer tested)*
 - [x] slice-018 asset-strip-pipeline  *(procedural sprite manifest + width-pin + sprite renderer)*

@@ -55,6 +55,7 @@ export function createRoom(ctx, opts = {}) {
   // Room ctx for the sim; rivalCollision is a per-room toggle (§10/§11).
   const simCtx = rivalCollision ? { ...ctx, rivalCollision: 1 } : ctx;
   const inputs = new Map(); // seatId -> latest { steer, accel, brake }
+  const ackSeq = new Map(); // seatId -> latest input seq received (for client prediction)
   let nextSeatId = 1;
 
   // Replay recording (slice-013): seats + input CHANGES, dumped as a scenario.
@@ -90,6 +91,7 @@ export function createRoom(ctx, opts = {}) {
         lastInputKey.set(seatId, key);
       }
       inputs.set(seatId, input);
+      if (Number.isInteger(input.seq)) ackSeq.set(seatId, input.seq);
     },
 
     setForkChoice(seatId, choice) {
@@ -133,6 +135,7 @@ export function createRoom(ctx, opts = {}) {
         type: S2C.VIEW,
         tick: state.tick,
         self,
+        ackSeq: ackSeq.get(seatId) ?? 0, // last input seq the server has taken (prediction ack)
         ghosts,
         traffic: state.traffic,
         events: state.events,

@@ -29,7 +29,8 @@ export function parseMessage(raw) {
     if (!TRISTATE.has(msg.steer)) return { ok: false, reason: "steer must be -1|0|1" };
     if (!BINARY.has(msg.accel)) return { ok: false, reason: "accel must be 0|1" };
     if (!BINARY.has(msg.brake)) return { ok: false, reason: "brake must be 0|1" };
-    return { ok: true, msg: { type: C2S.INPUT, steer: msg.steer, accel: msg.accel, brake: msg.brake } };
+    const seq = Number.isInteger(msg.seq) ? msg.seq : 0; // optional input sequence (for prediction ack)
+    return { ok: true, msg: { type: C2S.INPUT, steer: msg.steer, accel: msg.accel, brake: msg.brake, seq } };
   }
   if (msg.type === C2S.FORK) {
     if (!FORK_DIR.has(msg.choice)) return { ok: false, reason: "choice must be -1|1" };

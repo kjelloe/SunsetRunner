@@ -38,7 +38,7 @@ export async function boot(doc = document) {
   const remote = params.get("mode") === "remote";
   const courseId = Number(params.get("course")) || 1;
   const session = remote
-    ? createRemoteSession(`ws://${location.host}`)
+    ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks })
     : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig });
   if (remote) session.connect();
 

@@ -696,3 +696,26 @@ branches are 500 vs 400 strips). Instrument cleanly separates luck from geometry
 fairness trio (mirror/car-swap/traffic-swap) + tie fix all in.
 
 **Next:** client prediction/reconciliation (§21.2); music; native visual/perf.
+
+---
+
+## marker-0028 — client-side prediction & reconciliation (§21.2) (2026-08-01)
+
+**Goal:** instant input in remote play; server stays authoritative.
+
+**Built:**
+- `client/prediction.js` `createPredictor` — runs the real reducer on a
+  single-seat traffic-free state; `predict(seq)` buffers + advances, `reconcile
+  (serverSelf, ackSeq)` snaps to authoritative + replays unacked inputs.
+- Wire: `input` carries an optional `seq`; room echoes `view.ackSeq` per seat.
+  Reducer untouched (seq is transport only — no golden change).
+- `session_remote.js` builds a predictor on welcome (course/car data from
+  main.js), predicts each send, reconciles each view; `getState().seats[0]` is
+  the predicted self (instant) with authoritative ghosts/traffic. Raw-view
+  fallback without data.
+- `test/prediction.test.js` — EXACT vs no-surprise room, reconcile drop+replay,
+  stale-ack, live-server integration. `specs/28`.
+
+**Gate:** `./test.sh` → 129/129 + 4 Luau gates OK. No repin.
+
+**Next:** reconcile smoothing (visual), music, native visual/perf tuning.
