@@ -10,6 +10,17 @@
       "steerLow": 18,
       "steerHigh": 9,
       "driftRecovery": 12
+    },
+    {
+      "id": 2,
+      "nameKey": "car.blue_bolt",
+      "maxSpeed": 2300,
+      "accel": 27,
+      "brake": 48,
+      "offroadDrag": 55,
+      "steerLow": 20,
+      "steerHigh": 11,
+      "driftRecovery": 14
     }
   ]
 }

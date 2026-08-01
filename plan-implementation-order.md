@@ -59,5 +59,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] node --test unit gates + golden fixtures + `test.sh` self-test
 - [x] scenario replay (`engine/scenario.js`) + `checkpoint_1a` + repin tool + `debugging/replay.mjs`
 - [ ] sim campaign (`debugging/sim_campaign_outrun.sh`) — with AI drivers
-- [ ] sweep battery (`tools/sim_sweep.mjs`) + fairness tools (mirror/carswap/traffic)
+- [x] race-seeded traffic (marker-0017) — seeds now vary the race
+- [x] sweep battery (`tools/sim_sweep.mjs`) + fairness (seat-order, car-swap) (marker-0018)
+- [ ] route-mirror fairness (needs forks), analyze_sweep.py, seat/lane-skew fix
 - [ ] Playwright client smoke / ui-acceptance / perf smoke

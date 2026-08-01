@@ -33,7 +33,9 @@ export function runAiRace(ctx, opts = {}) {
     maxSeats: opts.maxSeats,
   });
 
-  const census = { checkpoints: 0, collisions: 0, timeouts: 0, finishes: [] };
+  const census = { checkpoints: 0, collisions: 0, collisionsTraffic: 0, collisionsRival: 0, timeouts: 0, finishes: [] };
+  const carOf = new Map(state.seats.map((s) => [s.id, s.carId]));
+  let maxSpeed = 0;
   for (let t = 1; t <= maxTicks; t++) {
     for (const seat of state.seats) {
       if (seat.finishTicks >= 0 || seat.timedOut) continue;
@@ -41,16 +43,33 @@ export function runAiRace(ctx, opts = {}) {
       state = apply(state, { type: CMD_INPUT, seatId: seat.id, ...inp }, runCtx);
     }
     state = apply(state, { type: CMD_ADVANCE_TICK }, runCtx);
+    for (const seat of state.seats) if (seat.speed > maxSpeed) maxSpeed = seat.speed;
     for (const e of state.events) {
       if (e.type === "checkpoint") census.checkpoints++;
-      else if (e.type === "collision") census.collisions++;
-      else if (e.type === "timeout") census.timeouts++;
+      else if (e.type === "collision") {
+        census.collisions++;
+        if (e.kind === "traffic") census.collisionsTraffic++;
+        else if (e.kind === "rival") census.collisionsRival++;
+      } else if (e.type === "timeout") census.timeouts++;
       else if (e.type === "finish") census.finishes.push({ seatId: e.seatId, tick: e.tick });
     }
     if (state.seats.every((s) => s.finishTicks >= 0 || s.timedOut)) break;
   }
 
-  return { seed: opts.seed ?? 12345, census, finalHash: hashSnapshot(state), lastTick: state.tick };
+  const winner = census.finishes[0] || null; // earliest finish
+  const avgFinishTicks = census.finishes.length
+    ? Math.round(census.finishes.reduce((n, f) => n + f.tick, 0) / census.finishes.length)
+    : -1;
+  return {
+    seed: opts.seed ?? 12345,
+    census,
+    winnerSeat: winner ? winner.seatId : -1,
+    winnerCar: winner ? carOf.get(winner.seatId) : -1,
+    avgFinishTicks,
+    maxSpeed,
+    finalHash: hashSnapshot(state),
+    lastTick: state.tick,
+  };
 }
 
 // Run the same AI race across pinned seeds — the 5-seed "do systems fire?" gate.

@@ -455,3 +455,32 @@ tripwire flipped to "race seed varies the outcome." `specs/17`.
 **Gate:** `./test.sh` → 95/95 + 3 Luau gates OK.
 
 **Next:** sweep battery + fairness tools (marker-0018).
+
+---
+
+## marker-0018 — sweep battery & fairness instruments (2026-08-01)
+
+**Goal:** balance tooling (§15.5, §16), unblocked by race-seeded traffic.
+
+**Built:**
+- `engine/sim.js` `runAiRace` census enriched: winnerSeat/Car, avgFinishTicks,
+  maxSpeed, collisions split traffic/rival.
+- `tools/sim_sweep.mjs` — CSV over N seeds (12 columns).
+- `engine/fairness.js` + `debugging/fairness.mjs` — `seatOrderFairness`
+  (win share of two identical mirror-lane cars) and `carSwap` (car strength via
+  average finish tick). `data/cars.json` gained car 2 (`blue_bolt`).
+- `test/fairness.test.js`.
+
+**Findings (recorded):**
+- **Seat/left-lane skew** — seat 1 (left start lane) wins 29/40. Flagged for a
+  fairness pass; the test asserts non-monopoly only.
+- **Roster** — blue_bolt ~245 avg finish vs red_sprint ~258 (mild edge).
+
+**No repin:** adding car 2 doesn't touch goldens (they use car 1);
+sim/fairness are read-only over the engine.
+
+**Gate:** `./test.sh` → 99/99 + 3 Luau gates OK.
+
+**Next:** the seat/lane-skew investigation, `analyze_sweep.py` for large-N,
+client prediction/reconciliation (§21.2), and Milestone 5 content (forks +
+multi-checkpoint courses → route-mirror fairness, music, mobile).
