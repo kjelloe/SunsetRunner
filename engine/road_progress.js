@@ -10,6 +10,10 @@ function segmentLength(courseSet, segmentId) {
   return getSegment(courseSet, segmentId).stripCount * ROAD_UNIT;
 }
 
+function isFork(seg) {
+  return seg.forkLeft >= 0 || seg.forkRight >= 0;
+}
+
 // Step 6 (+7 finish): advance roadZ by speed, carrying across segment
 // boundaries. On reaching a segment whose next is -1, the seat finishes.
 // Returns the ids of any segments newly ENTERED this tick so the reducer can
@@ -23,7 +27,9 @@ export function advanceRoad(seat, courseSet, tick) {
 
   while (seat.roadZ >= segLen) {
     seat.roadZ -= segLen;
-    const nxt = nextSegment(courseSet, seat.segmentId, 0);
+    const cur = getSegment(courseSet, seat.segmentId);
+    const nxt = nextSegment(courseSet, seat.segmentId, seat.forkChoice);
+    if (isFork(cur)) seat.forkChoice = 0; // choice consumed at the fork
     if (nxt === -1) {
       seat.segmentId = -1;
       seat.finishTicks = tick;

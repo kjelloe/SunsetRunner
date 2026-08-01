@@ -9,6 +9,10 @@ local function segmentLength(courseSet, segmentId: number): number
 	return road.getSegment(courseSet, segmentId).stripCount * ROAD_UNIT
 end
 
+local function isFork(seg): boolean
+	return seg.forkLeft >= 0 or seg.forkRight >= 0
+end
+
 local function advanceRoad(seat, courseSet, tick: number)
 	if seat.finishTicks >= 0 then
 		return { finished = false, entered = {} }
@@ -18,7 +22,11 @@ local function advanceRoad(seat, courseSet, tick: number)
 	local entered = {}
 	while seat.roadZ >= segLen do
 		seat.roadZ -= segLen
-		local nxt = road.nextSegment(courseSet, seat.segmentId, 0)
+		local cur = road.getSegment(courseSet, seat.segmentId)
+		local nxt = road.nextSegment(courseSet, seat.segmentId, seat.forkChoice)
+		if isFork(cur) then
+			seat.forkChoice = 0
+		end
 		if nxt == -1 then
 			seat.segmentId = -1
 			seat.finishTicks = tick

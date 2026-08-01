@@ -6,7 +6,7 @@
 
 import { createInitialState } from "./state.js";
 import { apply } from "./reducer.js";
-import { CMD_INPUT, CMD_ADVANCE_TICK } from "./commands.js";
+import { CMD_INPUT, CMD_ADVANCE_TICK, CMD_FORK_CHOICE } from "./commands.js";
 import { hashSnapshot } from "./snapshot.js";
 
 // Seat-level events worth pinning as a census (traffic emits none this milestone).
@@ -26,6 +26,11 @@ export function runScenario(scenario, ctx) {
     const t = inp.tick;
     if (!byTick.has(t)) byTick.set(t, []);
     byTick.get(t).push(inp);
+  }
+  const forkByTick = new Map();
+  for (const fc of scenario.forkChoices || []) {
+    if (!forkByTick.has(fc.tick)) forkByTick.set(fc.tick, []);
+    forkByTick.get(fc.tick).push(fc);
   }
 
   const seats = scenario.seats || [{ id: 1, carId: scenario.carId }];
@@ -48,6 +53,12 @@ export function runScenario(scenario, ctx) {
   let lastTick = 0;
 
   for (let t = 1; t <= scenario.maxTicks; t++) {
+    const fcs = forkByTick.get(t);
+    if (fcs) {
+      for (const fc of fcs) {
+        state = apply(state, { type: CMD_FORK_CHOICE, seatId: fc.seatId ?? 1, choice: fc.choice }, runCtx);
+      }
+    }
     const inps = byTick.get(t);
     if (inps) {
       for (const inp of inps) {

@@ -4,6 +4,11 @@
       "id": 1,
       "nameKey": "course.sunset_coast",
       "startSegment": 1
+    },
+    {
+      "id": 2,
+      "nameKey": "course.canyon_split",
+      "startSegment": 10
     }
   ],
   "segments": [
@@ -41,6 +46,66 @@
       "curveProfile": [0],
       "hillProfile": [0],
       "trafficSeed": 303,
+      "scenerySet": 2
+    },
+    {
+      "id": 10,
+      "stripCount": 400,
+      "checkpointTicks": 0,
+      "next": 11,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [0],
+      "hillProfile": [0],
+      "trafficSeed": 410,
+      "scenerySet": 1
+    },
+    {
+      "id": 11,
+      "stripCount": 200,
+      "checkpointTicks": 0,
+      "next": -1,
+      "forkLeft": 12,
+      "forkRight": 13,
+      "curveProfile": [0],
+      "hillProfile": [0],
+      "trafficSeed": 411,
+      "scenerySet": 1
+    },
+    {
+      "id": 12,
+      "stripCount": 500,
+      "checkpointTicks": 300,
+      "next": 14,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [0, 1, 2, 1, 0],
+      "hillProfile": [0],
+      "trafficSeed": 412,
+      "scenerySet": 2
+    },
+    {
+      "id": 13,
+      "stripCount": 400,
+      "checkpointTicks": 300,
+      "next": 14,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [0, -1, -2, -1, 0],
+      "hillProfile": [0],
+      "trafficSeed": 413,
+      "scenerySet": 2
+    },
+    {
+      "id": 14,
+      "stripCount": 300,
+      "checkpointTicks": 0,
+      "next": -1,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [0],
+      "hillProfile": [0],
+      "trafficSeed": 414,
       "scenerySet": 2
     }
   ]

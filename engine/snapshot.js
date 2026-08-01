@@ -31,6 +31,7 @@ export function serializeSnapshot(state) {
     w.writeI32LE(s.finishTicks);
     w.writeI32LE(s.timerTicks);
     w.writeU8(s.timedOut);
+    w.writeI32LE(s.forkChoice);
   }
 
   w.writeU32LE(state.nextTrafficId);

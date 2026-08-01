@@ -1,34 +1,68 @@
 {
-  "note": "collision_1a golden — two cars start co-located at the line and bump apart. Exercises the rival-collision step in both JS and Luau. Repin is a conscious act (dev-log.md).",
+  "note": "collision_1a golden \u2014 two cars start co-located at the line and bump apart. Exercises the rival-collision step in both JS and Luau. Repin is a conscious act (dev-log.md).",
   "scenario": {
     "name": "collision_1a",
     "seed": 12345,
     "courseId": 1,
     "startTimeTicks": 1500,
     "maxTicks": 60,
-    "hashTicks": [10, 30, 60],
+    "hashTicks": [
+      10,
+      30,
+      60
+    ],
     "rivalCollision": 1,
     "seats": [
-      { "id": 1, "carId": 1 },
-      { "id": 2, "carId": 1 }
+      {
+        "id": 1,
+        "carId": 1
+      },
+      {
+        "id": 2,
+        "carId": 1
+      }
     ],
     "inputs": [
-      { "tick": 1, "seatId": 1, "steer": 0, "accel": 1, "brake": 0 },
-      { "tick": 1, "seatId": 2, "steer": 0, "accel": 1, "brake": 0 }
+      {
+        "tick": 1,
+        "seatId": 1,
+        "steer": 0,
+        "accel": 1,
+        "brake": 0
+      },
+      {
+        "tick": 1,
+        "seatId": 2,
+        "steer": 0,
+        "accel": 1,
+        "brake": 0
+      }
     ]
   },
   "expected": {
     "hashes": {
-      "10": "2d2b5f3cc7c95272",
-      "30": "0154c452fce9e4b7",
-      "60": "de2c16e61a6abd81"
+      "10": "701d5f04990b3f62",
+      "30": "84c23bcdf6bf23c7",
+      "60": "0e231a34e0f33f71"
     },
-    "finalHash": "de2c16e61a6abd81",
+    "finalHash": "0e231a34e0f33f71",
     "census": [
-      { "type": "collision", "tick": 1 },
-      { "type": "collision", "tick": 1 },
-      { "type": "collision", "tick": 2 },
-      { "type": "collision", "tick": 2 }
+      {
+        "type": "collision",
+        "tick": 1
+      },
+      {
+        "type": "collision",
+        "tick": 1
+      },
+      {
+        "type": "collision",
+        "tick": 2
+      },
+      {
+        "type": "collision",
+        "tick": 2
+      }
     ]
   }
 }

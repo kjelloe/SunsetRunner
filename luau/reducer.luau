@@ -28,6 +28,18 @@ local function apply(state, command, ctx)
 		return next
 	end
 
+	if command.type == "forkChoice" then
+		for _, seat in ipairs(next.seats) do
+			if seat.id == command.seatId then
+				if seat.active ~= 0 and seat.finishTicks < 0 then
+					seat.forkChoice = command.choice
+				end
+				break
+			end
+		end
+		return next
+	end
+
 	if command.type == "advance_tick" then
 		next.events = {}
 		next.tick = state.tick + 1

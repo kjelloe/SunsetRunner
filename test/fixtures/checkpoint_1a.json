@@ -1,5 +1,5 @@
 {
-  "note": "checkpoint_1a milestone fixture. Last repinned: race-seeded traffic (marker-0017): traffic now varies with race seed; accel-only finishes tick 266",
+  "note": "checkpoint_1a milestone fixture. Last repinned: seat forkChoice field added (marker-0021); accel-only finish 266 unchanged",
   "scenario": {
     "name": "checkpoint_1a",
     "seed": 12345,
@@ -23,11 +23,11 @@
   },
   "expected": {
     "hashes": {
-      "10": "48f0187944e1ba0d",
-      "100": "ae88145cfc9f5df7",
-      "215": "27dedf0088249eb2"
+      "10": "5c99fe9776975cdd",
+      "100": "6966349cdae2c187",
+      "215": "d51639c96db79dd2"
     },
-    "finalHash": "18d3231cfe065ab3",
+    "finalHash": "f817fa6fe43aaf43",
     "finishTick": 266,
     "census": [
       {

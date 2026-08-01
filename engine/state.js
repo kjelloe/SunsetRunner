@@ -30,6 +30,7 @@ export function makeSeat(id, carId, startSegment, startTimeTicks, laneX = CENTER
     finishTicks: -1, // -1 = not finished; else the tick the seat crossed the line
     timerTicks: startTimeTicks, // remaining checkpoint time; 0 + timedOut = timeout
     timedOut: 0,
+    forkChoice: 0, // pending fork direction (-1 left / 1 right / 0 none), applied at the next fork
   };
 }
 

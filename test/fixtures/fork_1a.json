@@ -1,0 +1,24 @@
+{
+  "note": "fork routing golden — course 2 (canyon_split): one seat accelerates and takes forkChoice RIGHT at tick 5 (into seg 13, the right branch, which grants a checkpoint@119). A LEFT choice routes into seg 12 and differs (asserted in test/forks.test.js). Repin is a conscious act (dev-log.md).",
+  "scenario": {
+    "name": "fork_1a",
+    "seed": 12345,
+    "courseId": 2,
+    "startTimeTicks": 2000,
+    "maxTicks": 600,
+    "hashTicks": [10, 60, 120],
+    "seats": [{ "id": 1, "carId": 1 }],
+    "inputs": [{ "tick": 1, "seatId": 1, "steer": 0, "accel": 1, "brake": 0 }],
+    "forkChoices": [{ "tick": 5, "seatId": 1, "choice": 1 }]
+  },
+  "expected": {
+    "hashes": {
+      "10": "0939ec2660ba74c6",
+      "60": "505c9725870ad690",
+      "120": "a7f29753b8a85381"
+    },
+    "finalHash": "d8358de79eb6029f",
+    "finishTick": 227,
+    "census": ["checkpoint@119", "collision@174", "collision@175", "finish@227"]
+  }
+}

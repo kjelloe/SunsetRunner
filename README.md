@@ -16,7 +16,7 @@ See `specs/game-design.md` for the full technical brief and
 ## Layout
 
 ```
-data/     roads.json, cars.json, checkpoints.json, traffic.json
+data/     roads.json (sunset_coast + canyon_split fork), cars.json, checkpoints.json, traffic.json
 shared/   fixedmath, prng, canonical, statehash, constants, road_data, car_data, checkpoint_data, traffic_data, collision, protocol
 engine/ + shared/ are pure and dependency-free; the client may import ONLY from client/shared/engine/data (served dirs).
 engine/   reducer, state, car_physics, road_progress, traffic, collision, scenario, replay, ai_driver, sim, fairness, copy_state, snapshot, commands

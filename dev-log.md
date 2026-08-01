@@ -532,3 +532,30 @@ nearer < lower — the invariant the flip broke. `specs/20`.
 
 **Gate:** `./test.sh` → 102/102 + 3 Luau gates OK. Re-screenshot to confirm the
 road now sits below the horizon; camera magnitudes remain first-pass (§17).
+
+---
+
+## marker-0021 — branching forks (Milestone 5) (2026-08-01)
+
+**Goal:** deterministic branching routes — the OutRun fork. User confirmed the
+renderer works (road below horizon, car steers) before this.
+
+**Built:**
+- `data/roads.json` — course 2 `canyon_split` (10 → 11 fork → {12 L | 13 R} →
+  14 → finish); course 1 unchanged.
+- `CMD_FORK_CHOICE` command + seat `forkChoice` field; `advanceRoad` routes via
+  the pending choice and consumes it at the fork (default left).
+- `engine/scenario.js` `forkChoices[]` support.
+- Luau twin: state/snapshot/road_progress/reducer/scenario + new
+  `luau/fork-1a-check.luau` (4th Luau gate, `d8358de79eb6029f`).
+- `test/forks.test.js` + course-2 topology test; `specs/21`.
+
+**REPINS (conscious, mechanical — forkChoice joined the hashed seat state,
+behaviour unchanged):** `checkpoint_1a f817fa6fe43aaf43`, `physics_1a`,
+`collision_1a 0e231a34e0f33f71`, AI golden `c826f4e86f0f04fa`, roads content-hash
+`7d0880b9b6ede6b3`. New `fork_1a` golden (right-choice, finish 227).
+
+**Gate:** `./test.sh` → 108/108 + 4 Luau gates OK.
+
+**Next:** client fork UI + course select, route-mirror fairness (§16.1), and the
+rest of Milestone 5 (multi-checkpoint content, music, mobile, asset pipeline).

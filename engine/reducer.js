@@ -3,7 +3,7 @@
 // (carSet, courseSet) that is not part of hashed state. Tick order is pinned
 // (specs/01); do not casually reorder — it changes feel and hashes.
 
-import { CMD_INPUT, CMD_ADVANCE_TICK, validate } from "./commands.js";
+import { CMD_INPUT, CMD_ADVANCE_TICK, CMD_FORK_CHOICE, validate } from "./commands.js";
 import { cloneState } from "./copy_state.js";
 import { stepLongitudinal, stepLateral } from "./car_physics.js";
 import { advanceRoad } from "./road_progress.js";
@@ -25,6 +25,12 @@ export function apply(state, command, ctx = {}) {
       seat.accelHeld = command.accel;
       seat.brakeHeld = command.brake;
     }
+    return next;
+  }
+
+  if (command.type === CMD_FORK_CHOICE) {
+    const seat = next.seats.find((s) => s.id === command.seatId);
+    if (seat && seat.active && seat.finishTicks < 0) seat.forkChoice = command.choice;
     return next;
   }
 

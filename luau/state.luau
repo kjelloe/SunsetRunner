@@ -23,6 +23,7 @@ local function makeSeat(id: number, carId: number, startSegment: number, startTi
 		finishTicks = -1,
 		timerTicks = startTimeTicks,
 		timedOut = 0,
+		forkChoice = 0,
 	}
 end
 

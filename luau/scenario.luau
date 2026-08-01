@@ -26,6 +26,13 @@ local function runScenario(scenario, ctx)
 		end
 		table.insert(byTick[inp.tick], inp)
 	end
+	local forkByTick = {}
+	for _, fc in ipairs(scenario.forkChoices or {}) do
+		if not forkByTick[fc.tick] then
+			forkByTick[fc.tick] = {}
+		end
+		table.insert(forkByTick[fc.tick], fc)
+	end
 
 	local seats = scenario.seats or { { id = 1, carId = scenario.carId } }
 	local runCtx = ctx
@@ -58,6 +65,12 @@ local function runScenario(scenario, ctx)
 	local lastTick = 0
 
 	for t = 1, scenario.maxTicks do
+		local fcs = forkByTick[t]
+		if fcs then
+			for _, fc in ipairs(fcs) do
+				state = reducer.apply(state, { type = "forkChoice", seatId = fc.seatId or 1, choice = fc.choice }, runCtx)
+			end
+		end
 		local inps = byTick[t]
 		if inps then
 			for _, inp in ipairs(inps) do
