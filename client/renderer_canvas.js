@@ -17,18 +17,27 @@ const TRAFFIC_SPRITE = { 1: "traffic_sedan", 2: "traffic_truck" };
 const CAM_FOLLOW = 0.4;     // camera tracks 40% of the player's lateral position
 const PLAYER_NEAR_Z = 2000; // depth the player car is drawn at (for its road width)
 
-// Project a point at lateral `laneX` onto the road at forward distance `dz`.
-// Returns screen x (at the lane fraction of the road half-width), the road y at
-// that depth, the road half-width in px, and the perspective scale.
-export function onRoad(view, camX, dz, laneX) {
-  const p = projectPoint(view, camX, 0, 0, 0, dz); // road centre + half at this depth
+// Project a point at lateral `laneX` onto the road at forward distance `dz`,
+// relative to the CURVED road centre (curveX) and its hill (hillY) at that depth,
+// so entities follow the road's bends and rises. Returns screen x (lane fraction
+// of the road half-width), road y, half-width px, and perspective scale.
+export function onRoad(view, camX, dz, laneX, curveX = 0, hillY = 0) {
+  const p = projectPoint(view, camX, 0, curveX, hillY, dz); // curved road centre at this depth
   const half = Math.abs(p.w);
   return { x: p.x + (laneX / ROAD_HALF_WIDTH) * half, y: p.y, half, scale: p.scale };
+}
+
+// The curve/hill of the road at forward distance `dz`, read off the strip list.
+function sampleStrip(strips, dz) {
+  if (strips.length === 0) return { curveX: 0, hillY: 0 };
+  const k = Math.max(0, Math.min(strips.length - 1, Math.round((dz - strips[0].worldZ) / ROAD_UNIT)));
+  return { curveX: strips[k].curveX, hillY: strips[k].hillY };
 }
 
 export function render(g, view, state, courseSet, assets) {
   const seat = state.seats[0];
   const camX = seat.laneX * CAM_FOLLOW;
+  const strips = forwardStrips(courseSet, seat.segmentId, seat.roadZ, 220);
 
   const sky = g.createLinearGradient(0, 0, 0, view.h / 2);
   sky.addColorStop(0, "#2b1a54");
@@ -38,30 +47,29 @@ export function render(g, view, state, courseSet, assets) {
 
   drawRoad(g, view, seat, courseSet, camX);
   drawHaze(g, view);
-  if (assets) drawScenery(g, view, seat, courseSet, camX, assets);
-  drawTraffic(g, view, state, camX, assets);
-  drawGhosts(g, view, state, camX);
+  if (assets) drawScenery(g, view, camX, assets, strips);
+  drawTraffic(g, view, state, camX, assets, strips);
+  drawGhosts(g, view, state, camX, strips);
   drawPlayerCar(g, view, seat, camX, assets);
   drawHud(g, view, state);
   drawForkHint(g, view, seat, courseSet);
 }
 
 const SCENERY_EVERY = 10;
-function drawScenery(g, view, seat, courseSet, camX, assets) {
-  const strips = forwardStrips(courseSet, seat.segmentId, seat.roadZ, 220);
+function drawScenery(g, view, camX, assets, strips) {
   for (let i = strips.length - 1; i >= 0; i--) {
     const s = strips[i];
     if (s.worldStrip % SCENERY_EVERY !== 0) continue;
     const bucket = Math.floor(s.worldStrip / SCENERY_EVERY);
     const side = bucket % 2 === 0 ? -1 : 1;
-    const o = onRoad(view, camX, s.worldZ, side * ROAD_HALF_WIDTH * 1.7); // just off the shoulder
+    const o = onRoad(view, camX, s.worldZ, side * ROAD_HALF_WIDTH * 1.7, s.curveX, s.hillY); // off the (curved) shoulder
     if (o.half <= 0) continue;
     const sprite = assets.sprites[bucket % 3 === 0 ? "sign" : "palm"];
     drawSprite(g, sprite, o.x, o.y, spriteScale(o.half, sprite, 0.9));
   }
 }
 
-function drawTraffic(g, view, state, camX, assets) {
+function drawTraffic(g, view, state, camX, assets, strips) {
   const seat = state.seats[0];
   const ahead = state.traffic
     .filter((t) => t.segmentId === seat.segmentId && t.roadZ > seat.roadZ)
@@ -69,7 +77,8 @@ function drawTraffic(g, view, state, camX, assets) {
   for (const t of ahead) {
     const dz = t.roadZ - seat.roadZ;
     if (dz < ROAD_UNIT) continue;
-    const o = onRoad(view, camX, dz, t.laneX);
+    const s = sampleStrip(strips, dz);
+    const o = onRoad(view, camX, dz, t.laneX, s.curveX, s.hillY);
     if (assets) {
       const sprite = assets.sprites[TRAFFIC_SPRITE[t.kind] || "traffic_sedan"];
       drawSprite(g, sprite, o.x, o.y, spriteScale(o.half, sprite, 0.55));
@@ -81,7 +90,7 @@ function drawTraffic(g, view, state, camX, assets) {
   }
 }
 
-function drawGhosts(g, view, state, camX) {
+function drawGhosts(g, view, state, camX, strips) {
   const ghosts = state.ghosts || [];
   if (ghosts.length === 0) return;
   const seat = state.seats[0];
@@ -91,7 +100,8 @@ function drawGhosts(g, view, state, camX) {
   for (const r of ahead) {
     const dz = r.roadZ - seat.roadZ;
     if (dz < ROAD_UNIT) continue;
-    const o = onRoad(view, camX, dz, r.laneX);
+    const s = sampleStrip(strips, dz);
+    const o = onRoad(view, camX, dz, r.laneX, s.curveX, s.hillY);
     const w = Math.max(4, o.half * 0.5);
     const h = w * 0.6;
     g.globalAlpha = 0.6;

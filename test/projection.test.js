@@ -73,6 +73,15 @@ test("onRoad: laneX 0 = centre, ROAD_HALF_WIDTH = road edge, narrows with distan
   assert.ok(far.half < edge.half, "road narrows with distance");
 });
 
+test("onRoad follows the road curve — curveX bends entity placement", () => {
+  // Traffic/scenery must ride the curved centreline, not a straight column.
+  const straight = onRoad(view, 0, 2000, 0, 0);
+  const curvedRight = onRoad(view, 0, 2000, 0, 3000);
+  const curvedLeft = onRoad(view, 0, 2000, 0, -3000);
+  assert.ok(curvedRight.x > straight.x, "positive curveX shifts placement right");
+  assert.ok(curvedLeft.x < straight.x, "negative curveX shifts placement left");
+});
+
 test("forwardStrips accumulates curve across the profile", () => {
   // Segment 1's curve only begins past strip ~75 (profile [0,0,1,2,3,...] over
   // 600 strips), so sample deep enough to see curveX bend away from zero.

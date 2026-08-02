@@ -858,3 +858,20 @@ Client-only, no repin. Gate: ./test.sh -> 139/139 + 4 Luau gates OK.
 **Gate:** `./test.sh` -> 145/145 + 4 Luau gates OK.
 
 **Deferred:** server-restart persistence (spec #4), wake lock, browser strand test (#7).
+
+---
+
+## marker-0035 — scenery/traffic follow the road curve (2026-08-02)
+
+**From playtest:** trees and traffic don't follow the curves in the road.
+
+**Cause:** onRoad placed entities relative to the STRAIGHT centreline (worldX=0),
+while drawRoad bends each strip by its accumulated curveX -> road curved,
+entities stayed in a straight column.
+
+**Fix:** onRoad(view, camX, dz, laneX, curveX, hillY) projects relative to the
+CURVED road centre (+ hill) at that depth; render() builds the strip list once and
+`sampleStrip(strips, dz)` reads the curveX/hillY at each entity's distance, so
+traffic/scenery/ghosts ride the bends and rises. test/projection.test.js curve case.
+
+Client-only, no repin. Gate: ./test.sh -> 146/146 + 4 Luau gates OK.
