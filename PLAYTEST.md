@@ -88,8 +88,9 @@ On a phone (or desktop with `...index.html?touch=1`):
   buttons are hit-tested correctly at that scale (marker-0029 fixed the CSS-scale
   mapping bug — verify a tap actually triggers the button under your finger).
 - [ ] **[bug]** Page does not scroll or pinch-zoom while you drag on the canvas.
-- [ ] **[unverified]** High-DPR crispness (the 960 buffer is CSS-upscaled) — is it
-  acceptably sharp on a retina phone?
+- [ ] **[bug]** High-DPR crispness: the canvas buffer is now sized to CSS × DPR
+  (marker-0038) — is it acceptably sharp on a retina phone (no blur)?
+- [ ] **[bug]** The screen stays awake while driving (wake lock, marker-0038).
 - [ ] **[feel]** Are the buttons in reachable spots / big enough?
 
 ## 6. Multiplayer — server room
