@@ -91,5 +91,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [ ] sim campaign (`debugging/sim_campaign_outrun.sh`) — with AI drivers
 - [x] race-seeded traffic (marker-0017) — seeds now vary the race
 - [x] sweep battery (`tools/sim_sweep.mjs`) + fairness (seat-order, car-swap) (marker-0018)
-- [ ] route-mirror fairness (needs forks), analyze_sweep.py, seat/lane-skew fix
+- [x] route-mirror fairness (needs forks), analyze_sweep.py, seat/lane-skew fix (marker-0040)
+- [x] slice-040 car roster (4 cars) + balance sweep + analyze_sweep.py (marker-0040)
+- [ ] car-select UI (roster is data + tooling only so far)
 - [ ] Playwright client smoke / ui-acceptance / perf smoke

@@ -18,6 +18,16 @@ export function staggeredSeats(n, carId = 1) {
   return seats;
 }
 
+// Like staggeredSeats, but cycles cars across the roster so a sweep pits the
+// whole roster against each other (car-swap balance at scale).
+export function rosterSeats(n, carIds) {
+  const seats = [];
+  for (let i = 0; i < n; i++) {
+    seats.push({ id: i + 1, carId: carIds[i % carIds.length], laneX: Math.round((i - (n - 1) / 2) * 256) });
+  }
+  return seats;
+}
+
 export function runAiRace(ctx, opts = {}) {
   const rivalCollision = opts.rivalCollision ? 1 : 0;
   const runCtx = rivalCollision ? { ...ctx, rivalCollision: 1 } : ctx;

@@ -8,7 +8,7 @@ import { dirname, resolve } from "node:path";
 import { loadCourseSet } from "../shared/road_data.js";
 import { loadCarSet } from "../shared/car_data.js";
 import { loadTrafficConfig } from "../shared/traffic_data.js";
-import { runAiRace } from "../engine/sim.js";
+import { runAiRace, rosterSeats } from "../engine/sim.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p) => JSON.parse(readFileSync(resolve(root, p)));
@@ -20,7 +20,13 @@ const ctx = {
 
 const N = Number(process.argv[2]) || 50;
 const numSeats = Number(process.argv[3]) || 6;
+const courseId = Number(process.argv[4]) || 1;
 const rivalCollision = process.env.RIVAL !== "0";
+
+// Whole roster, so winnerCar actually varies. Rotate the car→lane assignment
+// per race so no car is permanently glued to the pole lane — otherwise a lane
+// advantage would masquerade as a car advantage (analyze_sweep reads winnerCar).
+const roster = ctx.carSet.cars.map((c) => c.id);
 
 const cols = [
   "seed", "courseId", "numSeats", "winnerSeat", "winnerCar", "finishCount",
@@ -30,9 +36,12 @@ const cols = [
 console.log(cols.join(","));
 for (let i = 0; i < N; i++) {
   const seed = 1000 + i;
-  const r = runAiRace(ctx, { seed, numSeats, rivalCollision, courseId: 1 });
+  const rot = i % roster.length;
+  const cars = roster.slice(rot).concat(roster.slice(0, rot));
+  const seats = rosterSeats(numSeats, cars);
+  const r = runAiRace(ctx, { seed, seats, rivalCollision, courseId });
   console.log([
-    seed, 1, numSeats, r.winnerSeat, r.winnerCar, r.census.finishes.length,
+    seed, courseId, numSeats, r.winnerSeat, r.winnerCar, r.census.finishes.length,
     r.census.timeouts, r.avgFinishTicks, r.census.collisionsTraffic,
     r.census.collisionsRival, r.maxSpeed, r.finalHash,
   ].join(","));

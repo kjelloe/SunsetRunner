@@ -948,3 +948,26 @@ Client-only, no repin. Surfaces the reconnect netcode.
   a real server) + import gate; specs/37.
 
 Gate: ./test.sh -> 157/157 + 4 Luau gates OK.
+
+---
+
+## marker-0040 — car roster + balance sweep (2026-08-02)
+
+Content + backend, no repin (car 1, the reference car every golden races, is
+untouched; only cars 2-4 changed).
+- data/cars.json: roster grown 2 -> 4 (green_machine high-top-speed/low-accel
+  glass cannon; gold_glider nimble all-rounder), then tuned via the sweep to all
+  four cars winning 18-32% across courses 1-3 (no imbalance flag).
+- engine/sim.js rosterSeats(n, carIds): staggered lanes but cycles the whole
+  roster, so winnerCar actually varies.
+- tools/sim_sweep.mjs: races the full roster, rotating car->lane per race so a
+  lane edge can't masquerade as a car edge; takes an optional courseId arg.
+- tools/analyze_sweep.py: aggregates the CSV into per-car win share + flags a
+  car above fair-share x1.5 or a course that mostly times out. Roster size =
+  max car id (a never-winning car can't shrink the denominator).
+- Finding: in AI fields thick with rival collisions, acceleration beats top
+  speed — the first draft had blue_bolt at 48% and green_machine at 13%.
+- test/balance_sweep.test.js (roster distinct, rosterSeats cycle+symmetry,
+  varied winners, analyze_sweep flag math; py test skips if python3 absent).
+
+Gate: ./test.sh -> 161/161 + 4 Luau gates OK.

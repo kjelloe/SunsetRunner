@@ -15,12 +15,34 @@
       "id": 2,
       "nameKey": "car.blue_bolt",
       "maxSpeed": 2300,
-      "accel": 27,
+      "accel": 25,
       "brake": 48,
       "offroadDrag": 55,
       "steerLow": 20,
       "steerHigh": 11,
       "driftRecovery": 14
+    },
+    {
+      "id": 3,
+      "nameKey": "car.green_machine",
+      "maxSpeed": 2600,
+      "accel": 21,
+      "brake": 42,
+      "offroadDrag": 60,
+      "steerLow": 18,
+      "steerHigh": 11,
+      "driftRecovery": 10
+    },
+    {
+      "id": 4,
+      "nameKey": "car.gold_glider",
+      "maxSpeed": 2350,
+      "accel": 21,
+      "brake": 52,
+      "offroadDrag": 48,
+      "steerLow": 24,
+      "steerHigh": 14,
+      "driftRecovery": 16
     }
   ]
 }
