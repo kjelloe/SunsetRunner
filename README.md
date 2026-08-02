@@ -1,51 +1,123 @@
-# Sunset Runner
+# 🌅 Sunset Runner
 
-A deterministic, server-authoritative arcade road racer — a real-time sibling of
-Fireline Command, with a Roblox/Luau twin (the RetroMultiCiv discipline). New IP.
+**A deterministic, server-authoritative arcade road racer for the browser — with a byte-identical Roblox/Luau twin.**
 
-- JavaScript / Node.js / ESM. **No build step. No framework.**
-- Dependency-free `shared/` and `engine/` (integer fixed-point, no floats).
-- Server owns truth; the client renders views and predicts locally.
-- Canvas 2D pseudo-3D road renderer (WebGL only if profiling forces it).
-- Headless simulation, replay-first debugging, golden-hash fixtures.
-- Luau twin of the deterministic core, verified byte-identical via `lune`.
+![tests](https://img.shields.io/badge/tests-139%20passing-brightgreen)
+![luau parity](https://img.shields.io/badge/Luau%20parity-4%20gates-brightgreen)
+![node](https://img.shields.io/badge/node-%E2%89%A518-informational)
+![build](https://img.shields.io/badge/build-none%20(vanilla%20ESM)-blue)
+![license](https://img.shields.io/badge/license-MIT-green)
 
-See `specs/game-design.md` for the full technical brief,
-`specs/01-determinism-contract.md` for the pinned determinism contract, and
-`PLAYTEST.md` for the manual playtest checklist (what the automated suite can't
-cover — visual feel, touch, real-network multiplayer).
+Sunset Runner is an OutRun-style pseudo-3D racer built as a **real-time sibling of a deterministic tactical engine**: the server owns truth, the client predicts and renders, and the whole simulation is integer-only so it reproduces bit-for-bit — including a full **Luau port** that produces the exact same hashes for a Roblox build.
 
-## Layout
+No framework. No build step. No bundler. Just Node.js and vanilla ES modules.
 
-```
-data/     roads.json (3 courses), cars.json, checkpoints.json, traffic.json, assets.json (sprite manifest)
-shared/   fixedmath, prng, canonical, statehash, constants, road_data, car_data, checkpoint_data, traffic_data, collision, protocol
-engine/ + shared/ are pure and dependency-free; the client may import ONLY from client/shared/engine/data (served dirs).
-engine/   reducer, state, car_physics, road_progress, traffic, collision, scenario, replay, ai_driver, sim, fairness, copy_state, snapshot, commands
-client/   index.html, main, projection, road_renderer, renderer_canvas, sprite_renderer, hud, input, touch_controls, prediction, session_local, session_remote
-server/   index (http static + ws), game_room  (protocol lives in shared/)
-luau/     Luau twins of shared/ (+ engine/ after Milestone 1)
-roblox/   Rojo project mounting luau/ into ReplicatedStorage.Shared
-test/     node --test suites + pinned fixtures
-tools/    repin_checkpoint_1a.mjs (golden repin), sim_sweep.mjs (balance CSV), build_assets.mjs, render_asset_strip.mjs
-debugging/ replay.mjs (race report), sim_campaign.mjs (systems gate), fairness.mjs
-specs/    game-design (brief) + 01 determinism … 07 local race loop
-```
+---
 
-## Running the gates
+## ✨ Features
+
+- 🏎️ **Pseudo-3D road** — scrolling rumble strips, lane markers, hills, curves that physically push the car (brake before the turn, steer through it).
+- ⏱️ **Checkpoint timer** — classic arcade extend-your-time loop; finish or time out.
+- 🚗 **Traffic & collisions** — deterministic segment-seeded traffic, crash-and-recover, and optional same-segment rival bumps.
+- 🍴 **Branching forks** — commit a direction with **Q/E**; three courses (a coast, a fork, a mirror-fair valley).
+- 🌐 **Drop-in multiplayer** — Node `ws` server, up to 8 seats, ghost rivals, live standings, **client-side prediction + reconciliation**.
+- 📱 **Mobile-ready** — on-screen arrow pad, correct touch mapping on CSS-scaled canvases, no page scroll/zoom while driving.
+- 🎉 **Finish celebration** — confetti + fireworks.
+- 🤖 **AI drivers + sim campaign** — headless balance tooling.
+- ⚖️ **Fairness instruments** — route-mirror, car-swap, traffic-swap, and seat-order analysis.
+- 🔁 **Replay** — dump any game as a re-runnable scenario; deterministic to the hash.
+- 🧬 **Luau twin** — `luau/` reproduces the engine byte-for-byte, gated by `lune`.
+
+---
+
+## 🚀 Quick start
 
 ```bash
-npm test        # node --test — unit suites, golden fixtures, Luau parity gate
-./test.sh       # full self-test: JS suite + Luau (lune) parity, with a summary
+git clone git@github.com:kjelloe/SunsetRunner.git
+cd SunsetRunner
+npm install            # only dependency: ws (for the multiplayer server)
 ```
 
-The Luau parity gate shells out to `lune`; if `lune` is not installed the JS
-suite still passes and that one gate is skipped.
+### Play (solo, offline)
 
-## Development discipline
+```bash
+python3 -m http.server 8000     # serve the repo root
+```
+Open **http://localhost:8000/client/index.html** and drive with **WASD / arrows**.
 
-- Slices land as one commit tagged `marker-NNNN` in the message; each is logged
-  in `dev-log.md`. The slice roadmap lives in `plan-implementation-order.md`.
-- Determinism is the contract: no floats in `shared/`/`engine/`, no wall-clock
-  in engine state, pinned reducer tick order. Repinning a golden fixture is a
-  conscious act, recorded in the dev log.
+- `?course=2` — the branching **canyon_split** (press **Q / E** at the fork)
+- `?course=3` — the mirror-fair **mirror_valley**
+- `?touch=1` — preview the mobile arrow pad on desktop
+
+### Play (multiplayer)
+
+```bash
+npm start              # http + ws server on :8000
+```
+Open **http://localhost:8000/client/index.html?mode=remote** in two tabs.
+
+### Test
+
+```bash
+npm test               # node --test: 139 unit/integration tests
+./test.sh              # the above + Luau (lune) cross-language parity gates
+```
+
+---
+
+## 🎮 Controls
+
+| Action | Keyboard | Touch |
+|---|---|---|
+| Accelerate / brake | ↑↓ or W/S | ▲ ▼ |
+| Steer | ←→ or A/D | ◄ ► |
+| Fork left / right | Q / E | ↰ ↱ |
+
+---
+
+## 🧠 How it's built
+
+```
+data/     roads (3 courses), cars, checkpoints, traffic, sprite manifest   (JSON)
+shared/   fixed-point math, prng, canonical hashing, loaders, protocol      (pure, Luau-portable)
+engine/   apply(state, command) reducer + physics/traffic/collision/AI/scenario/replay
+client/   canvas renderer, projection, sprites, input, touch, prediction, sessions
+server/   node http static host + ws race room
+luau/     Luau twin of shared/ + engine/ (verified byte-identical via lune)
+roblox/   Rojo project mounting luau/ into ReplicatedStorage
+tools/    asset build, balance sweeps, golden repin
+debugging/ replay, sim campaign, fairness reports
+test/     node --test suites + pinned golden fixtures
+specs/    the design brief + numbered decision docs
+```
+
+**Determinism is the contract.** No floats in `shared/` or `engine/`, integer fixed-point (256-unit), a pinned reducer tick order, and no wall-clock in engine state. State is hashed (FNV-1a 64 over canonical bytes) and pinned in golden fixtures. See [`specs/01-determinism-contract.md`](specs/01-determinism-contract.md).
+
+**The Luau twin** mirrors the engine module-for-module. Four `lune` gates re-run the golden scenarios (`spine`, `checkpoint_1a`, `collision_1a`, `fork_1a`) and assert the Luau output matches the JS **byte-for-byte** — so the Roblox build can never silently drift.
+
+**Multiplayer** is server-authoritative: the client sends input intents, the server ticks at 20 Hz and broadcasts per-seat views (self + filtered ghosts + traffic + standings). The client **predicts its own car** and reconciles against each view (§21.2).
+
+---
+
+## 🧪 Testing & determinism
+
+- `npm test` — 139 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
+- `./test.sh` — adds the Luau parity gates ([`lune`](https://lune-org.github.io/docs) required; skipped gracefully if absent).
+- `node debugging/replay.mjs` — replay a scenario as a race report.
+- `node debugging/sim_campaign.mjs` — AI "do systems fire?" gate across 5 seeds.
+- `node debugging/fairness.mjs` — route-mirror / car-swap / traffic-swap report.
+- See [`PLAYTEST.md`](PLAYTEST.md) for the manual checklist (visual feel, touch, real-network multiplayer — the things automation can't judge).
+
+---
+
+## 📋 Status
+
+Milestones 1–5 are functionally complete: solo run, server room, 8-player ghost race, collision/traffic/AI, and content (forks, curve physics, sprites, mobile, finish celebration). The engine is deterministic, Luau-twinned, and provably fair.
+
+Open work: native-browser visual/perf tuning, music, and multiplayer reconnect/drop-in robustness. See [`plan-implementation-order.md`](plan-implementation-order.md) and [`dev-log.md`](dev-log.md).
+
+---
+
+## 📄 License
+
+[MIT](LICENSE) — new IP. ("OutRun" is a Sega trademark and is **not** used in the game's name, assets, or code.)
