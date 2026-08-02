@@ -2,7 +2,7 @@
 
 **A deterministic, server-authoritative arcade road racer for the browser — with a byte-identical Roblox/Luau twin.**
 
-![tests](https://img.shields.io/badge/tests-161%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-185%20passing-brightgreen)
 ![luau parity](https://img.shields.io/badge/Luau%20parity-4%20gates-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A518-informational)
 ![build](https://img.shields.io/badge/build-none%20(vanilla%20ESM)-blue)
@@ -20,6 +20,9 @@ No framework. No build step. No bundler. Just Node.js and vanilla ES modules.
 - ⏱️ **Checkpoint timer** — classic arcade extend-your-time loop; finish or time out.
 - 🚗 **Traffic & collisions** — deterministic segment-seeded traffic, crash-and-recover, and optional same-segment rival bumps.
 - 🍴 **Branching forks** — commit a direction with **Q/E**; three hilly courses — a coast with a fork, a branch, a mirror-fair valley.
+- 🏝️ **Per-leg scenery** — each leg after a fork gets its own palette + sprite mix (beach / canyon / forest).
+- 🚙 **Car roster + picker** — four balance-swept cars, chosen in a pre-race select screen (`?car=N` to skip).
+- 🔊 **Procedural audio** — synthesised engine hum that tracks speed, event SFX, and a chiptune loop (`?mute=1`).
 - 🌐 **Drop-in & reconnect multiplayer** — Node `ws` server, up to 8 seats, ghost rivals, live standings, **client-side prediction**, and **token-reclaim reconnect** (survives mobile backgrounding).
 - 📱 **Mobile-ready** — on-screen arrow pad, correct touch mapping on CSS-scaled canvases, no page scroll/zoom while driving.
 - 🎉 **Finish celebration** — confetti + fireworks.
@@ -59,7 +62,7 @@ Open **http://localhost:8000/client/index.html?mode=remote** in two tabs.
 ### Test
 
 ```bash
-npm test               # node --test: 139 unit/integration tests
+npm test               # node --test: 185 unit/integration tests
 ./test.sh              # the above + Luau (lune) cross-language parity gates
 ```
 
@@ -101,7 +104,7 @@ specs/    the design brief + numbered decision docs
 
 ## 🧪 Testing & determinism
 
-- `npm test` — 161 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
+- `npm test` — 185 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
 - `./test.sh` — adds the Luau parity gates ([`lune`](https://lune-org.github.io/docs) required; skipped gracefully if absent).
 - `node debugging/replay.mjs` — replay a scenario as a race report.
 - `node debugging/sim_campaign.mjs` — AI "do systems fire?" gate across 5 seeds.
@@ -114,7 +117,7 @@ specs/    the design brief + numbered decision docs
 
 Milestones 1–5 are functionally complete: solo run, server room, 8-player ghost race, collision/traffic/AI, and content (forks, curve physics, sprites, mobile, finish celebration). The engine is deterministic, Luau-twinned, and provably fair.
 
-Open work: native-browser visual/perf tuning, music, in-game car-select UI. A 4-car roster with a balance sweep (`tools/sim_sweep.mjs` + `tools/analyze_sweep.py`), reconnect UI, mobile polish (wake lock, high-DPR crispness), reconnect/drop-in, and server-restart persistence (lossless deploys) are done. See [`plan-implementation-order.md`](plan-implementation-order.md) and [`dev-log.md`](dev-log.md).
+Open work: native-browser visual/perf tuning (needs playtest screenshots), a Playwright browser smoke test, and car identity on ghosts. Done: a 4-car roster + balance sweep (`tools/sim_sweep.mjs` + `tools/analyze_sweep.py`), the car-select UI, procedural audio, ws server hardening (payload cap + rate limit), per-leg scenery themes, reconnect UI, mobile polish (wake lock, high-DPR crispness), reconnect/drop-in, and server-restart persistence (lossless deploys). See [`plan-implementation-order.md`](plan-implementation-order.md) and [`dev-log.md`](dev-log.md).
 
 ---
 

@@ -93,5 +93,9 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] sweep battery (`tools/sim_sweep.mjs`) + fairness (seat-order, car-swap) (marker-0018)
 - [x] route-mirror fairness (needs forks), analyze_sweep.py, seat/lane-skew fix (marker-0040)
 - [x] slice-040 car roster (4 cars) + balance sweep + analyze_sweep.py (marker-0040)
-- [ ] car-select UI (roster is data + tooling only so far)
+- [x] slice-041 car-select UI (pre-race picker, ?car=N) (marker-0041)
+- [x] slice-042 procedural audio (engine hum + SFX + chiptune) (marker-0042)
+- [x] slice-043 ws server hardening (payload cap + rate limit) (marker-0043)
+- [x] slice-044 per-leg scenery themes (beach/canyon/forest) (marker-0044)
+- [ ] car identity on ghosts (tint rival sprite by carId)
 - [ ] Playwright client smoke / ui-acceptance / perf smoke
