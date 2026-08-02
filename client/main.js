@@ -19,6 +19,7 @@ import { drawConnectionBanner } from "./connection_banner.js";
 import { carChoiceFromParams, createCarSelect, drawCarSelect, carSelectTouchZone } from "./car_select.js";
 import { createAudio } from "./audio.js";
 import { loadScenery } from "./scenery.js";
+import { readTuning, applyTuning, drawTuningHud } from "./tuning.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -64,6 +65,10 @@ export async function boot(doc = document) {
   const params = new URLSearchParams(location.search);
   const remote = params.get("mode") === "remote";
   const courseId = Number(params.get("course")) || 1;
+  // Live feel-tuning knobs (renderer-only): ?depth=/?height=/?hill=/?follow=/etc
+  // override the camera/road constants; ?tune=1 shows the current values on screen.
+  applyTuning(readTuning(params));
+  const showTune = params.get("tune") === "1";
 
   installKeyboard(doc);
   installTouch(canvas);
@@ -156,6 +161,7 @@ export async function boot(doc = document) {
     celebration.update(view);
     celebration.draw(g, view);
     if (showTouch) drawTouchControls(g, view);
+    if (showTune) drawTuningHud(g, view);
     if (remote) drawConnectionBanner(g, view, session.status, frameCount);
     frameCount++;
     requestAnimationFrame(frame);

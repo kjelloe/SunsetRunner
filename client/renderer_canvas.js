@@ -8,16 +8,15 @@
 import { drawRoad, forwardStrips } from "./road_renderer.js";
 import { drawHud } from "./hud.js";
 import { drawSprite } from "./sprite_renderer.js";
-import { projectPoint, CAMERA } from "./projection.js";
+import { projectPoint } from "./projection.js";
 import { ROAD_HALF_WIDTH } from "../engine/car_physics.js";
 import { ROAD_UNIT } from "../shared/constants.js";
 import { getSegment } from "../shared/road_data.js";
 import { themeFor } from "./scenery.js";
 import { carColor } from "./car_colors.js";
+import { TUNING } from "./tuning.js";
 
 const TRAFFIC_SPRITE = { 1: "traffic_sedan", 2: "traffic_truck" };
-const CAM_FOLLOW = 0.4;     // camera tracks 40% of the player's lateral position
-const PLAYER_NEAR_Z = 2000; // depth the player car is drawn at (for its road width)
 
 // Project a point at lateral `laneX` onto the road at forward distance `dz`,
 // relative to the CURVED road centre (curveX) and its hill (hillY) at that depth,
@@ -38,7 +37,7 @@ function sampleStrip(strips, dz) {
 
 export function render(g, view, state, courseSet, assets, scenery) {
   const seat = state.seats[0];
-  const camX = seat.laneX * CAM_FOLLOW;
+  const camX = seat.laneX * TUNING.camFollow;
   const strips = forwardStrips(courseSet, seat.segmentId, seat.roadZ, 220);
 
   // Per-leg theme (beach/canyon/forest after forks) off the current segment's
@@ -125,7 +124,7 @@ function drawGhosts(g, view, state, camX, strips) {
 }
 
 function drawPlayerCar(g, view, seat, camX, assets) {
-  const o = onRoad(view, camX, PLAYER_NEAR_Z, seat.laneX);
+  const o = onRoad(view, camX, TUNING.playerNearZ, seat.laneX);
   const cy = view.h - 22; // pinned near the bottom of the screen
   if (assets) {
     drawSprite(g, assets.sprites.player_car, o.x, cy, view.w * 0.0028);

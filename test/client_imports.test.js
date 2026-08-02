@@ -22,6 +22,7 @@ test("client modules import cleanly and export their entry points", async () => 
   const audio = await import("../client/audio.js");
   const scenery = await import("../client/scenery.js");
   const carColors = await import("../client/car_colors.js");
+  const tuning = await import("../client/tuning.js");
   const main = await import("../client/main.js");
 
   assert.equal(typeof projection.projectPoint, "function");
@@ -45,6 +46,8 @@ test("client modules import cleanly and export their entry points", async () => 
   assert.equal(typeof scenery.themeFor, "function");
   assert.equal(typeof scenery.loadScenery, "function");
   assert.equal(typeof carColors.carColor, "function");
+  assert.equal(typeof tuning.readTuning, "function");
+  assert.equal(typeof tuning.applyTuning, "function");
   assert.equal(typeof banner.drawConnectionBanner, "function");
   assert.equal(typeof main.boot, "function");
 });

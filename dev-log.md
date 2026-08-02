@@ -1053,3 +1053,21 @@ Client-only, no repin. Rival ghosts tinted by their car (closes specs/39 follow-
   ghosts (carId 2,3) tint the canvas + import gate; specs/43.
 
 Gate: ./test.sh -> 187/187 + 4 Luau gates OK.
+
+---
+
+## marker-0046 — live feel-tuning knobs (2026-08-03)
+
+Renderer-only, no repin (defaults unchanged; projection golden holds). Turns the
+untuned camera/road feel constants into live URL knobs so the user's visual-feel
+pass needs no edit/test round-trip.
+- client/tuning.js: TUNING object (camDepth/camHeight/roadWidth/hillScale/
+  camFollow/playerNearZ) + readTuning(params) parse+clamp + applyTuning mutate +
+  drawTuningHud readout; TUNING_FIELDS drive params/clamps/labels.
+- projection.js reads TUNING (CAMERA export removed); road_renderer hillScale;
+  renderer_canvas camFollow/playerNearZ (unused CAMERA import dropped).
+- main.js: applyTuning(readTuning(params)) at boot; ?tune=1 draws the readout.
+  Knobs: ?depth ?height ?roadw ?hill ?follow ?nearz.
+- test/tuning.test.js (parse/clamp/ignore/applyTuning/HUD) + import gate; specs/44.
+
+Gate: ./test.sh -> 194/194 + 4 Luau gates OK.

@@ -98,4 +98,5 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-043 ws server hardening (payload cap + rate limit) (marker-0043)
 - [x] slice-044 per-leg scenery themes (beach/canyon/forest) (marker-0044)
 - [x] slice-045 car identity on ghosts (tint by carId) (marker-0045)
+- [x] slice-046 live feel-tuning knobs (?tune=1 + URL overrides) (marker-0046)
 - [ ] Playwright client smoke / ui-acceptance / perf smoke

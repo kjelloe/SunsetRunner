@@ -1,6 +1,6 @@
 # Playtest checklist — Sunset Runner
 
-The automated suite (`./test.sh`, 187 tests + 4 Luau parity gates) covers engine
+The automated suite (`./test.sh`, 194 tests + 4 Luau parity gates) covers engine
 determinism, the reducer, server room, fairness, and client module loading. It
 does **NOT** cover anything you can only judge with a real browser: visual feel,
 frame rate, camera tuning, touch ergonomics, audio, and real-network multiplayer.
@@ -30,7 +30,10 @@ Open `http://localhost:8000/client/index.html`.
 - [ ] **[bug]** Left/Right (or A/D) move the car sideways; it can go onto the
   green shoulder.
 - [ ] **[feel]** Speed sensation, road-scroll rate, steering response — does it
-  feel like an arcade racer? (camera magnitudes are untuned first-pass values.)
+  feel like an arcade racer? Camera magnitudes are untuned first passes — **dial
+  them live**: add `?tune=1` to see current values, then tweak with
+  `?depth=`/`?height=`/`?roadw=`/`?hill=`/`?follow=`/`?nearz=` (marker-0046).
+  Screenshot the `?tune=1` panel with values you like and report them back.
 - [ ] **[bug]** TIME counts down; passing the checkpoint (~⅓ in) adds time (watch
   TIME jump up).
 - [ ] **[bug]** Reaching the end triggers a **FINISH! splash with confetti +
@@ -46,7 +49,7 @@ Open `http://localhost:8000/client/index.html`.
 - [ ] **[bug]** The default course now has **hills** (road crests and dips) and a
   **fork** after the checkpoint — you reach it in normal play (marker-0036).
 - [ ] **[feel]** Are the hills readable (crest hides the road beyond, then reveals)?
-  Too gentle / too steep? (`HILL_SCALE` 180 is a sim-blind first pass.)
+  Too gentle / too steep? Tune live with `?hill=` (default 180, marker-0046).
 - [ ] **[feel]** After the fork, the two branches and the merge leg look
   **distinct** — sky/ground palette and roadside density change (beach / canyon /
   forest, marker-0044). Drive both branches: do they read as different places?
