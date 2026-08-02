@@ -2,7 +2,7 @@
 
 **A deterministic, server-authoritative arcade road racer for the browser — with a byte-identical Roblox/Luau twin.**
 
-![tests](https://img.shields.io/badge/tests-146%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-150%20passing-brightgreen)
 ![luau parity](https://img.shields.io/badge/Luau%20parity-4%20gates-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A518-informational)
 ![build](https://img.shields.io/badge/build-none%20(vanilla%20ESM)-blue)
@@ -114,7 +114,7 @@ specs/    the design brief + numbered decision docs
 
 Milestones 1–5 are functionally complete: solo run, server room, 8-player ghost race, collision/traffic/AI, and content (forks, curve physics, sprites, mobile, finish celebration). The engine is deterministic, Luau-twinned, and provably fair.
 
-Open work: native-browser visual/perf tuning, music, and server-restart persistence (lossless deploys). Reconnect/drop-in (token reclaim, grace, reconnect-on-visible) is done. See [`plan-implementation-order.md`](plan-implementation-order.md) and [`dev-log.md`](dev-log.md).
+Open work: native-browser visual/perf tuning, music,  Reconnect/drop-in and server-restart persistence (lossless deploys) are done. See [`plan-implementation-order.md`](plan-implementation-order.md) and [`dev-log.md`](dev-log.md).
 
 ---
 

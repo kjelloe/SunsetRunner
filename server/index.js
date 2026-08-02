@@ -16,7 +16,10 @@ import { loadCheckpointConfig } from "../shared/checkpoint_data.js";
 import { loadTrafficConfig } from "../shared/traffic_data.js";
 import { TICK_HZ } from "../shared/constants.js";
 import { createRoom } from "./game_room.js";
+import { saveSession, loadSession } from "./session_store.js";
 import { C2S, S2C, parseMessage } from "../shared/protocol.js";
+
+const DEFAULT_GRACE_TICKS = 900;
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -57,7 +60,12 @@ async function loadCtx() {
 
 export async function startServer(port = 8000, roomOpts = {}) {
   const ctx = await loadCtx();
-  const room = createRoom(ctx, { startTimeTicks: ctx.startTimeTicks, ...roomOpts });
+  // Persistence is opt-in via statePath (the entrypoint sets it; tests pass a temp
+  // file or omit it). On boot, restore a session younger than the grace window.
+  const statePath = roomOpts.statePath || null;
+  const graceTicks = roomOpts.graceTicks ?? DEFAULT_GRACE_TICKS;
+  const restore = statePath ? loadSession(statePath, (graceTicks / TICK_HZ) * 1000) : null;
+  const room = createRoom(ctx, { startTimeTicks: ctx.startTimeTicks, graceTicks, ...roomOpts, restore });
 
   const server = createServer(serveStatic);
   const wss = new WebSocketServer({ server });
@@ -125,12 +133,18 @@ export async function startServer(port = 8000, roomOpts = {}) {
   }, 1000 / TICK_HZ);
   interval.unref?.();
 
+  // Autosave every 5 s (a hard crash loses at most that). Deploys save on close().
+  const saveTimer = statePath ? setInterval(() => saveSession(statePath, room), 5000) : null;
+  saveTimer?.unref?.();
+
   await new Promise((r) => server.listen(port, r));
   return {
     room,
     port: server.address().port,
     async close() {
       clearInterval(interval);
+      if (saveTimer) clearInterval(saveTimer);
+      if (statePath) saveSession(statePath, room); // lossless handoff on shutdown
       for (const ws of clients.keys()) ws.terminate();
       await new Promise((r) => wss.close(r));
       await new Promise((r) => server.close(r));
@@ -140,5 +154,13 @@ export async function startServer(port = 8000, roomOpts = {}) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT) || 8000;
-  startServer(port).then((h) => console.log(`Sunset Runner server on http://localhost:${h.port}/client/index.html`));
+  const statePath = process.env.STATE_FILE || resolve(repoRoot, ".state/session.json");
+  startServer(port, { statePath }).then((h) => {
+    console.log(`Sunset Runner server on http://localhost:${h.port}/client/index.html`);
+    // SIGTERM/SIGINT (deploy/ctrl-c) -> close() (which saves) -> exit. Wired only
+    // in the standalone entrypoint so tests don't accumulate signal handlers.
+    for (const sig of ["SIGTERM", "SIGINT"]) {
+      process.on(sig, async () => { await h.close(); process.exit(0); });
+    }
+  });
 }

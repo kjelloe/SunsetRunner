@@ -896,3 +896,25 @@ branch. Default course now hits a fork in normal play.
 new 1->2->3-fork topology, 1800-strip walk). 4 Luau gates re-verified.
 
 Gate: ./test.sh -> 146/146 + 4 Luau gates OK. specs/34.
+
+---
+
+## marker-0037 — server-restart persistence (2026-08-02)
+
+**From:** the Pitfall write-up's #1-priority gap (deploys restart the process ->
+the token is useless if the server forgot the game).
+
+**Built (server bookkeeping, NOT hashed -> no repin):**
+- game_room: serialize() (engine state + presence/tokens + inputs + replay log);
+  createRoom({restore}) rebuilds verbatim (deterministic hash), restored seats get
+  a FRESH grace clock.
+- server/session_store.js: saveSession/loadSession (JSON + savedAt), best-effort,
+  rejects files older than the grace window.
+- server/index.js: opt-in via statePath; boot-restore, autosave 5s, save on
+  close(), SIGTERM/SIGINT -> close() (entrypoint only). Default .state/session.json
+  (gitignored).
+- test/persistence.test.js: serialize/restore hash-identical + tokens; stale
+  rejection; DEPLOY HANDOFF (join->play->kill->reboot->reclaim same seat, #4).
+
+Gate: ./test.sh -> 150/150 + 4 Luau gates OK. specs/35.
+Deferred: wake lock, browser strand test (#7), reconnect overlay.

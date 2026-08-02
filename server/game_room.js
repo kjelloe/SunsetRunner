@@ -80,6 +80,28 @@ export function createRoom(ctx, opts = {}) {
     presence.delete(seatId);
   }
 
+  // Restore a serialized session (server-restart persistence, specs/35). Every
+  // restored seat starts disconnected with a FRESH grace clock (no socket survives
+  // a restart), so returning players reclaim within the window and the rest are
+  // swept. Deterministic: the engine state is restored verbatim.
+  function applyRestore(r) {
+    state = r.state;
+    nextSeatId = r.nextSeatId;
+    presence.clear();
+    for (const p of r.presence) presence.set(p.id, { token: p.token, disconnectedTick: state.tick });
+    inputs.clear();
+    for (const e of r.inputs) inputs.set(e.id, e.inp);
+    ackSeq.clear();
+    for (const [id, s] of r.ackSeq) ackSeq.set(id, s);
+    seatsMeta.length = 0;
+    for (const m of r.seatsMeta) seatsMeta.push({ ...m });
+    recordedInputs.length = 0;
+    for (const i of r.recordedInputs) recordedInputs.push({ ...i });
+    recordedForks.length = 0;
+    for (const f of r.recordedForks) recordedForks.push({ ...f });
+  }
+  if (opts.restore) applyRestore(opts.restore);
+
   return {
     get tick() { return state.tick; },
     get courseId() { return courseId; },
@@ -180,5 +202,21 @@ export function createRoom(ctx, opts = {}) {
     },
 
     getState() { return state; },
+
+    // Snapshot the whole session for disk persistence (engine state + presence/
+    // tokens + queued input + replay log). JSON-safe.
+    serialize() {
+      return {
+        version: 1,
+        state,
+        nextSeatId,
+        presence: [...presence].map(([id, p]) => ({ id, token: p.token, disconnectedTick: p.disconnectedTick })),
+        inputs: [...inputs].map(([id, inp]) => ({ id, inp })),
+        ackSeq: [...ackSeq],
+        seatsMeta: seatsMeta.map((m) => ({ ...m })),
+        recordedInputs: recordedInputs.map((i) => ({ ...i })),
+        recordedForks: recordedForks.map((f) => ({ ...f })),
+      };
+    },
   };
 }

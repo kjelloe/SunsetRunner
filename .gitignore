@@ -1,6 +1,7 @@
 node_modules/
 *.log
 debugging/logs/
+.state/
 test/headless/reports/
 **/*.zip
 dev-prompts.md
