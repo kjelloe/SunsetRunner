@@ -11,6 +11,7 @@ import { hashSnapshot } from "../engine/snapshot.js";
 import { getCourse } from "../shared/road_data.js";
 import { inCollisionWindow } from "../shared/collision.js";
 import { S2C } from "../shared/protocol.js";
+import { randomUUID } from "node:crypto";
 
 // Filtered rival state (§10): only what a client needs to render a ghost, plus
 // collisionActive (1 when in the same segment/window as the viewer).
@@ -64,6 +65,21 @@ export function createRoom(ctx, opts = {}) {
   const recordedForks = [];
   const lastInputKey = new Map();
 
+  // Presence (separate from the socket): a dropped connection marks the seat
+  // disconnected, and a tick-based grace sweep frees it only after graceTicks.
+  // Token identity survives reconnects. NOT part of the hashed engine state, so
+  // no golden/determinism impact. See specs/33.
+  const graceTicks = opts.graceTicks ?? 900; // 45 s at 20 Hz
+  const presence = new Map(); // seatId -> { token, disconnectedTick|null }
+
+  function freeSeat(seatId) {
+    const seat = state.seats.find((s) => s.id === seatId);
+    if (seat) seat.active = 0;
+    inputs.delete(seatId);
+    ackSeq.delete(seatId);
+    presence.delete(seatId);
+  }
+
   return {
     get tick() { return state.tick; },
     get courseId() { return courseId; },
@@ -74,14 +90,29 @@ export function createRoom(ctx, opts = {}) {
       const id = nextSeatId++;
       state.seats.push(makeSeat(id, carId, startSegment, startTimeTicks));
       seatsMeta.push({ id, carId });
+      presence.set(id, { token: randomUUID(), disconnectedTick: null });
       return id;
     },
 
-    removeSeat(seatId) {
-      const seat = state.seats.find((s) => s.id === seatId);
-      if (seat) seat.active = 0;
-      inputs.delete(seatId);
+    tokenFor(seatId) { return presence.get(seatId)?.token ?? null; },
+
+    // A dropped socket does NOT free the seat — the car keeps driving on its last
+    // input while a grace clock runs (sweep() frees it after graceTicks).
+    markDisconnected(seatId) {
+      const p = presence.get(seatId);
+      if (p) p.disconnectedTick = state.tick;
     },
+
+    // Rebind a seat by token; idempotent (reclaiming a live seat just clears the
+    // grace clock). Returns the seatId, or -1 if the seat is gone.
+    reclaim(token) {
+      for (const [seatId, p] of presence) {
+        if (p.token === token) { p.disconnectedTick = null; return seatId; }
+      }
+      return -1;
+    },
+
+    removeSeat(seatId) { freeSeat(seatId); },
 
     setInput(seatId, input) {
       // Record only changes; the effect first lands on the next tick produced.
@@ -119,6 +150,10 @@ export function createRoom(ctx, opts = {}) {
 
     // One authoritative sim step: drain queued inputs, then advance a tick.
     tick() {
+      // Grace sweep: free seats whose disconnect grace has elapsed.
+      for (const [seatId, p] of presence) {
+        if (p.disconnectedTick !== null && state.tick - p.disconnectedTick > graceTicks) freeSeat(seatId);
+      }
       for (const [seatId, inp] of inputs) {
         state = apply(state, { type: CMD_INPUT, seatId, steer: inp.steer, accel: inp.accel, brake: inp.brake }, simCtx);
       }

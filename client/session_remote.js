@@ -1,84 +1,127 @@
-// client/session_remote.js — remote (server-authoritative) session with
-// client-side prediction (§21.2). Same seam as session_local (setInput /
-// getState). The server owns truth; we PREDICT the local car immediately and
-// reconcile against each view. Import-safe; a WebSocket impl can be injected
-// (opts.WebSocket) so this runs headless in tests. Prediction needs the course/
-// car data, passed via opts.courseSet/carSet (main.js already loaded them);
-// without them it falls back to rendering the raw view.
+// client/session_remote.js — remote session: prediction + drop-in/reconnect.
+// Connection != presence (Pitfall model, specs/33): the socket drops constantly
+// on mobile; the SERVER holds the seat for a grace window and the client reclaims
+// it by token. So: persist the token, reconnect relentlessly (backoff +
+// reconnect-on-visible), and reclaim on every open. The server owns truth; we
+// predict the local car and reconcile each view. Import-safe (WebSocket / storage
+// / document all injectable or guarded) so it runs headless in tests.
 
 import { TICK_HZ } from "../shared/constants.js";
 import { C2S, S2C } from "../shared/protocol.js";
 import { createPredictor } from "./prediction.js";
 
+const TOKEN_KEY = "sunset_runner_token";
+
 export function createRemoteSession(url, opts = {}) {
   const WebSocketImpl = opts.WebSocket || (typeof WebSocket !== "undefined" ? WebSocket : null);
+  const store = opts.storage || (typeof localStorage !== "undefined" ? localStorage : null);
+  const doc = opts.document || (typeof document !== "undefined" ? document : null);
   const carId = opts.carId ?? 1;
+
   let ws = null;
   let seatId = null;
-  let latest = null; // last received view
+  let token = readToken();
+  let latest = null;
   let held = { steer: 0, accel: 0, brake: 0 };
-  let sendTimer = null;
+  let pendingFork = 0;
   let predictor = null;
   let seq = 0;
-  let pendingFork = 0;
+  let sendTimer = null;
+  let reconnectTimer = null;
+  let reconnectDelay = 1000;
+  let closed = false;
+
+  function readToken() { try { return store?.getItem(TOKEN_KEY) || null; } catch { return null; } }
+  function writeToken(t) { try { store?.setItem(TOKEN_KEY, t); } catch { /* quota — non-fatal */ } }
+  function dropToken() { try { store?.removeItem(TOKEN_KEY); } catch { /* non-fatal */ } token = null; }
 
   function makePredictor(courseId) {
-    if (!opts.courseSet || !opts.carSet) return null; // no data -> raw-view fallback
-    return createPredictor(opts.courseSet, opts.carSet, {
-      courseId, seatId, carId, startTimeTicks: opts.startTimeTicks,
-    });
+    if (!opts.courseSet || !opts.carSet) return null;
+    return createPredictor(opts.courseSet, opts.carSet, { courseId, seatId, carId, startTimeTicks: opts.startTimeTicks });
+  }
+
+  function startSend() {
+    if (sendTimer) return;
+    sendTimer = setInterval(() => {
+      if (!ws || ws.readyState !== 1) return;
+      seq += 1;
+      ws.send(JSON.stringify({ type: C2S.INPUT, seq, ...held }));
+      if (predictor) predictor.predict(seq, pendingFork);
+      pendingFork = 0;
+    }, 1000 / TICK_HZ);
+    sendTimer.unref?.();
+  }
+  function stopSend() { if (sendTimer) { clearInterval(sendTimer); sendTimer = null; } }
+
+  function scheduleReconnect() {
+    if (closed) return;
+    clearTimeout(reconnectTimer);
+    reconnectTimer = setTimeout(connect, reconnectDelay);
+    reconnectTimer.unref?.();
+    reconnectDelay = Math.min(reconnectDelay * 1.7, 5000);
   }
 
   function connect() {
-    if (!WebSocketImpl) throw new Error("no WebSocket implementation available");
+    if (closed || !WebSocketImpl) return ws;
     ws = new WebSocketImpl(url);
     ws.onopen = () => {
-      ws.send(JSON.stringify({ type: C2S.JOIN, carId }));
-      sendTimer = setInterval(() => {
-        if (!ws || ws.readyState !== 1) return;
-        seq += 1;
-        ws.send(JSON.stringify({ type: C2S.INPUT, seq, ...held }));
-        if (predictor) predictor.predict(seq, pendingFork); // predict the same tick locally
-        pendingFork = 0;
-      }, 1000 / TICK_HZ);
-      sendTimer.unref?.();
+      // reclaim if we have a token, else a fresh join.
+      if (token) ws.send(JSON.stringify({ type: C2S.RECLAIM, token }));
+      else ws.send(JSON.stringify({ type: C2S.JOIN, carId }));
     };
     ws.onmessage = (ev) => {
       const msg = JSON.parse(typeof ev.data === "string" ? ev.data : ev.data.toString());
       if (msg.type === S2C.WELCOME) {
         seatId = msg.seatId;
+        if (msg.token) { token = msg.token; writeToken(token); }
         predictor = makePredictor(msg.courseId ?? 1);
+        reconnectDelay = 1000;
+        startSend();
       } else if (msg.type === S2C.VIEW) {
         latest = msg;
         if (predictor && msg.self) predictor.reconcile(msg.self, msg.ackSeq ?? 0);
+      } else if (msg.type === S2C.RECLAIM_FAILED) {
+        // The run ended while we were away (grace expired). Don't strand: clear
+        // the dead token, notify the UI, and drop back in as a fresh seat.
+        dropToken();
+        seatId = null;
+        predictor = null;
+        opts.onReclaimFailed?.();
+        if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.JOIN, carId }));
       }
     };
+    ws.onclose = () => { stopSend(); scheduleReconnect(); };
+    ws.onerror = () => { try { ws.close(); } catch { /* noop */ } };
     return ws;
+  }
+
+  if (doc) {
+    doc.addEventListener("visibilitychange", () => {
+      if (!closed && doc.visibilityState === "visible") {
+        clearTimeout(reconnectTimer);
+        if (!ws || ws.readyState > 1) connect(); // radio is back and the player is looking
+      }
+    });
   }
 
   return {
     connect,
     get seatId() { return seatId; },
+    get token() { return token; },
     setInput(input) { held = input; },
     setForkChoice(choice) {
-      pendingFork = choice; // predicted on the next send
+      pendingFork = choice;
       if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.FORK, choice }));
     },
-    // The local car is the PREDICTED self (instant); ghosts/traffic are the
-    // authoritative view. Falls back to the raw view self if no predictor.
     getState() {
       if (!latest || !latest.self) return { tick: 0, seats: [], ghosts: [], traffic: [], events: [] };
       const self = predictor ? predictor.self() : latest.self;
-      return {
-        tick: latest.tick,
-        seats: [self],
-        ghosts: latest.ghosts,
-        traffic: latest.traffic,
-        events: latest.events,
-      };
+      return { tick: latest.tick, seats: [self], ghosts: latest.ghosts, traffic: latest.traffic, events: latest.events };
     },
     close() {
-      if (sendTimer) clearInterval(sendTimer);
+      closed = true;
+      clearTimeout(reconnectTimer);
+      stopSend();
       if (ws) ws.close();
     },
   };

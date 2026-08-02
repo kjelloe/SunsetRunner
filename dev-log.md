@@ -835,3 +835,26 @@ road edge; player + traffic share coords), camera partial-follow CAM_FOLLOW 0.4.
 
 test/projection.test.js onRoad case (centre/edge/narrowing, real width). specs/32.
 Client-only, no repin. Gate: ./test.sh -> 139/139 + 4 Luau gates OK.
+
+---
+
+## marker-0034 — drop-in / reconnect multiplayer (2026-08-02)
+
+**From:** the Pitfall: Drop-Zone write-up (connection != presence).
+
+**Built (server bookkeeping, NOT hashed state -> no repin):**
+- server/game_room.js: presence map (seatId -> {token, disconnectedTick}),
+  markDisconnected, reclaim (idempotent + supersede), tick-based grace sweep
+  (graceTicks default 900); randomUUID tokens.
+- server/index.js: hello on connect; welcome carries token; reclaim handler
+  (supersede old socket, code 4000); close -> markDisconnected (not free).
+- shared/protocol.js: C2S.RECLAIM, S2C.HELLO/RECLAIM_FAILED, welcome token.
+- client/session_remote.js: persist token (localStorage, injectable), reclaim on
+  open, relentless reconnect (backoff 1s x1.7 cap 5s) + reconnect-on-visible,
+  reclaim_failed -> clear token + onReclaimFailed + fresh join (never strand).
+- test/reconnect.test.js: room grace unit + ws (drop/reclaim, grace expiry,
+  supersede) + session_remote persisted-token reclaim. specs/33.
+
+**Gate:** `./test.sh` -> 145/145 + 4 Luau gates OK.
+
+**Deferred:** server-restart persistence (spec #4), wake lock, browser strand test (#7).

@@ -5,8 +5,8 @@
 // server/* fails to load in the browser). See specs/19.
 // Client -> server: JOIN, INPUT.  Server -> client: WELCOME, VIEW, ERROR.
 
-export const C2S = { JOIN: "join", INPUT: "input", FORK: "forkChoice" };
-export const S2C = { WELCOME: "welcome", VIEW: "view", ERROR: "error" };
+export const C2S = { JOIN: "join", INPUT: "input", FORK: "forkChoice", RECLAIM: "reclaim" };
+export const S2C = { HELLO: "hello", WELCOME: "welcome", VIEW: "view", ERROR: "error", RECLAIM_FAILED: "reclaim_failed" };
 
 const TRISTATE = new Set([-1, 0, 1]);
 const BINARY = new Set([0, 1]);
@@ -35,6 +35,10 @@ export function parseMessage(raw) {
   if (msg.type === C2S.FORK) {
     if (!FORK_DIR.has(msg.choice)) return { ok: false, reason: "choice must be -1|1" };
     return { ok: true, msg: { type: C2S.FORK, choice: msg.choice } };
+  }
+  if (msg.type === C2S.RECLAIM) {
+    if (typeof msg.token !== "string" || msg.token.length === 0) return { ok: false, reason: "token required" };
+    return { ok: true, msg: { type: C2S.RECLAIM, token: msg.token } };
   }
   return { ok: false, reason: `unknown type: ${msg.type}` };
 }

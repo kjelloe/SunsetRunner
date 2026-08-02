@@ -63,7 +63,28 @@ export async function startServer(port = 8000, roomOpts = {}) {
   const wss = new WebSocketServer({ server });
   const clients = new Map(); // ws -> seatId
 
+  // Close any socket currently bound to a seat (reclaim supersede: same player,
+  // new tab/device wins) — code 4000.
+  function supersede(seatId, keepWs) {
+    for (const [otherWs, sid] of clients) {
+      if (sid === seatId && otherWs !== keepWs) {
+        clients.delete(otherWs);
+        try { otherWs.close(4000, "superseded"); } catch { /* already gone */ }
+      }
+    }
+  }
+
+  function sendWelcome(ws, seatId) {
+    ws.send(JSON.stringify({
+      type: S2C.WELCOME, seatId, token: room.tokenFor(seatId),
+      courseId: room.courseId, tick: room.tick,
+    }));
+  }
+
   wss.on("connection", (ws) => {
+    // A connected-but-not-joined client is a spectator with context (§ drop-in).
+    ws.send(JSON.stringify({ type: S2C.HELLO, courseId: room.courseId, tick: room.tick, seatCount: room.seatCount }));
+
     ws.on("message", (raw) => {
       const parsed = parseMessage(raw.toString());
       if (!parsed.ok) { ws.send(JSON.stringify({ type: S2C.ERROR, reason: parsed.reason })); return; }
@@ -72,7 +93,13 @@ export async function startServer(port = 8000, roomOpts = {}) {
         const seatId = room.addSeat(msg.carId);
         if (seatId === -1) { ws.send(JSON.stringify({ type: S2C.ERROR, reason: "room full" })); return; }
         clients.set(ws, seatId);
-        ws.send(JSON.stringify({ type: S2C.WELCOME, seatId, courseId: room.courseId ?? 1, tick: room.tick }));
+        sendWelcome(ws, seatId);
+      } else if (msg.type === C2S.RECLAIM) {
+        const seatId = room.reclaim(msg.token);
+        if (seatId === -1) { ws.send(JSON.stringify({ type: S2C.RECLAIM_FAILED })); return; }
+        supersede(seatId, ws); // old tab/zombie loses the seat
+        clients.set(ws, seatId);
+        sendWelcome(ws, seatId);
       } else if (msg.type === C2S.INPUT) {
         const seatId = clients.get(ws);
         if (seatId != null) room.setInput(seatId, msg);
@@ -81,9 +108,11 @@ export async function startServer(port = 8000, roomOpts = {}) {
         if (seatId != null) room.setForkChoice(seatId, msg.choice);
       }
     });
+
     ws.on("close", () => {
       const seatId = clients.get(ws);
-      if (seatId != null) room.removeSeat(seatId);
+      // Presence != connection: mark disconnected (grace window), don't free.
+      if (seatId != null && clients.get(ws) === seatId) room.markDisconnected(seatId);
       clients.delete(ws);
     });
   });
