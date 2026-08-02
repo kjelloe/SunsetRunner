@@ -9,13 +9,14 @@ import { loadTrafficConfig } from "../shared/traffic_data.js";
 import { TICK_HZ } from "../shared/constants.js";
 import { createLocalSession } from "./session_local.js";
 import { createRemoteSession } from "./session_remote.js";
-import { installKeyboard, readInput, readForkChoice } from "./input.js";
+import { installKeyboard, readInput, readForkChoice, readMenuNav } from "./input.js";
 import { installTouch, readTouchInput, readTouchFork, drawTouchControls, touchDetected } from "./touch_controls.js";
 import { render } from "./renderer_canvas.js";
 import { createCelebration } from "./celebration.js";
 import { computeBufferSize } from "./viewport.js";
 import { installWakeLock } from "./wakelock.js";
 import { drawConnectionBanner } from "./connection_banner.js";
+import { carChoiceFromParams, createCarSelect, drawCarSelect, carSelectTouchZone } from "./car_select.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -55,23 +56,57 @@ export async function boot(doc = document) {
 
   // ?mode=remote joins the ws server room; default is an offline local race.
   // ?course=N selects the course for a local race (default 1).
+  // ?car=N picks a car and skips the select overlay (else the overlay shows).
   const params = new URLSearchParams(location.search);
   const remote = params.get("mode") === "remote";
   const courseId = Number(params.get("course")) || 1;
-  const session = remote
-    ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks })
-    : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig });
-  if (remote) session.connect();
 
   installKeyboard(doc);
   installTouch(canvas);
   const showTouch = touchDetected() || params.get("touch") === "1";
   const celebration = createCelebration();
 
+  // Two phases: "select" shows the car picker; "race" runs the session. The
+  // session is not created until a car is chosen, so JOIN carries the choice.
+  const choice = carChoiceFromParams(params, carSet);
+  const sel = createCarSelect(carSet, choice.carId);
+  let phase = choice.fromUrl ? "race" : "select";
+  let session = null;
+
+  function start(carId) {
+    session = remote
+      ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks, carId })
+      : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig, carId });
+    if (remote) session.connect();
+    phase = "race";
+  }
+  if (phase === "race") start(choice.carId);
+
+  // Tap-to-choose on touch: left/right third cycles, centre confirms.
+  canvas.addEventListener?.("pointerup", (e) => {
+    if (phase !== "select") return;
+    const rect = canvas.getBoundingClientRect?.() || { left: 0, top: 0, width: view.w, height: view.h };
+    const x = ((e.clientX - rect.left) / (rect.width || 1)) * view.w;
+    const y = ((e.clientY - rect.top) / (rect.height || 1)) * view.h;
+    if (sel.handle(carSelectTouchZone(view, x, y)) === "confirm") start(sel.carId);
+  });
+
   let acc = 0;
   let last = performance.now();
   let frameCount = 0;
   function frame(now) {
+    // Drain menu-nav events every frame so the queue never leaks; only the
+    // select phase acts on them (arrow keys also steer during the race).
+    let ev;
+    while ((ev = readMenuNav()) !== null) {
+      if (phase === "select" && sel.handle(ev) === "confirm") { start(sel.carId); break; }
+    }
+    if (phase === "select") {
+      drawCarSelect(g, view, sel);
+      frameCount++;
+      requestAnimationFrame(frame);
+      return;
+    }
     const kb = readInput();
     const tc = readTouchInput();
     session.setInput({

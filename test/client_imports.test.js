@@ -18,6 +18,7 @@ test("client modules import cleanly and export their entry points", async () => 
   const viewport = await import("../client/viewport.js");
   const wakelock = await import("../client/wakelock.js");
   const banner = await import("../client/connection_banner.js");
+  const carSelect = await import("../client/car_select.js");
   const main = await import("../client/main.js");
 
   assert.equal(typeof projection.projectPoint, "function");
@@ -35,6 +36,8 @@ test("client modules import cleanly and export their entry points", async () => 
   assert.equal(typeof celebration.createCelebration, "function");
   assert.equal(typeof viewport.computeBufferSize, "function");
   assert.equal(typeof wakelock.installWakeLock, "function");
+  assert.equal(typeof carSelect.createCarSelect, "function");
+  assert.equal(typeof carSelect.drawCarSelect, "function");
   assert.equal(typeof banner.drawConnectionBanner, "function");
   assert.equal(typeof main.boot, "function");
 });

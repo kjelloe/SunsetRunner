@@ -971,3 +971,19 @@ untouched; only cars 2-4 changed).
   varied winners, analyze_sweep flag math; py test skips if python3 absent).
 
 Gate: ./test.sh -> 161/161 + 4 Luau gates OK.
+
+---
+
+## marker-0041 — car-select UI (2026-08-03)
+
+Client-only, no repin. Makes the roster playable; the carId path already existed.
+- client/car_select.js: carChoiceFromParams (?car=N skips overlay), createCarSelect
+  (wrapping cursor + handle/confirm), drawCarSelect (name + stat bars),
+  carSelectTouchZone (tap-to-choose).
+- client/input.js readMenuNav(): edge-triggered left/right/confirm; frame loop
+  drains it every frame (no leak) but only the select phase acts.
+- client/main.js: two-phase boot (select -> race); session created only once a
+  car is chosen so JOIN carries the choice; pointerup tap wiring.
+- test/car_select.test.js + import gate; specs/39.
+
+Gate: ./test.sh -> 168/168 + 4 Luau gates OK.

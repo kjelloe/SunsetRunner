@@ -4,12 +4,13 @@
 
 const keys = new Set();
 const forkQueue = []; // edge-triggered fork presses (-1 left / 1 right)
+const menuQueue = []; // edge-triggered menu nav ("left"/"right"/"confirm")
 
 // Keys we drive with — both WASD and arrows. preventDefault stops the arrow keys
 // (and space) from scrolling the page while driving.
 const DRIVE_KEYS = new Set([
   "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight",
-  "KeyW", "KeyA", "KeyS", "KeyD", "KeyQ", "KeyE", "Space",
+  "KeyW", "KeyA", "KeyS", "KeyD", "KeyQ", "KeyE", "Space", "Enter",
 ]);
 
 export function installKeyboard(target) {
@@ -17,6 +18,9 @@ export function installKeyboard(target) {
     if (!keys.has(e.code)) {
       if (e.code === "KeyQ") forkQueue.push(-1);
       else if (e.code === "KeyE") forkQueue.push(1);
+      if (e.code === "ArrowLeft" || e.code === "KeyA") menuQueue.push("left");
+      else if (e.code === "ArrowRight" || e.code === "KeyD") menuQueue.push("right");
+      else if (e.code === "Enter" || e.code === "Space") menuQueue.push("confirm");
     }
     keys.add(e.code);
     if (DRIVE_KEYS.has(e.code) && e.preventDefault) e.preventDefault();
@@ -27,6 +31,12 @@ export function installKeyboard(target) {
 // Pop the next queued fork press (0 if none) — discrete, not held.
 export function readForkChoice() {
   return forkQueue.length ? forkQueue.shift() : 0;
+}
+
+// Pop the next queued menu-nav event (null if none) — discrete, not held.
+// Used by the pre-race car-select overlay; ignored during the race.
+export function readMenuNav() {
+  return menuQueue.length ? menuQueue.shift() : null;
 }
 
 // Reduce current keys to { steer, accel, brake } (all integers).
