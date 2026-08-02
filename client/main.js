@@ -15,6 +15,7 @@ import { render } from "./renderer_canvas.js";
 import { createCelebration } from "./celebration.js";
 import { computeBufferSize } from "./viewport.js";
 import { installWakeLock } from "./wakelock.js";
+import { drawConnectionBanner } from "./connection_banner.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -69,6 +70,7 @@ export async function boot(doc = document) {
 
   let acc = 0;
   let last = performance.now();
+  let frameCount = 0;
   function frame(now) {
     const kb = readInput();
     const tc = readTouchInput();
@@ -94,6 +96,8 @@ export async function boot(doc = document) {
     celebration.update(view);
     celebration.draw(g, view);
     if (showTouch) drawTouchControls(g, view);
+    if (remote) drawConnectionBanner(g, view, session.status, frameCount);
+    frameCount++;
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);

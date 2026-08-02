@@ -38,7 +38,8 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
       client reconnect backoff + reconnect-on-visible, never-strand (marker-0034)
 - [x] server-restart persistence — serialize + restore, deploy handoff (marker-0037)
 - [x] screen wake lock + high-DPR canvas buffer (marker-0038)
-- [ ] browser-level strand test (#7); reconnect overlay
+- [x] reconnect UI: connection status + banner (marker-0039)
+- [ ] browser-level strand test (#7); dedicated rejoin button
 
 ### Playtest polish (from real playtests)
 

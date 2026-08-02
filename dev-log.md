@@ -934,3 +934,17 @@ Client-only, no repin.
   + import gate; specs/36.
 
 Gate: ./test.sh -> 154/154 + 4 Luau gates OK.
+
+---
+
+## marker-0039 — reconnect UI (connection banner) (2026-08-02)
+
+Client-only, no repin. Surfaces the reconnect netcode.
+- session_remote: status state machine (idle->connecting->live; live->reconnecting
+  on drop; ->run_ended on refused reclaim) + onStatus callback + status getter.
+- client/connection_banner.js: bannerText(status) + drawConnectionBanner (pulsing
+  centre banner); main.js draws it each frame in remote mode.
+- test/connection_banner.test.js (text mapping, draw gating, connecting->live on
+  a real server) + import gate; specs/37.
+
+Gate: ./test.sh -> 157/157 + 4 Luau gates OK.

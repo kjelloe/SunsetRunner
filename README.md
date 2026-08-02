@@ -2,7 +2,7 @@
 
 **A deterministic, server-authoritative arcade road racer for the browser — with a byte-identical Roblox/Luau twin.**
 
-![tests](https://img.shields.io/badge/tests-154%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-157%20passing-brightgreen)
 ![luau parity](https://img.shields.io/badge/Luau%20parity-4%20gates-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A518-informational)
 ![build](https://img.shields.io/badge/build-none%20(vanilla%20ESM)-blue)
@@ -101,7 +101,7 @@ specs/    the design brief + numbered decision docs
 
 ## 🧪 Testing & determinism
 
-- `npm test` — 154 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
+- `npm test` — 157 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
 - `./test.sh` — adds the Luau parity gates ([`lune`](https://lune-org.github.io/docs) required; skipped gracefully if absent).
 - `node debugging/replay.mjs` — replay a scenario as a race report.
 - `node debugging/sim_campaign.mjs` — AI "do systems fire?" gate across 5 seeds.
@@ -114,7 +114,7 @@ specs/    the design brief + numbered decision docs
 
 Milestones 1–5 are functionally complete: solo run, server room, 8-player ghost race, collision/traffic/AI, and content (forks, curve physics, sprites, mobile, finish celebration). The engine is deterministic, Luau-twinned, and provably fair.
 
-Open work: native-browser visual/perf tuning, music, and a reconnect overlay. Mobile polish (wake lock, high-DPR crispness) is done. Reconnect/drop-in and server-restart persistence (lossless deploys) are done. See [`plan-implementation-order.md`](plan-implementation-order.md) and [`dev-log.md`](dev-log.md).
+Open work: native-browser visual/perf tuning, music. Reconnect UI, mobile polish (wake lock, high-DPR crispness) is done. Reconnect/drop-in and server-restart persistence (lossless deploys) are done. See [`plan-implementation-order.md`](plan-implementation-order.md) and [`dev-log.md`](dev-log.md).
 
 ---
 

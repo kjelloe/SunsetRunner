@@ -30,6 +30,8 @@ export function createRemoteSession(url, opts = {}) {
   let reconnectTimer = null;
   let reconnectDelay = 1000;
   let closed = false;
+  let status = "idle"; // idle | connecting | live | reconnecting | run_ended
+  function setStatus(s) { if (s !== status) { status = s; opts.onStatus?.(s); } }
 
   function readToken() { try { return store?.getItem(TOKEN_KEY) || null; } catch { return null; } }
   function writeToken(t) { try { store?.setItem(TOKEN_KEY, t); } catch { /* quota — non-fatal */ } }
@@ -63,6 +65,7 @@ export function createRemoteSession(url, opts = {}) {
 
   function connect() {
     if (closed || !WebSocketImpl) return ws;
+    if (status !== "reconnecting") setStatus("connecting");
     ws = new WebSocketImpl(url);
     ws.onopen = () => {
       // reclaim if we have a token, else a fresh join.
@@ -76,6 +79,7 @@ export function createRemoteSession(url, opts = {}) {
         if (msg.token) { token = msg.token; writeToken(token); }
         predictor = makePredictor(msg.courseId ?? 1);
         reconnectDelay = 1000;
+        setStatus("live");
         startSend();
       } else if (msg.type === S2C.VIEW) {
         latest = msg;
@@ -86,11 +90,12 @@ export function createRemoteSession(url, opts = {}) {
         dropToken();
         seatId = null;
         predictor = null;
+        setStatus("run_ended");
         opts.onReclaimFailed?.();
         if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.JOIN, carId }));
       }
     };
-    ws.onclose = () => { stopSend(); scheduleReconnect(); };
+    ws.onclose = () => { stopSend(); if (!closed) setStatus("reconnecting"); scheduleReconnect(); };
     ws.onerror = () => { try { ws.close(); } catch { /* noop */ } };
     return ws;
   }
@@ -108,6 +113,7 @@ export function createRemoteSession(url, opts = {}) {
     connect,
     get seatId() { return seatId; },
     get token() { return token; },
+    get status() { return status; },
     setInput(input) { held = input; },
     setForkChoice(choice) {
       pendingFork = choice;
