@@ -19,7 +19,7 @@ No framework. No build step. No bundler. Just Node.js and vanilla ES modules.
 - 🏎️ **Pseudo-3D road** — scrolling rumble strips, lane markers, hills, curves that physically push the car (brake before the turn, steer through it).
 - ⏱️ **Checkpoint timer** — classic arcade extend-your-time loop; finish or time out.
 - 🚗 **Traffic & collisions** — deterministic segment-seeded traffic, crash-and-recover, and optional same-segment rival bumps.
-- 🍴 **Branching forks** — commit a direction with **Q/E**; three courses (a coast, a fork, a mirror-fair valley).
+- 🍴 **Branching forks** — commit a direction with **Q/E**; three hilly courses — a coast with a fork, a branch, a mirror-fair valley.
 - 🌐 **Drop-in & reconnect multiplayer** — Node `ws` server, up to 8 seats, ghost rivals, live standings, **client-side prediction**, and **token-reclaim reconnect** (survives mobile backgrounding).
 - 📱 **Mobile-ready** — on-screen arrow pad, correct touch mapping on CSS-scaled canvases, no page scroll/zoom while driving.
 - 🎉 **Finish celebration** — confetti + fireworks.

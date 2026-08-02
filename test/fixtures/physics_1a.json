@@ -1,14 +1,14 @@
 {
-  "note": "single-car physics golden. REPINNED at marker-0032 (driving-feel pass: crash stun/immunity + stronger curve/steer). Seed 12345, sunset_coast, red_sprint, accel from tick 1.",
+  "note": "single-car physics golden. REPINNED at marker-0036 (course 1 restructured with hills + a fork; default-left path). Seed 12345, sunset_coast, red_sprint, accel from tick 1.",
   "seed": 12345,
   "courseId": 1,
   "carId": 1,
   "accelRun": {
-    "hashAtTick10": "170aa301c509796d",
-    "hashAtTick100": "d2b020b8ab35cf64",
-    "finishTick": 279,
-    "hashAtTick500": "9d47b716b3de26af",
-    "checkpointTick": 119,
+    "hashAtTick10": "a0303900554ef6a8",
+    "hashAtTick100": "e4bad669a5f29321",
+    "finishTick": 297,
+    "hashAtTick500": "d24415875a83f23a",
+    "checkpointTick": 108,
     "checkpointBonus": 600,
     "finalTimerTicks": 1822,
     "initialTrafficCount": 4

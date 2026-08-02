@@ -875,3 +875,24 @@ CURVED road centre (+ hill) at that depth; render() builds the strip list once a
 traffic/scenery/ghosts ride the bends and rises. test/projection.test.js curve case.
 
 Client-only, no repin. Gate: ./test.sh -> 146/146 + 4 Luau gates OK.
+
+---
+
+## marker-0036 — hills + a fork on the default course (2026-08-02)
+
+**From:** "make hills and the first fork".
+
+**Hills (renderer-only):** hillProfile is direct elevation; HILL_SCALE 40->180 so
+crests/dips read. Added hills to all 3 courses. Hills don't touch engine hashes
+(fork_1a + mirror/traffic-swap fairness byte-identical) — only the content pin.
+
+**First fork (course 1):** sunset_coast restructured 1 -> 2(cp) -> 3(fork) ->
+{4 left | 5 right} -> 6 -> finish, hills throughout, bonus checkpoint on the right
+branch. Default course now hits a fork in normal play.
+
+**REPINS:** content a483515d79677564; physics_1a; checkpoint_1a 96c7d18179ba5b92
+(default-left finish 297, cp@108); collision_1a d2f7696101148e38; AI
+336dc614cd69a85a (297). fork_1a UNCHANGED. road_data.test updated (16 segments,
+new 1->2->3-fork topology, 1800-strip walk). 4 Luau gates re-verified.
+
+Gate: ./test.sh -> 146/146 + 4 Luau gates OK. specs/34.

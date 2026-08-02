@@ -37,8 +37,9 @@ test("camera lateral offset shifts the projected point opposite", () => {
 });
 
 test("forwardStrips walks the whole course then stops at finish", () => {
-  const total = 600 + 500 + 400; // sunset_coast strip total
-  const strips = forwardStrips(courseSet, 1, 0, 2000);
+  // sunset_coast default-left path: 1(500) -> 2(400) -> 3 fork -> 4(400) -> 6(300)
+  const total = 500 + 400 + 200 + 400 + 300;
+  const strips = forwardStrips(courseSet, 1, 0, 3000);
   assert.equal(strips.length, total);
   assert.equal(strips[0].worldZ, 256);
 });

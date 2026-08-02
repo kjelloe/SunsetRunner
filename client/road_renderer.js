@@ -8,6 +8,8 @@ import { ROAD_UNIT } from "../shared/constants.js";
 import { getSegment, nextSegment } from "../shared/road_data.js";
 import { projectPoint } from "./projection.js";
 
+const HILL_SCALE = 180; // world-units of elevation per hillProfile step (visible crests/dips)
+
 export function forwardStrips(courseSet, segmentId, roadZ, count) {
   const out = [];
   if (segmentId === -1) return out;
@@ -33,8 +35,9 @@ export function forwardStrips(courseSet, segmentId, roadZ, count) {
     curveDx += curve;
     curveX += curveDx;
     // Sub-strip offset (ROAD_UNIT - frac) makes the nearest strip slide toward
-    // the camera as the car advances -> the road scrolls smoothly.
-    out.push({ k, worldStrip, worldZ: k * ROAD_UNIT + (ROAD_UNIT - frac), curveX, hillY: hill * 40 });
+    // the camera as the car advances -> the road scrolls smoothly. hillProfile is
+    // direct elevation (rises to a crest and back); HILL_SCALE makes it read.
+    out.push({ k, worldStrip, worldZ: k * ROAD_UNIT + (ROAD_UNIT - frac), curveX, hillY: hill * HILL_SCALE });
     worldStrip++;
     stripIdx++;
   }

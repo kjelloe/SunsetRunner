@@ -24,7 +24,7 @@ test("data/roads.json loads and indexes the sunset_coast course", () => {
   const course = getCourse(cs, 1);
   assert.equal(course.nameKey, "course.sunset_coast");
   assert.equal(course.startSegment, 1);
-  assert.equal(cs.segmentsById.size, 13); // 3 + 5 + 5
+  assert.equal(cs.segmentsById.size, 16); // sunset_coast 6 + canyon_split 5 + mirror_valley 5
 });
 
 test("canyon_split (course 2) forks at seg 11 and rejoins at seg 14", () => {
@@ -37,11 +37,15 @@ test("canyon_split (course 2) forks at seg 11 and rejoins at seg 14", () => {
   assert.equal(nextSegment(cs, 14), -1); // finish
 });
 
-test("linear segments chain start -> 2 -> 3 -> finish", () => {
+test("sunset_coast chains 1 -> 2 -> 3(fork) -> {4|5} -> 6 -> finish", () => {
   const cs = loadCourseSet(roadsJson);
   assert.equal(nextSegment(cs, 1), 2);
   assert.equal(nextSegment(cs, 2), 3);
-  assert.equal(nextSegment(cs, 3), -1); // finish
+  assert.equal(nextSegment(cs, 3, FORK_LEFT), 4);  // the first fork
+  assert.equal(nextSegment(cs, 3, FORK_RIGHT), 5);
+  assert.equal(nextSegment(cs, 4), 6);             // branches rejoin
+  assert.equal(nextSegment(cs, 5), 6);
+  assert.equal(nextSegment(cs, 6), -1);            // finish
 });
 
 test("checkpoint lives on segment 2", () => {
@@ -120,5 +124,5 @@ test("sunset_coast course content hash is pinned", () => {
     w.writeUtf8U16(c.nameKey);
   }
   const h = computeFnv1a64(w.toBytes());
-  assert.equal(hashToHex64(h.hashHi, h.hashLo), "7844aea058de58fc");
+  assert.equal(hashToHex64(h.hashHi, h.hashLo), "a483515d79677564");
 });

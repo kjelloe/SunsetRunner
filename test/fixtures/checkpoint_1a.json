@@ -1,5 +1,5 @@
 {
-  "note": "checkpoint_1a milestone fixture. Last repinned: driving-feel pass marker-0032 (crash stun + stronger curve/steer); accel-only finish 279",
+  "note": "checkpoint_1a milestone fixture. Last repinned: course 1 restructured with hills + a fork (marker-0036); default-left path finishes tick 297",
   "scenario": {
     "name": "checkpoint_1a",
     "seed": 12345,
@@ -23,28 +23,28 @@
   },
   "expected": {
     "hashes": {
-      "10": "170aa301c509796d",
-      "100": "d2b020b8ab35cf64",
-      "215": "8cc21e22e251b289"
+      "10": "a0303900554ef6a8",
+      "100": "e4bad669a5f29321",
+      "215": "1ac285db87777503"
     },
-    "finalHash": "815e8a04c44fc59a",
-    "finishTick": 279,
+    "finalHash": "96c7d18179ba5b92",
+    "finishTick": 297,
     "census": [
       {
         "type": "checkpoint",
+        "tick": 108
+      },
+      {
+        "type": "collision",
         "tick": 119
       },
       {
         "type": "collision",
-        "tick": 164
-      },
-      {
-        "type": "collision",
-        "tick": 214
+        "tick": 175
       },
       {
         "type": "finish",
-        "tick": 279
+        "tick": 297
       }
     ]
   }
