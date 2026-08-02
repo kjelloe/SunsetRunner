@@ -1,6 +1,6 @@
 # Playtest checklist — Sunset Runner
 
-The automated suite (`./test.sh`, 146 tests + 4 Luau parity gates) covers engine
+The automated suite (`./test.sh`, 150 tests + 4 Luau parity gates) covers engine
 determinism, the reducer, server room, fairness, and client module loading. It
 does **NOT** cover anything you can only judge with a real browser: visual feel,
 frame rate, camera tuning, touch ergonomics, audio, and real-network multiplayer.
@@ -118,11 +118,14 @@ Open TWO browser tabs at `http://localhost:8000/client/index.html?mode=remote`.
   first tab's socket closes); one seat, latest tab wins.
 - [ ] **[bug]** Stay backgrounded past the grace window (default 45 s) → on return
   you drop back in as a fresh seat, never a frozen HUD.
+- [ ] **[bug]** Restart the server (`npm start`, then Ctrl-C, then `npm start`
+  again) mid-race → the browser reconnects and reclaims the SAME run within a few
+  seconds (server-restart persistence, marker-0037; state in `.state/session.json`).
 
 ## 7. Determinism / regression sanity
 
 - [ ] **[bug]** `node debugging/replay.mjs` prints a race report ending with a
-  `finish` event (checkpoint_1a accel-only finishes at tick 279).
+  `finish` event (checkpoint_1a accel-only finishes at tick 297).
 - [ ] **[bug]** `node debugging/sim_campaign.mjs` prints 5 seeds, all finishing,
   "systems fired" true for finish/checkpoint/collision.
 - [ ] **[bug]** `node debugging/fairness.mjs` prints mirror = FAIR and

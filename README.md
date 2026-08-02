@@ -101,7 +101,7 @@ specs/    the design brief + numbered decision docs
 
 ## 🧪 Testing & determinism
 
-- `npm test` — 139 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
+- `npm test` — 150 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
 - `./test.sh` — adds the Luau parity gates ([`lune`](https://lune-org.github.io/docs) required; skipped gracefully if absent).
 - `node debugging/replay.mjs` — replay a scenario as a race report.
 - `node debugging/sim_campaign.mjs` — AI "do systems fire?" gate across 5 seeds.
@@ -114,7 +114,7 @@ specs/    the design brief + numbered decision docs
 
 Milestones 1–5 are functionally complete: solo run, server room, 8-player ghost race, collision/traffic/AI, and content (forks, curve physics, sprites, mobile, finish celebration). The engine is deterministic, Luau-twinned, and provably fair.
 
-Open work: native-browser visual/perf tuning, music,  Reconnect/drop-in and server-restart persistence (lossless deploys) are done. See [`plan-implementation-order.md`](plan-implementation-order.md) and [`dev-log.md`](dev-log.md).
+Open work: native-browser visual/perf tuning, music, and mobile polish (wake lock, high-DPR). Reconnect/drop-in and server-restart persistence (lossless deploys) are done. See [`plan-implementation-order.md`](plan-implementation-order.md) and [`dev-log.md`](dev-log.md).
 
 ---
 
