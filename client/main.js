@@ -18,6 +18,7 @@ import { installWakeLock } from "./wakelock.js";
 import { drawConnectionBanner } from "./connection_banner.js";
 import { carChoiceFromParams, createCarSelect, drawCarSelect, carSelectTouchZone } from "./car_select.js";
 import { createAudio } from "./audio.js";
+import { loadScenery } from "./scenery.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -43,17 +44,19 @@ export async function boot(doc = document) {
   }
   installWakeLock(); // keep the phone awake while driving
 
-  const [roads, cars, checkpoints, traffic, assets] = await Promise.all([
+  const [roads, cars, checkpoints, traffic, assets, sceneryJson] = await Promise.all([
     fetch("../data/roads.json").then((r) => r.json()),
     fetch("../data/cars.json").then((r) => r.json()),
     fetch("../data/checkpoints.json").then((r) => r.json()),
     fetch("../data/traffic.json").then((r) => r.json()),
     fetch("../data/assets.json").then((r) => r.json()),
+    fetch("../data/scenery.json").then((r) => r.json()).catch(() => null),
   ]);
   const courseSet = loadCourseSet(roads);
   const carSet = loadCarSet(cars);
   const { startTimeTicks } = loadCheckpointConfig(checkpoints);
   const trafficConfig = loadTrafficConfig(traffic);
+  const scenery = loadScenery(sceneryJson);
 
   // ?mode=remote joins the ws server room; default is an offline local race.
   // ?course=N selects the course for a local race (default 1).
@@ -135,7 +138,7 @@ export async function boot(doc = document) {
       }
     }
     const state = session.getState();
-    if (state.seats.length) render(g, view, state, courseSet, assets);
+    if (state.seats.length) render(g, view, state, courseSet, assets, scenery);
     // Audio: engine pitch tracks speed; SFX fire on state edges (crash entered,
     // finish crossed, timer bumped up by a checkpoint).
     const self = state.seats[0];

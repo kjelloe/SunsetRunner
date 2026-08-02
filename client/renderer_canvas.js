@@ -12,6 +12,7 @@ import { projectPoint, CAMERA } from "./projection.js";
 import { ROAD_HALF_WIDTH } from "../engine/car_physics.js";
 import { ROAD_UNIT } from "../shared/constants.js";
 import { getSegment } from "../shared/road_data.js";
+import { themeFor } from "./scenery.js";
 
 const TRAFFIC_SPRITE = { 1: "traffic_sedan", 2: "traffic_truck" };
 const CAM_FOLLOW = 0.4;     // camera tracks 40% of the player's lateral position
@@ -34,20 +35,25 @@ function sampleStrip(strips, dz) {
   return { curveX: strips[k].curveX, hillY: strips[k].hillY };
 }
 
-export function render(g, view, state, courseSet, assets) {
+export function render(g, view, state, courseSet, assets, scenery) {
   const seat = state.seats[0];
   const camX = seat.laneX * CAM_FOLLOW;
   const strips = forwardStrips(courseSet, seat.segmentId, seat.roadZ, 220);
 
+  // Per-leg theme (beach/canyon/forest after forks) off the current segment's
+  // scenerySet — renderer-only, no engine coupling.
+  const seg = seat.segmentId !== -1 ? getSegment(courseSet, seat.segmentId) : null;
+  const theme = themeFor(scenery, seg ? seg.scenerySet : 0);
+
   const sky = g.createLinearGradient(0, 0, 0, view.h / 2);
-  sky.addColorStop(0, "#2b1a54");
-  sky.addColorStop(1, "#ff7e5f");
+  sky.addColorStop(0, theme.sky[0]);
+  sky.addColorStop(1, theme.sky[1]);
   g.fillStyle = sky;
   g.fillRect(0, 0, view.w, view.h);
 
-  drawRoad(g, view, seat, courseSet, camX);
+  drawRoad(g, view, seat, courseSet, camX, theme);
   drawHaze(g, view);
-  if (assets) drawScenery(g, view, camX, assets, strips);
+  if (assets) drawScenery(g, view, camX, assets, strips, theme);
   drawTraffic(g, view, state, camX, assets, strips);
   drawGhosts(g, view, state, camX, strips);
   drawPlayerCar(g, view, seat, camX, assets);
@@ -55,16 +61,17 @@ export function render(g, view, state, courseSet, assets) {
   drawForkHint(g, view, seat, courseSet);
 }
 
-const SCENERY_EVERY = 10;
-function drawScenery(g, view, camX, assets, strips) {
+function drawScenery(g, view, camX, assets, strips, theme) {
+  const every = theme.every;
+  const kinds = theme.sprites;
   for (let i = strips.length - 1; i >= 0; i--) {
     const s = strips[i];
-    if (s.worldStrip % SCENERY_EVERY !== 0) continue;
-    const bucket = Math.floor(s.worldStrip / SCENERY_EVERY);
+    if (s.worldStrip % every !== 0) continue;
+    const bucket = Math.floor(s.worldStrip / every);
     const side = bucket % 2 === 0 ? -1 : 1;
     const o = onRoad(view, camX, s.worldZ, side * ROAD_HALF_WIDTH * 1.7, s.curveX, s.hillY); // off the (curved) shoulder
     if (o.half <= 0) continue;
-    const sprite = assets.sprites[bucket % 3 === 0 ? "sign" : "palm"];
+    const sprite = assets.sprites[kinds[bucket % kinds.length]];
     drawSprite(g, sprite, o.x, o.y, spriteScale(o.half, sprite, 0.9));
   }
 }

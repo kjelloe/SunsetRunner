@@ -1020,3 +1020,22 @@ input-validated engine.
   specs/41.
 
 Gate: ./test.sh -> 180/180 + 4 Luau gates OK.
+
+---
+
+## marker-0044 — per-leg scenery themes (2026-08-03)
+
+Renderer-only. CONTENT REPIN (conscious): spread segment scenerySet ids so fork
+branches differ -> content hash a483515d79677564 -> 4cdff42d55b0f6af. scenerySet
+is NOT in the engine state hash, so all engine goldens + 4 Luau gates UNCHANGED.
+- data/roads.json: post-fork legs now scenerySet 2/3/4 (beach/canyon/forest) per
+  course; opening legs stay 1 (sunset).
+- data/scenery.json: scenerySet -> {sky, grassA/B, rumbleA, sprites[], every}.
+- client/scenery.js loadScenery/themeFor (validate + fallback chain, never null).
+- renderer_canvas.render(...,scenery): themed sky + drawRoad(theme) grass/rumble
+  + drawScenery(theme) sprite kinds/density; road_renderer.drawRoad takes theme
+  (defaults DEFAULT_THEME). main.js fetches data/scenery.json.
+- test/scenery.test.js (parse/backfill/repair/mapping/fallback + every shipped
+  segment resolves) + road_data content-hash repin + import gate; specs/42.
+
+Gate: ./test.sh -> 185/185 + 4 Luau gates OK.

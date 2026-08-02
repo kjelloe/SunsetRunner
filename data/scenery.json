@@ -1,0 +1,37 @@
+{
+  "default": 1,
+  "themes": {
+    "1": {
+      "name": "sunset",
+      "sky": ["#2b1a54", "#ff7e5f"],
+      "grassA": "#2f9e42", "grassB": "#279137",
+      "rumbleA": "#d63a3a",
+      "sprites": ["palm", "palm", "sign"],
+      "every": 10
+    },
+    "2": {
+      "name": "beach",
+      "sky": ["#1a6ab5", "#7fd0e8"],
+      "grassA": "#e4d29a", "grassB": "#d8c488",
+      "rumbleA": "#e0664a",
+      "sprites": ["palm", "palm", "palm", "sign"],
+      "every": 7
+    },
+    "3": {
+      "name": "canyon",
+      "sky": ["#5a2a44", "#e8935f"],
+      "grassA": "#b5713a", "grassB": "#a5632f",
+      "rumbleA": "#caa24a",
+      "sprites": ["sign", "palm"],
+      "every": 12
+    },
+    "4": {
+      "name": "forest",
+      "sky": ["#173d2f", "#7bb26a"],
+      "grassA": "#2f7e42", "grassB": "#256e37",
+      "rumbleA": "#c85c3a",
+      "sprites": ["palm", "palm", "palm", "palm", "sign"],
+      "every": 6
+    }
+  }
+}

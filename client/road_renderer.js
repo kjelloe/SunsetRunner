@@ -7,6 +7,7 @@
 import { ROAD_UNIT } from "../shared/constants.js";
 import { getSegment, nextSegment } from "../shared/road_data.js";
 import { projectPoint } from "./projection.js";
+import { DEFAULT_THEME } from "./scenery.js";
 
 const HILL_SCALE = 180; // world-units of elevation per hillProfile step (visible crests/dips)
 
@@ -46,7 +47,7 @@ export function forwardStrips(courseSet, segmentId, roadZ, count) {
 
 const DRAW_STRIPS = 220;
 
-export function drawRoad(g, view, seat, courseSet, camX = 0) {
+export function drawRoad(g, view, seat, courseSet, camX = 0, theme = DEFAULT_THEME) {
   const strips = forwardStrips(courseSet, seat.segmentId, seat.roadZ, DRAW_STRIPS);
 
   for (let i = strips.length - 1; i >= 0; i--) {
@@ -59,13 +60,13 @@ export function drawRoad(g, view, seat, courseSet, camX = 0) {
     const bh = Math.max(p.y, prev.y) - top + 1;
     const band = s.worldStrip % 2 === 0;
 
-    // grass (two scrolling greens, whole width)
-    g.fillStyle = band ? "#2f9e42" : "#279137";
+    // grass/ground (two scrolling shades, whole width) — themed per leg
+    g.fillStyle = band ? theme.grassA : theme.grassB;
     g.fillRect(0, top, view.w, bh);
 
-    // rumble: a red/white band wider than the road, then the road painted on top
+    // rumble: a themed/white band wider than the road, then the road on top
     const rw = Math.max(2, p.w * 0.18);
-    g.fillStyle = band ? "#d63a3a" : "#f4f4f4";
+    g.fillStyle = band ? theme.rumbleA : "#f4f4f4";
     g.fillRect(p.x - p.w - rw, top, p.w * 2 + rw * 2, bh);
 
     // road

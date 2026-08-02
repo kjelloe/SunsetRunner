@@ -124,5 +124,5 @@ test("sunset_coast course content hash is pinned", () => {
     w.writeUtf8U16(c.nameKey);
   }
   const h = computeFnv1a64(w.toBytes());
-  assert.equal(hashToHex64(h.hashHi, h.hashLo), "a483515d79677564");
+  assert.equal(hashToHex64(h.hashHi, h.hashLo), "4cdff42d55b0f6af");
 });

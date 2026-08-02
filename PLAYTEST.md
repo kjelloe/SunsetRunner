@@ -47,6 +47,9 @@ Open `http://localhost:8000/client/index.html`.
   **fork** after the checkpoint — you reach it in normal play (marker-0036).
 - [ ] **[feel]** Are the hills readable (crest hides the road beyond, then reveals)?
   Too gentle / too steep? (`HILL_SCALE` 180 is a sim-blind first pass.)
+- [ ] **[feel]** After the fork, the two branches and the merge leg look
+  **distinct** — sky/ground palette and roadside density change (beach / canyon /
+  forest, marker-0044). Drive both branches: do they read as different places?
 
 ## 2. Curves & drift — feel
 

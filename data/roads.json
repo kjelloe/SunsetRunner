@@ -1,8 +1,20 @@
 {
   "courses": [
-    { "id": 1, "nameKey": "course.sunset_coast", "startSegment": 1 },
-    { "id": 2, "nameKey": "course.canyon_split", "startSegment": 10 },
-    { "id": 3, "nameKey": "course.mirror_valley", "startSegment": 20 }
+    {
+      "id": 1,
+      "nameKey": "course.sunset_coast",
+      "startSegment": 1
+    },
+    {
+      "id": 2,
+      "nameKey": "course.canyon_split",
+      "startSegment": 10
+    },
+    {
+      "id": 3,
+      "nameKey": "course.mirror_valley",
+      "startSegment": 20
+    }
   ],
   "segments": [
     {
@@ -12,8 +24,25 @@
       "next": 2,
       "forkLeft": -1,
       "forkRight": -1,
-      "curveProfile": [0, 0, 1, 2, 2, 1, 0],
-      "hillProfile": [0, 0, 1, 2, 3, 2, 1, 0],
+      "curveProfile": [
+        0,
+        0,
+        1,
+        2,
+        2,
+        1,
+        0
+      ],
+      "hillProfile": [
+        0,
+        0,
+        1,
+        2,
+        3,
+        2,
+        1,
+        0
+      ],
       "trafficSeed": 101,
       "scenerySet": 1
     },
@@ -24,8 +53,21 @@
       "next": 3,
       "forkLeft": -1,
       "forkRight": -1,
-      "curveProfile": [0, -1, -2, -1, 0],
-      "hillProfile": [0, -1, -2, -2, -1, 0],
+      "curveProfile": [
+        0,
+        -1,
+        -2,
+        -1,
+        0
+      ],
+      "hillProfile": [
+        0,
+        -1,
+        -2,
+        -2,
+        -1,
+        0
+      ],
       "trafficSeed": 202,
       "scenerySet": 1
     },
@@ -36,8 +78,12 @@
       "next": -1,
       "forkLeft": 4,
       "forkRight": 5,
-      "curveProfile": [0],
-      "hillProfile": [0],
+      "curveProfile": [
+        0
+      ],
+      "hillProfile": [
+        0
+      ],
       "trafficSeed": 103,
       "scenerySet": 1
     },
@@ -48,8 +94,21 @@
       "next": 6,
       "forkLeft": -1,
       "forkRight": -1,
-      "curveProfile": [0, 1, 2, 1, 0],
-      "hillProfile": [0, 0, 1, 2, 1, 0],
+      "curveProfile": [
+        0,
+        1,
+        2,
+        1,
+        0
+      ],
+      "hillProfile": [
+        0,
+        0,
+        1,
+        2,
+        1,
+        0
+      ],
       "trafficSeed": 104,
       "scenerySet": 2
     },
@@ -60,10 +119,24 @@
       "next": 6,
       "forkLeft": -1,
       "forkRight": -1,
-      "curveProfile": [0, -1, -2, -1, 0],
-      "hillProfile": [0, 1, 2, 3, 2, 1, 0],
+      "curveProfile": [
+        0,
+        -1,
+        -2,
+        -1,
+        0
+      ],
+      "hillProfile": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1,
+        0
+      ],
       "trafficSeed": 105,
-      "scenerySet": 2
+      "scenerySet": 3
     },
     {
       "id": 6,
@@ -72,10 +145,18 @@
       "next": -1,
       "forkLeft": -1,
       "forkRight": -1,
-      "curveProfile": [0],
-      "hillProfile": [0, 0, -1, -1, 0],
+      "curveProfile": [
+        0
+      ],
+      "hillProfile": [
+        0,
+        0,
+        -1,
+        -1,
+        0
+      ],
       "trafficSeed": 106,
-      "scenerySet": 2
+      "scenerySet": 4
     },
     {
       "id": 10,
@@ -84,8 +165,17 @@
       "next": 11,
       "forkLeft": -1,
       "forkRight": -1,
-      "curveProfile": [0],
-      "hillProfile": [0, 0, 1, 2, 1, 0],
+      "curveProfile": [
+        0
+      ],
+      "hillProfile": [
+        0,
+        0,
+        1,
+        2,
+        1,
+        0
+      ],
       "trafficSeed": 410,
       "scenerySet": 1
     },
@@ -96,8 +186,12 @@
       "next": -1,
       "forkLeft": 12,
       "forkRight": 13,
-      "curveProfile": [0],
-      "hillProfile": [0],
+      "curveProfile": [
+        0
+      ],
+      "hillProfile": [
+        0
+      ],
       "trafficSeed": 411,
       "scenerySet": 1
     },
@@ -108,8 +202,20 @@
       "next": 14,
       "forkLeft": -1,
       "forkRight": -1,
-      "curveProfile": [0, 1, 2, 1, 0],
-      "hillProfile": [0, 1, 2, 1, 0],
+      "curveProfile": [
+        0,
+        1,
+        2,
+        1,
+        0
+      ],
+      "hillProfile": [
+        0,
+        1,
+        2,
+        1,
+        0
+      ],
       "trafficSeed": 412,
       "scenerySet": 2
     },
@@ -120,10 +226,22 @@
       "next": 14,
       "forkLeft": -1,
       "forkRight": -1,
-      "curveProfile": [0, -1, -2, -1, 0],
-      "hillProfile": [0, -1, -2, -1, 0],
+      "curveProfile": [
+        0,
+        -1,
+        -2,
+        -1,
+        0
+      ],
+      "hillProfile": [
+        0,
+        -1,
+        -2,
+        -1,
+        0
+      ],
       "trafficSeed": 413,
-      "scenerySet": 2
+      "scenerySet": 3
     },
     {
       "id": 14,
@@ -132,10 +250,17 @@
       "next": -1,
       "forkLeft": -1,
       "forkRight": -1,
-      "curveProfile": [0],
-      "hillProfile": [0, 0, -1, 0],
+      "curveProfile": [
+        0
+      ],
+      "hillProfile": [
+        0,
+        0,
+        -1,
+        0
+      ],
       "trafficSeed": 414,
-      "scenerySet": 2
+      "scenerySet": 4
     },
     {
       "id": 20,
@@ -144,8 +269,16 @@
       "next": 21,
       "forkLeft": -1,
       "forkRight": -1,
-      "curveProfile": [0],
-      "hillProfile": [0, 0, 1, 1, 0],
+      "curveProfile": [
+        0
+      ],
+      "hillProfile": [
+        0,
+        0,
+        1,
+        1,
+        0
+      ],
       "trafficSeed": 420,
       "scenerySet": 1
     },
@@ -156,8 +289,12 @@
       "next": -1,
       "forkLeft": 22,
       "forkRight": 23,
-      "curveProfile": [0],
-      "hillProfile": [0],
+      "curveProfile": [
+        0
+      ],
+      "hillProfile": [
+        0
+      ],
       "trafficSeed": 421,
       "scenerySet": 1
     },
@@ -168,8 +305,23 @@
       "next": 24,
       "forkLeft": -1,
       "forkRight": -1,
-      "curveProfile": [0, 1, 2, 3, 2, 1, 0],
-      "hillProfile": [0, 1, 2, 2, 1, 0],
+      "curveProfile": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1,
+        0
+      ],
+      "hillProfile": [
+        0,
+        1,
+        2,
+        2,
+        1,
+        0
+      ],
       "trafficSeed": 422,
       "scenerySet": 2
     },
@@ -180,10 +332,25 @@
       "next": 24,
       "forkLeft": -1,
       "forkRight": -1,
-      "curveProfile": [0, -1, -2, -3, -2, -1, 0],
-      "hillProfile": [0, 1, 2, 2, 1, 0],
+      "curveProfile": [
+        0,
+        -1,
+        -2,
+        -3,
+        -2,
+        -1,
+        0
+      ],
+      "hillProfile": [
+        0,
+        1,
+        2,
+        2,
+        1,
+        0
+      ],
       "trafficSeed": 423,
-      "scenerySet": 2
+      "scenerySet": 3
     },
     {
       "id": 24,
@@ -192,10 +359,17 @@
       "next": -1,
       "forkLeft": -1,
       "forkRight": -1,
-      "curveProfile": [0],
-      "hillProfile": [0, 0, -1, 0],
+      "curveProfile": [
+        0
+      ],
+      "hillProfile": [
+        0,
+        0,
+        -1,
+        0
+      ],
       "trafficSeed": 424,
-      "scenerySet": 2
+      "scenerySet": 4
     }
   ]
 }
