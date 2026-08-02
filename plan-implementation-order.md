@@ -37,7 +37,8 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] drop-in / reconnect: seats survive drops (grace + token reclaim, supersede),
       client reconnect backoff + reconnect-on-visible, never-strand (marker-0034)
 - [x] server-restart persistence — serialize + restore, deploy handoff (marker-0037)
-- [ ] screen wake lock; browser-level strand test
+- [x] screen wake lock + high-DPR canvas buffer (marker-0038)
+- [ ] browser-level strand test (#7); reconnect overlay
 
 ### Playtest polish (from real playtests)
 

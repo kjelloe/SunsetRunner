@@ -15,6 +15,8 @@ test("client modules import cleanly and export their entry points", async () => 
   const touch = await import("../client/touch_controls.js");
   const prediction = await import("../client/prediction.js");
   const celebration = await import("../client/celebration.js");
+  const viewport = await import("../client/viewport.js");
+  const wakelock = await import("../client/wakelock.js");
   const main = await import("../client/main.js");
 
   assert.equal(typeof projection.projectPoint, "function");
@@ -30,6 +32,8 @@ test("client modules import cleanly and export their entry points", async () => 
   assert.equal(typeof touch.installTouch, "function");
   assert.equal(typeof prediction.createPredictor, "function");
   assert.equal(typeof celebration.createCelebration, "function");
+  assert.equal(typeof viewport.computeBufferSize, "function");
+  assert.equal(typeof wakelock.installWakeLock, "function");
   assert.equal(typeof main.boot, "function");
 });
 

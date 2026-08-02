@@ -918,3 +918,19 @@ the token is useless if the server forgot the game).
 
 Gate: ./test.sh -> 150/150 + 4 Luau gates OK. specs/35.
 Deferred: wake lock, browser strand test (#7), reconnect overlay.
+
+---
+
+## marker-0038 — mobile polish: high-DPR canvas + wake lock (2026-08-02)
+
+Client-only, no repin.
+- client/viewport.js computeBufferSize: buffer = displayed CSS size × DPR, 16:9,
+  floor 320 / cap 1920 (crisp retina, no giant frames). main.js fit() on boot +
+  resize + orientationchange; projection scales via view.w/h; touch unaffected
+  (rect-based).
+- client/wakelock.js installWakeLock: request screen lock, re-request on visible +
+  first gesture, best-effort no-op when unsupported; nav/doc injectable.
+- test/viewport.test.js (DPR/16:9/cap/floor + wake-lock request/re-request/no-op)
+  + import gate; specs/36.
+
+Gate: ./test.sh -> 154/154 + 4 Luau gates OK.

@@ -13,6 +13,8 @@ import { installKeyboard, readInput, readForkChoice } from "./input.js";
 import { installTouch, readTouchInput, readTouchFork, drawTouchControls, touchDetected } from "./touch_controls.js";
 import { render } from "./renderer_canvas.js";
 import { createCelebration } from "./celebration.js";
+import { computeBufferSize } from "./viewport.js";
+import { installWakeLock } from "./wakelock.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -20,6 +22,23 @@ export async function boot(doc = document) {
   const canvas = doc.getElementById("game");
   const g = canvas.getContext("2d");
   const view = { w: canvas.width, h: canvas.height };
+
+  // Crisp on retina/mobile: match the drawing buffer to the displayed size × DPR.
+  function fit() {
+    const rect = canvas.getBoundingClientRect?.() || { width: canvas.width, height: canvas.height };
+    const dpr = (typeof window !== "undefined" && window.devicePixelRatio) || 1;
+    const { w, h } = computeBufferSize(rect.width, rect.height, dpr);
+    canvas.width = w;
+    canvas.height = h;
+    view.w = w;
+    view.h = h;
+  }
+  fit();
+  if (typeof window !== "undefined") {
+    window.addEventListener("resize", fit);
+    window.addEventListener("orientationchange", fit);
+  }
+  installWakeLock(); // keep the phone awake while driving
 
   const [roads, cars, checkpoints, traffic, assets] = await Promise.all([
     fetch("../data/roads.json").then((r) => r.json()),
