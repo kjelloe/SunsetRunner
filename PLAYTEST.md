@@ -122,6 +122,8 @@ Open TWO browser tabs at `http://localhost:8000/client/index.html?mode=remote`.
 - [ ] **[bug]** Restart the server (`npm start`, then Ctrl-C, then `npm start`
   again) mid-race → the browser reconnects and reclaims the SAME run within a few
   seconds (server-restart persistence, marker-0037; state in `.state/session.json`).
+- [ ] **[bug]** During any drop/restart a **RECONNECTING…** banner shows and clears
+  once you're back live (marker-0039).
 
 ## 7. Determinism / regression sanity
 
