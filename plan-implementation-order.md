@@ -32,6 +32,22 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 **Milestone 3 (8-player ghost race): COMPLETE.**
 
+### Multiplayer robustness (post-plan, from the Pitfall write-up)
+
+- [x] drop-in / reconnect: seats survive drops (grace + token reclaim, supersede),
+      client reconnect backoff + reconnect-on-visible, never-strand (marker-0034)
+- [ ] server-restart persistence (serialize session to disk; lossless deploys — Pitfall #4)
+- [ ] screen wake lock; browser-level strand test
+
+### Playtest polish (from real playtests)
+
+- [x] renderer speed/scroll + rumble strips + scenery (marker-0030)
+- [x] finish celebration (confetti/fireworks) + mobile arrow pad (marker-0031)
+- [x] driving feel: crash stun + cornering that matters (marker-0032)
+- [x] traffic/scenery visible + car drift readable (marker-0033)
+- [x] scenery/traffic follow the road curve (marker-0035)
+- [ ] native visual/perf tuning (camera magnitudes, CURVE_PUSH_DEN, high-DPR); music
+
 ## Milestone 4 — Collision, traffic, AI
 
 - [x] slice-013 replay-dump-load  *(room dumps a re-runnable scenario)*

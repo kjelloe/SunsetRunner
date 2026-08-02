@@ -37,6 +37,17 @@ road edge (one road-half from centre), road narrows with distance, and the road
 half-width is a real on-screen size (`> 20 px`, so sprites can't be sub-pixel).
 `./test.sh` → 139/139 + 4 Luau gates.
 
+## Follow-up (marker-0035): entities follow the road curve
+
+The first cut of `onRoad` placed entities relative to the STRAIGHT centreline
+(`worldX = 0`), while the road bends each strip by its accumulated `curveX` — so
+the road curved but traffic/scenery marched in a straight column. Fixed:
+`onRoad(view, camX, dz, laneX, curveX, hillY)` projects relative to the CURVED
+road centre + hill at that depth; `render` builds the strip list once and
+`sampleStrip(strips, dz)` reads the curve/hill at each entity's distance so
+traffic/scenery/ghosts ride the bends and rises. Guarded by the
+`onRoad follows the road curve` test.
+
 ## Not verified
 
 Exact camera-follow feel, sprite sizes, and whether laneX↔road-edge now lines up

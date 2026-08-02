@@ -20,7 +20,7 @@ No framework. No build step. No bundler. Just Node.js and vanilla ES modules.
 - ⏱️ **Checkpoint timer** — classic arcade extend-your-time loop; finish or time out.
 - 🚗 **Traffic & collisions** — deterministic segment-seeded traffic, crash-and-recover, and optional same-segment rival bumps.
 - 🍴 **Branching forks** — commit a direction with **Q/E**; three courses (a coast, a fork, a mirror-fair valley).
-- 🌐 **Drop-in multiplayer** — Node `ws` server, up to 8 seats, ghost rivals, live standings, **client-side prediction + reconciliation**.
+- 🌐 **Drop-in & reconnect multiplayer** — Node `ws` server, up to 8 seats, ghost rivals, live standings, **client-side prediction**, and **token-reclaim reconnect** (survives mobile backgrounding).
 - 📱 **Mobile-ready** — on-screen arrow pad, correct touch mapping on CSS-scaled canvases, no page scroll/zoom while driving.
 - 🎉 **Finish celebration** — confetti + fireworks.
 - 🤖 **AI drivers + sim campaign** — headless balance tooling.
@@ -114,7 +114,7 @@ specs/    the design brief + numbered decision docs
 
 Milestones 1–5 are functionally complete: solo run, server room, 8-player ghost race, collision/traffic/AI, and content (forks, curve physics, sprites, mobile, finish celebration). The engine is deterministic, Luau-twinned, and provably fair.
 
-Open work: native-browser visual/perf tuning, music, and multiplayer reconnect/drop-in robustness. See [`plan-implementation-order.md`](plan-implementation-order.md) and [`dev-log.md`](dev-log.md).
+Open work: native-browser visual/perf tuning, music, and server-restart persistence (lossless deploys). Reconnect/drop-in (token reclaim, grace, reconnect-on-visible) is done. See [`plan-implementation-order.md`](plan-implementation-order.md) and [`dev-log.md`](dev-log.md).
 
 ---
 

@@ -1,6 +1,6 @@
 # Playtest checklist — Sunset Runner
 
-The automated suite (`./test.sh`, 138 tests + 4 Luau parity gates) covers engine
+The automated suite (`./test.sh`, 146 tests + 4 Luau parity gates) covers engine
 determinism, the reducer, server room, fairness, and client module loading. It
 does **NOT** cover anything you can only judge with a real browser: visual feel,
 frame rate, camera tuning, touch ergonomics, audio, and real-network multiplayer.
@@ -102,8 +102,18 @@ Open TWO browser tabs at `http://localhost:8000/client/index.html?mode=remote`.
   to input INSTANTLY, not after a round-trip delay. Watch for rubber-banding /
   snapping when the car crashes into traffic (the server correction).
 - [ ] **[bug]** Same-segment rival collision (if enabled) bumps both cars apart.
-- [ ] **[bug]** Close a tab → that ghost disappears in the other.
-- [ ] **[bug]** Refresh a tab mid-race → it rejoins as a new seat.
+- [ ] **[bug]** Entities follow the curve: on a bend, ghosts/traffic sweep with
+  the road, not in a straight column (marker-0035).
+
+### Reconnect / drop-in (marker-0034)
+
+- [ ] **[bug]** Background the tab for a few seconds, then return → back in the
+  SAME run (reconnect-on-visible + token reclaim), not a fresh seat.
+- [ ] **[bug]** Reload the page mid-race → the persisted token reclaims your seat.
+- [ ] **[bug]** Open a second tab (same browser) → it supersedes the first (the
+  first tab's socket closes); one seat, latest tab wins.
+- [ ] **[bug]** Stay backgrounded past the grace window (default 45 s) → on return
+  you drop back in as a fresh seat, never a frozen HUD.
 
 ## 7. Determinism / regression sanity
 
