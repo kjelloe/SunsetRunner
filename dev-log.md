@@ -816,3 +816,22 @@ ea720799d79d2321, fork_1a 24bb509ea5326409 (finish 199), AI 1d6b97a6d0cda2d2
 (finish 238). 4 Luau gates re-verified.
 
 **Gate:** `./test.sh` -> 138/138 + 4 Luau gates OK.
+
+---
+
+## marker-0033 — lateral render model + sprite-scale fix (2026-08-02)
+
+**From playtest:** no traffic/scenery visible; car drift barely moves (1.5 car widths).
+
+**Bug 1:** with assets loaded, traffic/scenery sprites were scaled by raw
+perspective scale (~0.0003) -> sub-pixel -> invisible (rect fallback used
+projected width, so it showed before sprites landed). Fix: spriteScale sizes to a
+fraction of the projected road half-width.
+
+**Bug 2:** car used a tiny fixed lateral map (~107px at edge) and camX=laneX (road
+followed and cancelled motion); traffic used different units. Fix: one lateral
+model `onRoad` (lane fraction of road half-width -> laneX=ROAD_HALF_WIDTH is the
+road edge; player + traffic share coords), camera partial-follow CAM_FOLLOW 0.4.
+
+test/projection.test.js onRoad case (centre/edge/narrowing, real width). specs/32.
+Client-only, no repin. Gate: ./test.sh -> 139/139 + 4 Luau gates OK.

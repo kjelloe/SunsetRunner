@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { projectPoint } from "../client/projection.js";
 import { forwardStrips } from "../client/road_renderer.js";
+import { onRoad } from "../client/renderer_canvas.js";
 import { loadCourseSet } from "../shared/road_data.js";
 
 const courseSet = loadCourseSet(JSON.parse(readFileSync(new URL("../data/roads.json", import.meta.url))));
@@ -60,6 +61,16 @@ test("crossing a strip boundary advances worldStrip (bands/scenery scroll)", () 
   const a = forwardStrips(courseSet, 1, 0, 5);
   const c = forwardStrips(courseSet, 1, 300, 5); // 300 > ROAD_UNIT(256) -> next strip
   assert.equal(c[0].worldStrip, a[0].worldStrip + 1);
+});
+
+test("onRoad: laneX 0 = centre, ROAD_HALF_WIDTH = road edge, narrows with distance", () => {
+  const centre = onRoad(view, 0, 2000, 0);
+  const edge = onRoad(view, 0, 2000, 512); // ROAD_HALF_WIDTH
+  assert.equal(centre.x, view.w / 2);
+  assert.ok(Math.abs((edge.x - centre.x) - edge.half) < 1, "edge is one road-half from centre");
+  assert.ok(edge.half > 20, `road must have real on-screen width, got ${edge.half}`); // sprites won't be sub-pixel
+  const far = onRoad(view, 0, 5000, 512);
+  assert.ok(far.half < edge.half, "road narrows with distance");
 });
 
 test("forwardStrips accumulates curve across the profile", () => {

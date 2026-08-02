@@ -43,9 +43,8 @@ export function forwardStrips(courseSet, segmentId, roadZ, count) {
 
 const DRAW_STRIPS = 220;
 
-export function drawRoad(g, view, seat, courseSet) {
+export function drawRoad(g, view, seat, courseSet, camX = 0) {
   const strips = forwardStrips(courseSet, seat.segmentId, seat.roadZ, DRAW_STRIPS);
-  const camX = seat.laneX;
 
   for (let i = strips.length - 1; i >= 0; i--) {
     const s = strips[i];
