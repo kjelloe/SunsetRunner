@@ -987,3 +987,19 @@ Client-only, no repin. Makes the roster playable; the carId path already existed
 - test/car_select.test.js + import gate; specs/39.
 
 Gate: ./test.sh -> 168/168 + 4 Luau gates OK.
+
+---
+
+## marker-0042 — procedural audio (2026-08-03)
+
+Client-only, no repin. Synthesised WebAudio (no asset files); AudioContext
+injectable for headless tests.
+- client/audio.js createAudio: resume() (gesture-gated context + engine osc +
+  chiptune loop), setSpeed -> engine pitch 60+frac*220Hz, event(kind) one-shot
+  SFX (checkpoint/crash/nearmiss/finish), setEnabled/stopMusic mute path.
+- client/main.js: armed on first keydown/pointerdown; per-frame setSpeed; SFX on
+  self-seat state edges (crash entered / finish crossed / timer bumped); ?mute=1.
+- test/audio.test.js (fake AudioContext: import-safe, engine osc, speed->pitch,
+  one-shot SFX, disabled/muted) + import gate; specs/40. PLAYTEST §8 rewritten.
+
+Gate: ./test.sh -> 174/174 + 4 Luau gates OK.

@@ -134,10 +134,25 @@ Open TWO browser tabs at `http://localhost:8000/client/index.html?mode=remote`.
 - [ ] **[bug]** `node debugging/fairness.mjs` prints mirror = FAIR and
   traffic-swap: course-3 residual much smaller than course-2 (geometry fair).
 
-## 8. Audio
+## 8. Audio (marker-0042)
 
-- [ ] **[unverified]** There is NO audio yet (music select is not built). Nothing
-  to test — noted so silence isn't mistaken for a bug.
+Procedural WebAudio — synthesised, no asset files. Autoplay is blocked until you
+interact, so press a key / tap first. `?mute=1` disables it.
+
+- [ ] **[feel]** After the first keypress, an **engine hum** starts and its pitch
+  **rises with speed** — accelerate and listen. Too harsh / too quiet?
+- [ ] **[feel]** SFX fire on events: a **crash** growl when you hit traffic, a
+  **checkpoint** blip when TIME jumps up, a **finish** flourish at the line. Do
+  they land at the right moment?
+- [ ] **[feel]** A background **chiptune loop** plays. Pleasant or annoying?
+- [ ] **[bug]** `?mute=1` → total silence, no console errors.
+
+## 9. Car select (marker-0041)
+
+- [ ] **[bug]** On load (no `?car=`) a **CHOOSE YOUR CAR** overlay shows with stat
+  bars; `◄`/`►` (or A/D) cycles cars, Enter/Space (or tap) starts the race.
+- [ ] **[bug]** `?car=3` skips the overlay and starts in that car.
+- [ ] **[feel]** Do the four cars feel distinct (speed vs accel vs grip)?
 
 ## What to report back
 

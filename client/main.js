@@ -17,6 +17,7 @@ import { computeBufferSize } from "./viewport.js";
 import { installWakeLock } from "./wakelock.js";
 import { drawConnectionBanner } from "./connection_banner.js";
 import { carChoiceFromParams, createCarSelect, drawCarSelect, carSelectTouchZone } from "./car_select.js";
+import { createAudio } from "./audio.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -66,6 +67,14 @@ export async function boot(doc = document) {
   const showTouch = touchDetected() || params.get("touch") === "1";
   const celebration = createCelebration();
 
+  // Procedural audio: engine hum + SFX + chiptune. Browsers block autoplay, so
+  // it only spins up on the first user gesture. ?mute=1 disables it.
+  const audio = createAudio({ enabled: params.get("mute") !== "1" });
+  let audioArmed = false;
+  const armAudio = () => { if (!audioArmed) { audioArmed = true; audio.resume(); } };
+  doc.addEventListener?.("keydown", armAudio);
+  canvas.addEventListener?.("pointerdown", armAudio);
+
   // Two phases: "select" shows the car picker; "race" runs the session. The
   // session is not created until a car is chosen, so JOIN carries the choice.
   const choice = carChoiceFromParams(params, carSet);
@@ -94,6 +103,7 @@ export async function boot(doc = document) {
   let acc = 0;
   let last = performance.now();
   let frameCount = 0;
+  let prevCrashed = 0, prevFinish = -1, prevTimer = NaN; // SFX edge trackers
   function frame(now) {
     // Drain menu-nav events every frame so the queue never leaks; only the
     // select phase acts on them (arrow keys also steer during the race).
@@ -126,6 +136,18 @@ export async function boot(doc = document) {
     }
     const state = session.getState();
     if (state.seats.length) render(g, view, state, courseSet, assets);
+    // Audio: engine pitch tracks speed; SFX fire on state edges (crash entered,
+    // finish crossed, timer bumped up by a checkpoint).
+    const self = state.seats[0];
+    if (self) {
+      audio.setSpeed(self.speed, sel.car.maxSpeed);
+      if (self.crashedTicks > 0 && prevCrashed === 0) audio.event("crash");
+      if (self.finishTicks >= 0 && prevFinish < 0) audio.event("finish");
+      if (Number.isFinite(prevTimer) && self.timerTicks > prevTimer) audio.event("checkpoint");
+      prevCrashed = self.crashedTicks || 0;
+      prevFinish = self.finishTicks ?? -1;
+      prevTimer = self.timerTicks;
+    }
     // Finish splash: confetti + fireworks once the local car crosses the line.
     if (state.seats.length && state.seats[0].finishTicks >= 0) celebration.trigger(view);
     celebration.update(view);

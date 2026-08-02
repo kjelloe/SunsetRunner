@@ -19,6 +19,7 @@ test("client modules import cleanly and export their entry points", async () => 
   const wakelock = await import("../client/wakelock.js");
   const banner = await import("../client/connection_banner.js");
   const carSelect = await import("../client/car_select.js");
+  const audio = await import("../client/audio.js");
   const main = await import("../client/main.js");
 
   assert.equal(typeof projection.projectPoint, "function");
@@ -38,6 +39,7 @@ test("client modules import cleanly and export their entry points", async () => 
   assert.equal(typeof wakelock.installWakeLock, "function");
   assert.equal(typeof carSelect.createCarSelect, "function");
   assert.equal(typeof carSelect.drawCarSelect, "function");
+  assert.equal(typeof audio.createAudio, "function");
   assert.equal(typeof banner.drawConnectionBanner, "function");
   assert.equal(typeof main.boot, "function");
 });
