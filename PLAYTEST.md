@@ -1,6 +1,6 @@
 # Playtest checklist — Sunset Runner
 
-The automated suite (`./test.sh`, 185 tests + 4 Luau parity gates) covers engine
+The automated suite (`./test.sh`, 187 tests + 4 Luau parity gates) covers engine
 determinism, the reducer, server room, fairness, and client module loading. It
 does **NOT** cover anything you can only judge with a real browser: visual feel,
 frame rate, camera tuning, touch ergonomics, audio, and real-network multiplayer.
@@ -112,6 +112,9 @@ Open TWO browser tabs at `http://localhost:8000/client/index.html?mode=remote`.
 - [ ] **[bug]** Same-segment rival collision (if enabled) bumps both cars apart.
 - [ ] **[bug]** Entities follow the curve: on a bend, ghosts/traffic sweep with
   the road, not in a straight column (marker-0035).
+- [ ] **[feel]** Each rival ghost is **tinted by its car** (red/blue/green/gold,
+  marker-0045) matching the colour of its name in the car-select screen — can you
+  tell rivals apart? Tints legible against the road/scenery?
 
 ### Reconnect / drop-in (marker-0034)
 

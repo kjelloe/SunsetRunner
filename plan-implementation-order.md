@@ -97,5 +97,5 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-042 procedural audio (engine hum + SFX + chiptune) (marker-0042)
 - [x] slice-043 ws server hardening (payload cap + rate limit) (marker-0043)
 - [x] slice-044 per-leg scenery themes (beach/canyon/forest) (marker-0044)
-- [ ] car identity on ghosts (tint rival sprite by carId)
+- [x] slice-045 car identity on ghosts (tint by carId) (marker-0045)
 - [ ] Playwright client smoke / ui-acceptance / perf smoke

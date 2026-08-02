@@ -1039,3 +1039,17 @@ is NOT in the engine state hash, so all engine goldens + 4 Luau gates UNCHANGED.
   segment resolves) + road_data content-hash repin + import gate; specs/42.
 
 Gate: ./test.sh -> 185/185 + 4 Luau gates OK.
+
+---
+
+## marker-0045 — car identity on ghosts (2026-08-03)
+
+Client-only, no repin. Rival ghosts tinted by their car (closes specs/39 follow-up).
+- client/car_colors.js carColor(carId): per-car palette (red/blue/green/gold,
+  grey fallback); kept OUT of data/cars.json so it never touches the content hash.
+- renderer_canvas drawGhosts: fill each ghost with carColor(r.carId) (ghost
+  already carries carId via server ghostFor); car_select draws name in carColor.
+- test/car_colors.test.js: palette distinctness + integration render proving two
+  ghosts (carId 2,3) tint the canvas + import gate; specs/43.
+
+Gate: ./test.sh -> 187/187 + 4 Luau gates OK.

@@ -13,6 +13,7 @@ import { ROAD_HALF_WIDTH } from "../engine/car_physics.js";
 import { ROAD_UNIT } from "../shared/constants.js";
 import { getSegment } from "../shared/road_data.js";
 import { themeFor } from "./scenery.js";
+import { carColor } from "./car_colors.js";
 
 const TRAFFIC_SPRITE = { 1: "traffic_sedan", 2: "traffic_truck" };
 const CAM_FOLLOW = 0.4;     // camera tracks 40% of the player's lateral position
@@ -111,8 +112,8 @@ function drawGhosts(g, view, state, camX, strips) {
     const o = onRoad(view, camX, dz, r.laneX, s.curveX, s.hillY);
     const w = Math.max(4, o.half * 0.5);
     const h = w * 0.6;
-    g.globalAlpha = 0.6;
-    g.fillStyle = "#9a5cff";
+    g.globalAlpha = 0.7;
+    g.fillStyle = carColor(r.carId); // rival identity: tint the ghost by its car
     g.fillRect(o.x - w / 2, o.y - h, w, h);
     g.globalAlpha = 1;
     if (r.collisionActive) {

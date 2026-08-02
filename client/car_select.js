@@ -2,6 +2,8 @@
 // Pure cursor logic + a fake-ctx-safe draw. The roster (data/cars.json) is real;
 // this is the UI that lets a human choose which car to JOIN with (marker-0041).
 
+import { carColor } from "./car_colors.js";
+
 // Turn "car.red_sprint" into "Red Sprint" for display.
 export function carDisplayName(nameKey) {
   return String(nameKey)
@@ -71,7 +73,7 @@ export function drawCarSelect(g, view, sel) {
   g.font = `${Math.round(view.h * 0.06)}px sans-serif`;
   g.fillText("CHOOSE YOUR CAR", view.w / 2, view.h * 0.18);
 
-  g.fillStyle = "#ffffff";
+  g.fillStyle = carColor(car.id); // name in the car's identity colour
   g.font = `${Math.round(view.h * 0.08)}px sans-serif`;
   g.fillText(carDisplayName(car.nameKey), view.w / 2, view.h * 0.33);
 
