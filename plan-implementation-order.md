@@ -46,7 +46,8 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] driving feel: crash stun + cornering that matters (marker-0032)
 - [x] traffic/scenery visible + car drift readable (marker-0033)
 - [x] scenery/traffic follow the road curve (marker-0035)
-- [ ] native visual/perf tuning (camera magnitudes, CURVE_PUSH_DEN, high-DPR); music
+- [x] hills (visible crests/dips) + a fork on the default course (marker-0036)
+- [ ] native visual/perf tuning (camera magnitudes, CURVE_PUSH_DEN, HILL_SCALE, high-DPR); music
 
 ## Milestone 4 — Collision, traffic, AI
 
@@ -59,7 +60,9 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 ## Milestone 5 — Content and feel
 
+- [x] hills — visible crests/dips, all courses (marker-0036)
 - [x] branching forks (marker-0021) — course 2 canyon_split, forkChoice command, Luau-twinned
+- [x] fork on the DEFAULT course (marker-0036) — sunset_coast 1→2(cp)→3(fork)→{4|5}→6
 - [x] client fork UI (Q/E + ?course select, local+remote) (marker-0022)
 - [x] curve physics (centrifugal push, truncDiv-symmetric) (marker-0023)
 - [x] route-mirror fairness (§16.1) — mirror_valley course + mirrorFairness (marker-0023)

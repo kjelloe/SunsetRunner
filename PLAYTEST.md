@@ -43,6 +43,10 @@ Open `http://localhost:8000/client/index.html`.
   (marker-0016). Is the crash readable?
 - [ ] **[feel]** Roadside palms/signs scroll past (marker-0026) — do they read as
   scenery or noise?
+- [ ] **[bug]** The default course now has **hills** (road crests and dips) and a
+  **fork** after the checkpoint — you reach it in normal play (marker-0036).
+- [ ] **[feel]** Are the hills readable (crest hides the road beyond, then reveals)?
+  Too gentle / too steep? (`HILL_SCALE` 180 is a sim-blind first pass.)
 
 ## 2. Curves & drift — feel
 
