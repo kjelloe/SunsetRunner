@@ -17,9 +17,12 @@ import { loadTrafficConfig } from "../shared/traffic_data.js";
 import { TICK_HZ } from "../shared/constants.js";
 import { createRoom } from "./game_room.js";
 import { saveSession, loadSession } from "./session_store.js";
+import { createRateLimiter } from "./rate_limit.js";
 import { C2S, S2C, parseMessage } from "../shared/protocol.js";
 
 const DEFAULT_GRACE_TICKS = 900;
+// Protocol messages are tiny (well under 1 KB); anything larger is junk/abuse.
+const DEFAULT_MAX_MESSAGE_BYTES = 4096;
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -67,8 +70,11 @@ export async function startServer(port = 8000, roomOpts = {}) {
   const restore = statePath ? loadSession(statePath, (graceTicks / TICK_HZ) * 1000) : null;
   const room = createRoom(ctx, { startTimeTicks: ctx.startTimeTicks, graceTicks, ...roomOpts, restore });
 
+  const maxMessageBytes = roomOpts.maxMessageBytes ?? DEFAULT_MAX_MESSAGE_BYTES;
   const server = createServer(serveStatic);
-  const wss = new WebSocketServer({ server });
+  // maxPayload caps frame size at the ws layer (oversized frame -> 1009 close),
+  // so a giant-frame flood can't allocate unbounded memory.
+  const wss = new WebSocketServer({ server, maxPayload: maxMessageBytes });
   const clients = new Map(); // ws -> seatId
 
   // Close any socket currently bound to a seat (reclaim supersede: same player,
@@ -93,8 +99,21 @@ export async function startServer(port = 8000, roomOpts = {}) {
     // A connected-but-not-joined client is a spectator with context (§ drop-in).
     ws.send(JSON.stringify({ type: S2C.HELLO, courseId: room.courseId, tick: room.tick, seatCount: room.seatCount }));
 
+    // Per-connection flood control. A well-behaved client sends ~20 msg/s.
+    const limiter = createRateLimiter(roomOpts.rate);
+    // Guard the socket-level 'error' (e.g. a 1009 oversized-frame close) so a
+    // bad client can't take the process down with an uncaught exception.
+    ws.on("error", () => { try { ws.terminate(); } catch { /* already gone */ } });
+
     ws.on("message", (raw) => {
-      const parsed = parseMessage(raw.toString());
+      const text = raw.toString();
+      // Belt-and-suspenders alongside maxPayload; also drops oversized text.
+      if (text.length > maxMessageBytes) {
+        ws.send(JSON.stringify({ type: S2C.ERROR, reason: "message too large" }));
+        return;
+      }
+      if (!limiter.allow()) return; // over rate: drop silently, no feedback loop
+      const parsed = parseMessage(text);
       if (!parsed.ok) { ws.send(JSON.stringify({ type: S2C.ERROR, reason: parsed.reason })); return; }
       const msg = parsed.msg;
       if (msg.type === C2S.JOIN) {

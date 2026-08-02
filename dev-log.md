@@ -1003,3 +1003,20 @@ injectable for headless tests.
   one-shot SFX, disabled/muted) + import gate; specs/40. PLAYTEST §8 rewritten.
 
 Gate: ./test.sh -> 174/174 + 4 Luau gates OK.
+
+---
+
+## marker-0043 — ws server hardening (2026-08-03)
+
+Server-only, no repin. Defence-in-depth on the transport around the already
+input-validated engine.
+- server/rate_limit.js createRateLimiter: pure clock-injectable token bucket
+  (default cap 60 / refill 40 msg/s); per-connection, over-rate msgs dropped.
+- server/index.js: WebSocketServer maxPayload (4096B, roomOpts.maxMessageBytes)
+  -> oversized frame closes 1009; app-layer size check; ws 'error' -> terminate
+  (no uncaught crash); rate limiter gate before parseMessage.
+- test/rate_limit.test.js + server_ws hardening cases (malformed/garbage survive,
+  oversized -> 1009 + server keeps serving, 200-msg burst limited no crash);
+  specs/41.
+
+Gate: ./test.sh -> 180/180 + 4 Luau gates OK.
