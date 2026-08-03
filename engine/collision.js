@@ -30,6 +30,26 @@ export function resolveTrafficCollisions(state, tick) {
   return events;
 }
 
+// Step 9b: hazard collision. Hitting a crossing skier/snowmobile is a crash —
+// a dead stop + the same stun immunity as traffic. Always on.
+export function resolveHazardCollisions(state, tick) {
+  const events = [];
+  if (!state.hazards || state.hazards.length === 0) return events;
+  for (const seat of state.seats) {
+    if (!seat.active || seat.finishTicks >= 0 || seat.timedOut) continue;
+    if (seat.crashedTicks > 0) continue;
+    for (const h of state.hazards) {
+      if (overlapping(seat, h)) {
+        seat.speed = 0;
+        seat.crashedTicks = CRASH_STUN_TICKS;
+        events.push({ type: "collision", kind: "hazard", seatId: seat.id, tick });
+        break;
+      }
+    }
+  }
+  return events;
+}
+
 export function resolveRivalCollisions(state, tick) {
   const seats = state.seats.filter((s) => s.active && s.finishTicks < 0 && !s.timedOut);
   const dSpeed = new Map();

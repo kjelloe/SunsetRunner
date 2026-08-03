@@ -37,6 +37,28 @@ local function resolveTrafficCollisions(state, tick: number)
 	return events
 end
 
+-- Step 9b: hazard collision. Hitting a crossing skier/snowmobile is a dead stop
+-- + stun immunity, like traffic. Mirrors JS.
+local function resolveHazardCollisions(state, tick: number)
+	local events = {}
+	if #state.hazards == 0 then
+		return events
+	end
+	for _, seat in ipairs(state.seats) do
+		if seat.active ~= 0 and seat.finishTicks < 0 and seat.timedOut == 0 and seat.crashedTicks == 0 then
+			for _, h in ipairs(state.hazards) do
+				if overlapping(seat, h) then
+					seat.speed = 0
+					seat.crashedTicks = CRASH_STUN_TICKS
+					table.insert(events, { type = "collision", kind = "hazard", seatId = seat.id, tick = tick })
+					break
+				end
+			end
+		end
+	end
+	return events
+end
+
 local function resolveRivalCollisions(state, tick: number)
 	local seats = {}
 	for _, s in ipairs(state.seats) do
@@ -98,5 +120,6 @@ end
 return {
 	resolveRivalCollisions = resolveRivalCollisions,
 	resolveTrafficCollisions = resolveTrafficCollisions,
+	resolveHazardCollisions = resolveHazardCollisions,
 	overlapping = overlapping,
 }

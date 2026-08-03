@@ -36,11 +36,11 @@
   },
   "expected": {
     "hashes": {
-      "10": "72a5b170daaadec6",
-      "60": "6a35fe2a58929630",
-      "120": "211cd8f11ed974c1"
+      "10": "ba24b26f19e1fd9e",
+      "60": "c10237d81ed004a8",
+      "120": "3ac0dfa3aa85335d"
     },
-    "finalHash": "18837aa0a26d9051",
+    "finalHash": "21ae1f3f755cfa15",
     "finishTick": 217,
     "census": [
       "checkpoint@119",

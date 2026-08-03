@@ -50,7 +50,7 @@ check("fnv1a64([1..10])", canonical.hashToHex64(hb.hashHi, hb.hashLo), golden.fn
 
 -- spine state hash
 check("hashState(spine0)", statehash.hashState({
-	version = 1,
+	version = 2, -- STATE_VERSION (bumped to 2 for cross-hazards, marker-0066)
 	tick = 0,
 	seed = 12345,
 	rng = seeded,

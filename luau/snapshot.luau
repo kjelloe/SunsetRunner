@@ -48,6 +48,16 @@ local function serializeSnapshot(state): { number }
 		w.writeI32LE(t.speed)
 		w.writeU32LE(t.kind)
 	end
+	w.writeU32LE(state.nextHazardId)
+	w.writeU16LE(#state.hazards)
+	for _, h in ipairs(state.hazards) do
+		w.writeU32LE(h.id)
+		w.writeI32LE(h.segmentId)
+		w.writeI32LE(h.roadZ)
+		w.writeI32LE(h.laneX)
+		w.writeI32LE(h.vx)
+		w.writeU32LE(h.kind)
+	end
 	return w.toBytes()
 end
 

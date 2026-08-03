@@ -23,4 +23,5 @@ export const DIFFICULTY = { easy: 130, medium: 100, hard: 75 };
 export const DEFAULT_TIME_SCALE = 100;
 
 // State schema version — bump on any hashed-state shape change, then repin.
-export const STATE_VERSION = 1;
+// v2: added cross-hazards (state.hazards + nextHazardId) — marker-0066.
+export const STATE_VERSION = 2;

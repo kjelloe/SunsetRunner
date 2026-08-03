@@ -124,7 +124,7 @@ export function createRemoteSession(url, opts = {}) {
     getState() {
       if (!latest || !latest.self) return { tick: 0, seats: [], ghosts: [], traffic: [], events: [] };
       const self = predictor ? predictor.self() : latest.self;
-      return { tick: latest.tick, seats: [self], ghosts: latest.ghosts, traffic: latest.traffic, events: latest.events };
+      return { tick: latest.tick, seats: [self], ghosts: latest.ghosts, traffic: latest.traffic, hazards: latest.hazards || [], events: latest.events };
     },
     close() {
       closed = true;

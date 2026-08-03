@@ -10,8 +10,10 @@ export function cloneState(state) {
     race: { ...state.race },
     seats: state.seats.map((s) => ({ ...s })),
     traffic: state.traffic.map((t) => ({ ...t })),
+    hazards: state.hazards.map((h) => ({ ...h })),
     spawnedSegments: [...state.spawnedSegments],
     nextTrafficId: state.nextTrafficId,
+    nextHazardId: state.nextHazardId,
     events: state.events.map((e) => ({ ...e })),
   };
 }

@@ -62,6 +62,7 @@ export function render(g, view, state, courseSet, assets, scenery) {
   if (assets) drawScenery(g, view, camX, assets, strips, theme);
   drawCheckpointBanner(g, view, camX, strips, seat, courseSet);
   drawTraffic(g, view, state, camX, assets, strips);
+  drawHazards(g, view, state, camX, assets, strips);
   drawGhosts(g, view, state, camX, strips);
   drawPlayerCar(g, view, seat, camX, assets);
   drawHud(g, view, state);
@@ -133,6 +134,28 @@ function drawTraffic(g, view, state, camX, assets, strips) {
       const w = Math.max(4, o.half * 0.5);
       g.fillStyle = t.kind === 2 ? "#3a6ea5" : "#e0c040";
       g.fillRect(o.x - w / 2, o.y - w * 0.6, w, w * 0.6);
+    }
+  }
+}
+
+const HAZARD_SPRITE = { 3: "snowmobile", 4: "skier" };
+function drawHazards(g, view, state, camX, assets, strips) {
+  const seat = state.seats[0];
+  const ahead = (state.hazards || [])
+    .filter((h) => h.segmentId === seat.segmentId && h.roadZ > seat.roadZ)
+    .sort((a, b) => b.roadZ - a.roadZ);
+  for (const h of ahead) {
+    const dz = h.roadZ - seat.roadZ;
+    if (dz < ROAD_UNIT) continue;
+    const s = sampleStrip(strips, dz);
+    const o = onRoad(view, camX, dz, h.laneX, s.curveX, s.hillY);
+    const sprite = assets && assets.sprites[HAZARD_SPRITE[h.kind]];
+    if (sprite) {
+      drawSprite(g, sprite, o.x, o.y, spriteScale(o.half, sprite, 0.5));
+    } else {
+      const w = Math.max(4, o.half * 0.4);
+      g.fillStyle = h.kind === 4 ? "#e04a8a" : "#303040"; // skier pink / snowmobile dark
+      g.fillRect(o.x - w / 2, o.y - w, w, w);
     }
   }
 }

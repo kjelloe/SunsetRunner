@@ -55,8 +55,10 @@ export function createInitialState(opts) {
     },
     seats,
     traffic: [],
+    hazards: [], // cross-hazards (skiers/snowmobiles) on snow terrain
     spawnedSegments: [],
     nextTrafficId: 1,
+    nextHazardId: 1,
     events: [],
   };
   // Seed the start segment's traffic up front when a traffic config is supplied.

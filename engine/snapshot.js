@@ -47,6 +47,16 @@ export function serializeSnapshot(state) {
     w.writeI32LE(t.speed);
     w.writeU32LE(t.kind);
   }
+  w.writeU32LE(state.nextHazardId);
+  w.writeU16LE(state.hazards.length);
+  for (const h of state.hazards) {
+    w.writeU32LE(h.id);
+    w.writeI32LE(h.segmentId);
+    w.writeI32LE(h.roadZ);
+    w.writeI32LE(h.laneX);
+    w.writeI32LE(h.vx);
+    w.writeU32LE(h.kind);
+  }
   return w.toBytes();
 }
 

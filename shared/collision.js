@@ -15,6 +15,15 @@ export const BUMP_PUSH = 64;   // lateral shove applied to each car, apart
 export const TRAFFIC_CRASH_DEN = 3;   // hitting traffic cuts speed to 1/3
 export const CRASH_STUN_TICKS = 30;   // post-crash immunity so you don't re-crash every tick
 
+// Cross-hazards (skiers/snowmobiles) that traverse the road laterally on snow
+// terrain (scenerySet 10 mountain -> snowmobile kind 3, 11 alpine -> skier 4).
+export const HAZARD_START = 384;      // lateral start offset (off one shoulder)
+export const HAZARD_DESPAWN = 430;    // remove once it crosses past the far shoulder
+export const HAZARD_SPEED = 26;       // lateral units per tick
+export const HAZARD_COUNT = 2;        // hazards seeded per snow segment
+export const HAZARD_SNOWMOBILE = 3;
+export const HAZARD_SKIER = 4;
+
 // Same segment and close enough along the road to be "near" (ghost highlight).
 export function inCollisionWindow(a, b) {
   return a.segmentId === b.segmentId && a.segmentId !== -1

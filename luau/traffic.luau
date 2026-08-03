@@ -6,8 +6,18 @@
 
 local prng = require("./prng")
 local road = require("./road_data")
+local fixed = require("./fixedmath")
 
 local ROAD_UNIT = 256
+-- Hazard constants mirror shared/collision.js.
+local HAZARD_START = 384
+local HAZARD_DESPAWN = 430
+local HAZARD_SPEED = 26
+local HAZARD_COUNT = 2
+local HAZARD_SNOWMOBILE = 3
+local HAZARD_SKIER = 4
+
+local spawnSegmentHazards -- forward declaration (used by spawnSegmentTraffic)
 
 local function contains(arr: { number }, v: number): boolean
 	for _, x in ipairs(arr) do
@@ -50,7 +60,49 @@ local function spawnSegmentTraffic(state, courseSet, cfg, segmentId: number)
 		})
 		state.nextTrafficId += 1
 	end
+	spawnSegmentHazards(state, seg, segLen)
 	table.insert(state.spawnedSegments, segmentId)
+end
+
+-- Cross-hazards on snow terrain (scenerySet 10 snowmobile / 11 skier). Distinct
+-- RNG stream so it never perturbs the traffic rolls above. Mirrors JS.
+spawnSegmentHazards = function(state, seg, segLen: number)
+	local kind = if seg.scenerySet == 10 then HAZARD_SNOWMOBILE elseif seg.scenerySet == 11 then HAZARD_SKIER else 0
+	if kind == 0 then
+		return
+	end
+	local rng = prng.seedSfc32((seg.trafficSeed * 2654435761 + state.seed + 777) % 4294967296)
+	for _ = 1, HAZARD_COUNT do
+		local r = prng.sfc32Next(rng)
+		local roadZ = if segLen > 0 then r.value % segLen else 0
+		rng = r.nextState
+		r = prng.sfc32Next(rng)
+		local dir = if r.value % 2 == 0 then 1 else -1
+		rng = r.nextState
+		table.insert(state.hazards, {
+			id = state.nextHazardId,
+			segmentId = seg.id,
+			roadZ = roadZ,
+			laneX = -dir * HAZARD_START,
+			vx = dir * HAZARD_SPEED,
+			kind = kind,
+		})
+		state.nextHazardId += 1
+	end
+end
+
+local function advanceHazards(state)
+	if #state.hazards == 0 then
+		return
+	end
+	local kept = {}
+	for _, h in ipairs(state.hazards) do
+		h.laneX += h.vx
+		if fixed.absI32(h.laneX) <= HAZARD_DESPAWN then
+			table.insert(kept, h)
+		end
+	end
+	state.hazards = kept
 end
 
 local function advanceTraffic(state, courseSet)
@@ -67,4 +119,4 @@ local function advanceTraffic(state, courseSet)
 	state.traffic = kept
 end
 
-return { spawnSegmentTraffic = spawnSegmentTraffic, advanceTraffic = advanceTraffic }
+return { spawnSegmentTraffic = spawnSegmentTraffic, advanceTraffic = advanceTraffic, advanceHazards = advanceHazards }

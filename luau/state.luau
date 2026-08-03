@@ -36,7 +36,7 @@ local function createInitialState(opts)
 		table.insert(seats, makeSeat(s.id, s.carId, course.startSegment, startTimeTicks))
 	end
 	local state = {
-		version = 1,
+		version = 2, -- STATE_VERSION (cross-hazards, marker-0066)
 		tick = 0,
 		seed = opts.seed % 4294967296,
 		rng = prng.seedSfc32(opts.seed % 4294967296),
@@ -47,8 +47,10 @@ local function createInitialState(opts)
 		},
 		seats = seats,
 		traffic = {},
+		hazards = {},
 		spawnedSegments = {},
 		nextTrafficId = 1,
+		nextHazardId = 1,
 		events = {},
 	}
 	if opts.trafficConfig then

@@ -85,12 +85,16 @@ local function apply(state, command, ctx)
 		for _, e in ipairs(collision.resolveTrafficCollisions(next, next.tick)) do
 			table.insert(next.events, e)
 		end
+		for _, e in ipairs(collision.resolveHazardCollisions(next, next.tick)) do
+			table.insert(next.events, e)
+		end
 		if ctx.rivalCollision then
 			for _, e in ipairs(collision.resolveRivalCollisions(next, next.tick)) do
 				table.insert(next.events, e)
 			end
 		end
 		trafficMod.advanceTraffic(next, ctx.courseSet)
+		trafficMod.advanceHazards(next)
 		return next
 	end
 

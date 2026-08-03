@@ -1342,3 +1342,22 @@ Client + server config, no repin.
   right curve. test/fork_road.test.js. specs/55.
 
 Gate: ./test.sh -> 244/244 + 4 Luau gates OK.
+
+---
+
+## marker-0066 — cross-hazards (skiers/snowmobiles), state v2 (2026-08-03)
+
+Engine + Luau twin (tranche 3). STATE_VERSION 1->2; FULL conscious repin (course
+1/2 behaviour identical — hazards gate on scenerySet 10/11, course-4 only).
+- state.hazards + nextHazardId; traffic.js spawnSegmentHazards (distinct RNG,
+  after traffic rolls) + advanceHazards; collision.js resolveHazardCollisions
+  (dead stop + stun). reducer tick order 8c/9b. copy_state + snapshot mirror.
+  shared/collision HAZARD_* consts.
+- Luau: state/traffic/collision/copy_state/snapshot/reducer/constants/spine-check
+  mirrored -> 4 gates byte-identical.
+- Repins: spine 6ed9caba, checkpoint e38e85c1, collision c7509672, fork
+  21ae1f3f, physics t500 1d8e8876, AI 14fb758b.
+- Render: drawHazards (sprite by kind + rect fallback); viewFor+remote carry
+  hazards. test/hazards.test.js. CLAUDE.md tick order updated. specs/56.
+
+Gate: ./test.sh -> 249/249 + 4 Luau gates OK.

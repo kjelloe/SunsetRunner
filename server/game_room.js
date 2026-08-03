@@ -222,6 +222,7 @@ export function createRoom(ctx, opts = {}) {
         ackSeq: ackSeq.get(seatId) ?? 0, // last input seq the server has taken (prediction ack)
         ghosts,
         traffic: state.traffic,
+        hazards: state.hazards,
         events: state.events,
         standings: computeStandings(state.seats),
         hash: hashSnapshot(state),

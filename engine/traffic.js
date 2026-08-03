@@ -7,6 +7,8 @@
 import { ROAD_UNIT } from "../shared/constants.js";
 import { seedSfc32, sfc32Next } from "../shared/prng.js";
 import { getSegment } from "../shared/road_data.js";
+import { HAZARD_START, HAZARD_DESPAWN, HAZARD_SPEED, HAZARD_COUNT, HAZARD_SNOWMOBILE, HAZARD_SKIER } from "../shared/collision.js";
+import { absI32 } from "../shared/fixedmath.js";
 
 function segmentLength(courseSet, segmentId) {
   return getSegment(courseSet, segmentId).stripCount * ROAD_UNIT;
@@ -41,7 +43,42 @@ export function spawnSegmentTraffic(state, courseSet, cfg, segmentId) {
     });
     state.nextTrafficId += 1;
   }
+  // Snow terrain also seeds crossing hazards (a distinct RNG stream so it never
+  // perturbs the traffic rolls above — non-snow segments are byte-identical).
+  spawnSegmentHazards(state, seg, segLen);
   state.spawnedSegments.push(segmentId);
+}
+
+// Cross-hazards on mountain (scenerySet 10 -> snowmobile) / alpine (11 -> skier).
+// Each starts off one shoulder and slides across; hitting one is a crash.
+export function spawnSegmentHazards(state, seg, segLen) {
+  const kind = seg.scenerySet === 10 ? HAZARD_SNOWMOBILE : seg.scenerySet === 11 ? HAZARD_SKIER : 0;
+  if (!kind) return;
+  let rng = seedSfc32((Math.imul(seg.trafficSeed, 2654435761) + state.seed + 777) >>> 0);
+  for (let i = 0; i < HAZARD_COUNT; i++) {
+    let r = roll(rng, segLen); const roadZ = r.value; rng = r.rng;
+    r = roll(rng, 2); const dir = r.value === 0 ? 1 : -1; rng = r.rng;
+    state.hazards.push({
+      id: state.nextHazardId,
+      segmentId: seg.id,
+      roadZ,
+      laneX: -dir * HAZARD_START, // start off the shoulder it enters from
+      vx: dir * HAZARD_SPEED,     // slides toward the far shoulder
+      kind,
+    });
+    state.nextHazardId += 1;
+  }
+}
+
+// Advance every hazard laterally; despawn once it crosses past the far shoulder.
+export function advanceHazards(state) {
+  if (state.hazards.length === 0) return;
+  const kept = [];
+  for (const h of state.hazards) {
+    h.laneX += h.vx;
+    if (absI32(h.laneX) <= HAZARD_DESPAWN) kept.push(h);
+  }
+  state.hazards = kept;
 }
 
 // Advance every traffic car; despawn any that drove off the end of its segment.

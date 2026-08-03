@@ -34,8 +34,10 @@ local function cloneState(state)
 		race = copy(state.race),
 		seats = copyArrayOfTables(state.seats),
 		traffic = copyArrayOfTables(state.traffic),
+		hazards = copyArrayOfTables(state.hazards),
 		spawnedSegments = copyArray(state.spawnedSegments),
 		nextTrafficId = state.nextTrafficId,
+		nextHazardId = state.nextHazardId,
 		events = copyArrayOfTables(state.events),
 	}
 end
