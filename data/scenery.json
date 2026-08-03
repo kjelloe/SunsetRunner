@@ -48,6 +48,46 @@
       "rumbleA": "#e05a5a",
       "sprites": ["sign", "palm", "palm"],
       "every": 7
+    },
+    "7": {
+      "name": "wheat",
+      "sky": ["#6aa0d0", "#d7e2a8"],
+      "grassA": "#d8c060", "grassB": "#c8b050",
+      "rumbleA": "#d06a3a",
+      "sprites": ["sign", "palm"],
+      "every": 9
+    },
+    "8": {
+      "name": "lake",
+      "sky": ["#4a7ab0", "#a6d4e6"],
+      "grassA": "#3a8a6a", "grassB": "#31795c",
+      "rumbleA": "#4aa0c0",
+      "sprites": ["palm", "palm", "sign"],
+      "every": 8
+    },
+    "9": {
+      "name": "autumn",
+      "sky": ["#b0673a", "#e6bd82"],
+      "grassA": "#b0602a", "grassB": "#a0521f",
+      "rumbleA": "#c05020",
+      "sprites": ["palm", "palm", "palm", "sign"],
+      "every": 6
+    },
+    "10": {
+      "name": "mountain",
+      "sky": ["#6a80a0", "#d2dae4"],
+      "grassA": "#7a8a6a", "grassB": "#6a7a5a",
+      "rumbleA": "#c0c0d0",
+      "sprites": ["palm", "palm", "sign"],
+      "every": 7
+    },
+    "11": {
+      "name": "alpine",
+      "sky": ["#a6b6cc", "#eaf2fa"],
+      "grassA": "#d8e0e8", "grassB": "#c8d0d8",
+      "rumbleA": "#8090a0",
+      "sprites": ["sign", "palm"],
+      "every": 8
     }
   }
 }

@@ -24,34 +24,43 @@ const secondsToStrips = (sec) => Math.round((sec * CRUISE * TICK_HZ) / ROAD_UNIT
 const stripsToSeconds = (strips) => (strips * ROAD_UNIT) / (CRUISE * TICK_HZ);
 
 // Curve/hill keyframe shapes (integer, sampled across the segment).
+// Curve keyframe shapes (integer, stepwise-sampled across the segment). NONE
+// contain a sustained 0 run — every leg is always turning, so the course has no
+// straight lines (playtest rule: no straight for more than ~8 s).
 const CURVES = {
-  straight: [0, 0, 0],
-  gentleL: [0, -1, -1, 0],
-  gentleR: [0, 1, 1, 0],
-  sharpL: [0, -1, -2, -2, -1, 0],
-  sharpR: [0, 1, 2, 2, 1, 0],
-  ess: [0, 1, 2, 0, -2, -1, 0],
+  sweepL: [-1, -2, -2, -1],
+  sweepR: [1, 2, 2, 1],
+  ess: [1, 2, 1, -1, -2, -1],
+  windL: [-1, -2, -1, -2, -1],
+  windR: [1, 2, 1, 2, 1],
+  hairpin: [2, 3, 3, 2],
 };
+// Hills MAY be flat in spots (a flat + turning road is still not a straight).
 const HILLS = {
-  flat: [0, 0, 0],
+  flat: [0, 0],
   crest: [0, 1, 2, 3, 2, 1, 0],
   dip: [0, -1, -2, -1, 0],
-  rolling: [0, 1, 0, -1, 0, 1, 0],
+  rolling: [1, 2, 0, -1, 0, 1],
 };
-const CURVE_CYCLE = ["straight", "gentleR", "ess", "gentleL", "sharpR", "straight", "sharpL"];
-const HILL_CYCLE = ["flat", "crest", "rolling", "dip", "flat", "rolling"];
-const SEC_CYCLE = [35, 45, 55, 40, 50, 38, 48];
+// Index 0 = stage 1: opens on an S-curve + crest to showcase corners & hills.
+const CURVE_CYCLE = ["ess", "sweepR", "windL", "sweepL", "hairpin", "windR"];
+const HILL_CYCLE = ["crest", "rolling", "dip", "crest", "flat", "rolling"];
+const SEC_CYCLE = [40, 48, 34, 52, 44, 38, 50];
 
-// Biome bands (scenerySet ids from specs/42 + city/night added in scenery.json).
-// Tuned so the MAIN (left-fork) route is exactly 50 stages: 44 line legs (1
-// stage each) + 3 fork legs (fork segment + left branch = 2 stages each) = 50.
+// Ten terrain bands (scenerySet -> scenery.json themes), a progression from coast
+// to alpine to night. 47 legs + 3 forks (each adds one on-route segment) = a
+// 50-stage main route.
 const BANDS = [
-  { biome: 1, name: "sunset", n: 7 },
-  { biome: 2, name: "beach", n: 9, forkIdx: 4, detour: 3 },
-  { biome: 3, name: "canyon", n: 9, forkIdx: 5, detour: 6 },
-  { biome: 4, name: "forest", n: 7 },
-  { biome: 5, name: "city", n: 9, forkIdx: 4, detour: 6 },
-  { biome: 6, name: "night", n: 6 },
+  { biome: 1, name: "palm", n: 5 },
+  { biome: 2, name: "beach", n: 5, forkIdx: 2, detour: 8 },      // detour: lake
+  { biome: 7, name: "wheat", n: 5 },
+  { biome: 8, name: "lake", n: 5, forkIdx: 2, detour: 9 },       // detour: autumn
+  { biome: 4, name: "forest", n: 5 },
+  { biome: 9, name: "autumn", n: 4 },
+  { biome: 3, name: "canyon", n: 5 },
+  { biome: 10, name: "mountain", n: 4, forkIdx: 2, detour: 11 }, // detour: alpine
+  { biome: 11, name: "alpine", n: 5 },
+  { biome: 6, name: "night", n: 4 },
 ];
 
 // Flatten bands into an ordered list of "legs"; a leg is a line or a fork.
@@ -68,8 +77,8 @@ function buildLegs() {
         // A fork: two branches (current biome vs a detour biome) that rejoin.
         legs.push({
           type: "fork", ...base,
-          left: { name: `${band.name}_${i + 1}L`, biome: band.biome, seconds: seconds + 5, curve: "sharpL", hill: "crest" },
-          right: { name: `${band.name}_${i + 1}R`, biome: band.detour, seconds: seconds + 10, curve: "sharpR", hill: "dip" },
+          left: { name: `${band.name}_${i + 1}L`, biome: band.biome, seconds: seconds + 5, curve: "sweepL", hill: "crest" },
+          right: { name: `${band.name}_${i + 1}R`, biome: band.detour, seconds: seconds + 10, curve: "sweepR", hill: "dip" },
         });
       } else {
         legs.push({ type: "line", ...base });

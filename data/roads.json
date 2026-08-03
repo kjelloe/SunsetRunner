@@ -378,40 +378,20 @@
     },
     {
       "id": 100,
-      "nameKey": "seg.sunset_1",
-      "seconds": 35,
-      "stripCount": 5469,
-      "checkpointTicks": 630,
+      "nameKey": "seg.palm_1",
+      "seconds": 40,
+      "stripCount": 6250,
+      "checkpointTicks": 720,
       "next": 101,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        0,
-        0
-      ],
-      "hillProfile": [
-        0,
-        0,
-        0
-      ],
-      "trafficSeed": 500,
-      "scenerySet": 1
-    },
-    {
-      "id": 101,
-      "nameKey": "seg.sunset_2",
-      "seconds": 45,
-      "stripCount": 7031,
-      "checkpointTicks": 810,
-      "next": 102,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
         1,
+        2,
         1,
-        0
+        -1,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
@@ -422,34 +402,56 @@
         1,
         0
       ],
+      "trafficSeed": 500,
+      "scenerySet": 1
+    },
+    {
+      "id": 101,
+      "nameKey": "seg.palm_2",
+      "seconds": 48,
+      "stripCount": 7500,
+      "checkpointTicks": 864,
+      "next": 102,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        1,
+        2,
+        2,
+        1
+      ],
+      "hillProfile": [
+        1,
+        2,
+        0,
+        -1,
+        0,
+        1
+      ],
       "trafficSeed": 501,
       "scenerySet": 1
     },
     {
       "id": 102,
-      "nameKey": "seg.sunset_3",
-      "seconds": 55,
-      "stripCount": 8594,
-      "checkpointTicks": 990,
+      "nameKey": "seg.palm_3",
+      "seconds": 34,
+      "stripCount": 5313,
+      "checkpointTicks": 612,
       "next": 103,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        1,
-        2,
-        0,
+        -1,
         -2,
         -1,
-        0
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
-        1,
-        0,
         -1,
-        0,
-        1,
+        -2,
+        -1,
         0
       ],
       "trafficSeed": 502,
@@ -457,24 +459,26 @@
     },
     {
       "id": 103,
-      "nameKey": "seg.sunset_4",
-      "seconds": 40,
-      "stripCount": 6250,
-      "checkpointTicks": 720,
+      "nameKey": "seg.palm_4",
+      "seconds": 52,
+      "stripCount": 8125,
+      "checkpointTicks": 936,
       "next": 104,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
         -1,
-        -1,
-        0
+        -2,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
-        -1,
-        -2,
-        -1,
+        1,
+        2,
+        3,
+        2,
+        1,
         0
       ],
       "trafficSeed": 503,
@@ -482,23 +486,20 @@
     },
     {
       "id": 104,
-      "nameKey": "seg.sunset_5",
-      "seconds": 50,
-      "stripCount": 7813,
-      "checkpointTicks": 900,
+      "nameKey": "seg.palm_5",
+      "seconds": 44,
+      "stripCount": 6875,
+      "checkpointTicks": 792,
       "next": 105,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        1,
         2,
-        2,
-        1,
-        0
+        3,
+        3,
+        2
       ],
       "hillProfile": [
-        0,
         0,
         0
       ],
@@ -507,7 +508,7 @@
     },
     {
       "id": 105,
-      "nameKey": "seg.sunset_6",
+      "nameKey": "seg.beach_1",
       "seconds": 38,
       "stripCount": 5938,
       "checkpointTicks": 684,
@@ -515,60 +516,39 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        0,
-        0
+        1,
+        2,
+        1,
+        2,
+        1
       ],
       "hillProfile": [
-        0,
         1,
+        2,
         0,
         -1,
         0,
-        1,
-        0
+        1
       ],
       "trafficSeed": 505,
-      "scenerySet": 1
+      "scenerySet": 2
     },
     {
       "id": 106,
-      "nameKey": "seg.sunset_7",
-      "seconds": 48,
-      "stripCount": 7500,
-      "checkpointTicks": 864,
+      "nameKey": "seg.beach_2",
+      "seconds": 50,
+      "stripCount": 7813,
+      "checkpointTicks": 900,
       "next": 107,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
+        1,
+        2,
+        1,
         -1,
         -2,
-        -2,
-        -1,
-        0
-      ],
-      "hillProfile": [
-        0,
-        0,
-        0
-      ],
-      "trafficSeed": 506,
-      "scenerySet": 1
-    },
-    {
-      "id": 107,
-      "nameKey": "seg.beach_1",
-      "seconds": 35,
-      "stripCount": 5469,
-      "checkpointTicks": 630,
-      "next": 108,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
-        0,
-        0
+        -1
       ],
       "hillProfile": [
         0,
@@ -579,30 +559,56 @@
         1,
         0
       ],
+      "trafficSeed": 506,
+      "scenerySet": 2
+    },
+    {
+      "id": 107,
+      "nameKey": "seg.beach_3",
+      "seconds": 40,
+      "stripCount": 6250,
+      "checkpointTicks": 720,
+      "next": -1,
+      "forkLeft": 108,
+      "forkRight": 109,
+      "curveProfile": [
+        1,
+        2,
+        2,
+        1
+      ],
+      "hillProfile": [
+        1,
+        2,
+        0,
+        -1,
+        0,
+        1
+      ],
       "trafficSeed": 507,
       "scenerySet": 2
     },
     {
       "id": 108,
-      "nameKey": "seg.beach_2",
+      "nameKey": "seg.beach_3L",
       "seconds": 45,
       "stripCount": 7031,
       "checkpointTicks": 810,
-      "next": 109,
+      "next": 110,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        1,
-        1,
-        0
+        -1,
+        -2,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
         1,
-        0,
-        -1,
-        0,
+        2,
+        3,
+        2,
         1,
         0
       ],
@@ -611,21 +617,18 @@
     },
     {
       "id": 109,
-      "nameKey": "seg.beach_3",
-      "seconds": 55,
-      "stripCount": 8594,
-      "checkpointTicks": 990,
+      "nameKey": "seg.beach_3R",
+      "seconds": 50,
+      "stripCount": 7813,
+      "checkpointTicks": 900,
       "next": 110,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
         1,
         2,
-        0,
-        -2,
-        -1,
-        0
+        2,
+        1
       ],
       "hillProfile": [
         0,
@@ -635,26 +638,29 @@
         0
       ],
       "trafficSeed": 509,
-      "scenerySet": 2
+      "scenerySet": 8
     },
     {
       "id": 110,
       "nameKey": "seg.beach_4",
-      "seconds": 40,
-      "stripCount": 6250,
-      "checkpointTicks": 720,
+      "seconds": 48,
+      "stripCount": 7500,
+      "checkpointTicks": 864,
       "next": 111,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
         -1,
+        -2,
         -1,
-        0
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
-        0,
+        -1,
+        -2,
+        -1,
         0
       ],
       "trafficSeed": 510,
@@ -663,26 +669,24 @@
     {
       "id": 111,
       "nameKey": "seg.beach_5",
-      "seconds": 50,
-      "stripCount": 7813,
-      "checkpointTicks": 900,
-      "next": -1,
-      "forkLeft": 112,
-      "forkRight": 113,
+      "seconds": 34,
+      "stripCount": 5313,
+      "checkpointTicks": 612,
+      "next": 112,
+      "forkLeft": -1,
+      "forkRight": -1,
       "curveProfile": [
-        0,
-        1,
-        2,
-        2,
-        1,
-        0
+        -1,
+        -2,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
         1,
-        0,
-        -1,
-        0,
+        2,
+        3,
+        2,
         1,
         0
       ],
@@ -691,63 +695,56 @@
     },
     {
       "id": 112,
-      "nameKey": "seg.beach_5L",
-      "seconds": 55,
-      "stripCount": 8594,
-      "checkpointTicks": 990,
-      "next": 114,
+      "nameKey": "seg.wheat_1",
+      "seconds": 52,
+      "stripCount": 8125,
+      "checkpointTicks": 936,
+      "next": 113,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        -1,
-        -2,
-        -2,
-        -1,
-        0
+        2,
+        3,
+        3,
+        2
       ],
       "hillProfile": [
         0,
-        1,
-        2,
-        3,
-        2,
-        1,
         0
       ],
       "trafficSeed": 512,
-      "scenerySet": 2
+      "scenerySet": 7
     },
     {
       "id": 113,
-      "nameKey": "seg.beach_5R",
-      "seconds": 60,
-      "stripCount": 9375,
-      "checkpointTicks": 1080,
+      "nameKey": "seg.wheat_2",
+      "seconds": 44,
+      "stripCount": 6875,
+      "checkpointTicks": 792,
       "next": 114,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
         1,
         2,
-        2,
         1,
-        0
+        2,
+        1
       ],
       "hillProfile": [
+        1,
+        2,
         0,
         -1,
-        -2,
-        -1,
-        0
+        0,
+        1
       ],
       "trafficSeed": 513,
-      "scenerySet": 3
+      "scenerySet": 7
     },
     {
       "id": 114,
-      "nameKey": "seg.beach_6",
+      "nameKey": "seg.wheat_3",
       "seconds": 38,
       "stripCount": 5938,
       "checkpointTicks": 684,
@@ -755,189 +752,167 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        0,
-        0
+        1,
+        2,
+        1,
+        -1,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
-        0,
+        1,
+        2,
+        3,
+        2,
+        1,
         0
       ],
       "trafficSeed": 514,
-      "scenerySet": 2
+      "scenerySet": 7
     },
     {
       "id": 115,
-      "nameKey": "seg.beach_7",
-      "seconds": 48,
-      "stripCount": 7500,
-      "checkpointTicks": 864,
+      "nameKey": "seg.wheat_4",
+      "seconds": 50,
+      "stripCount": 7813,
+      "checkpointTicks": 900,
       "next": 116,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        -1,
-        -2,
-        -2,
-        -1,
-        0
+        1,
+        2,
+        2,
+        1
       ],
       "hillProfile": [
+        1,
+        2,
         0,
-        1,
-        2,
-        3,
-        2,
-        1,
-        0
+        -1,
+        0,
+        1
       ],
       "trafficSeed": 515,
-      "scenerySet": 2
+      "scenerySet": 7
     },
     {
       "id": 116,
-      "nameKey": "seg.beach_8",
-      "seconds": 35,
-      "stripCount": 5469,
-      "checkpointTicks": 630,
+      "nameKey": "seg.wheat_5",
+      "seconds": 40,
+      "stripCount": 6250,
+      "checkpointTicks": 720,
       "next": 117,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        0,
-        0
+        -1,
+        -2,
+        -1,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
-        1,
-        0,
         -1,
-        0,
-        1,
+        -2,
+        -1,
         0
       ],
       "trafficSeed": 516,
-      "scenerySet": 2
+      "scenerySet": 7
     },
     {
       "id": 117,
-      "nameKey": "seg.beach_9",
-      "seconds": 45,
-      "stripCount": 7031,
-      "checkpointTicks": 810,
+      "nameKey": "seg.lake_1",
+      "seconds": 48,
+      "stripCount": 7500,
+      "checkpointTicks": 864,
       "next": 118,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        1,
-        1,
-        0
+        -1,
+        -2,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
-        -1,
-        -2,
-        -1,
+        1,
+        2,
+        3,
+        2,
+        1,
         0
       ],
       "trafficSeed": 517,
-      "scenerySet": 2
+      "scenerySet": 8
     },
     {
       "id": 118,
-      "nameKey": "seg.canyon_1",
-      "seconds": 55,
-      "stripCount": 8594,
-      "checkpointTicks": 990,
+      "nameKey": "seg.lake_2",
+      "seconds": 34,
+      "stripCount": 5313,
+      "checkpointTicks": 612,
       "next": 119,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        1,
         2,
-        0,
-        -2,
-        -1,
-        0
+        3,
+        3,
+        2
       ],
       "hillProfile": [
-        0,
         0,
         0
       ],
       "trafficSeed": 518,
-      "scenerySet": 3
+      "scenerySet": 8
     },
     {
       "id": 119,
-      "nameKey": "seg.canyon_2",
-      "seconds": 40,
-      "stripCount": 6250,
-      "checkpointTicks": 720,
-      "next": 120,
-      "forkLeft": -1,
-      "forkRight": -1,
+      "nameKey": "seg.lake_3",
+      "seconds": 52,
+      "stripCount": 8125,
+      "checkpointTicks": 936,
+      "next": -1,
+      "forkLeft": 120,
+      "forkRight": 121,
       "curveProfile": [
-        0,
-        -1,
-        -1,
-        0
+        1,
+        2,
+        1,
+        2,
+        1
       ],
       "hillProfile": [
-        0,
         1,
+        2,
         0,
         -1,
         0,
-        1,
-        0
+        1
       ],
       "trafficSeed": 519,
-      "scenerySet": 3
+      "scenerySet": 8
     },
     {
       "id": 120,
-      "nameKey": "seg.canyon_3",
-      "seconds": 50,
-      "stripCount": 7813,
-      "checkpointTicks": 900,
-      "next": 121,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
-        1,
-        2,
-        2,
-        1,
-        0
-      ],
-      "hillProfile": [
-        0,
-        0,
-        0
-      ],
-      "trafficSeed": 520,
-      "scenerySet": 3
-    },
-    {
-      "id": 121,
-      "nameKey": "seg.canyon_4",
-      "seconds": 38,
-      "stripCount": 5938,
-      "checkpointTicks": 684,
+      "nameKey": "seg.lake_3L",
+      "seconds": 57,
+      "stripCount": 8906,
+      "checkpointTicks": 1026,
       "next": 122,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        0,
-        0
+        -1,
+        -2,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
@@ -948,210 +923,129 @@
         1,
         0
       ],
+      "trafficSeed": 520,
+      "scenerySet": 8
+    },
+    {
+      "id": 121,
+      "nameKey": "seg.lake_3R",
+      "seconds": 62,
+      "stripCount": 9688,
+      "checkpointTicks": 1116,
+      "next": 122,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        1,
+        2,
+        2,
+        1
+      ],
+      "hillProfile": [
+        0,
+        -1,
+        -2,
+        -1,
+        0
+      ],
       "trafficSeed": 521,
-      "scenerySet": 3
+      "scenerySet": 9
     },
     {
       "id": 122,
-      "nameKey": "seg.canyon_5",
-      "seconds": 48,
-      "stripCount": 7500,
-      "checkpointTicks": 864,
+      "nameKey": "seg.lake_4",
+      "seconds": 44,
+      "stripCount": 6875,
+      "checkpointTicks": 792,
       "next": 123,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
+        1,
+        2,
+        1,
         -1,
         -2,
-        -2,
-        -1,
-        0
+        -1
       ],
       "hillProfile": [
         0,
         1,
-        0,
-        -1,
-        0,
+        2,
+        3,
+        2,
         1,
         0
       ],
       "trafficSeed": 522,
-      "scenerySet": 3
+      "scenerySet": 8
     },
     {
       "id": 123,
-      "nameKey": "seg.canyon_6",
-      "seconds": 35,
-      "stripCount": 5469,
-      "checkpointTicks": 630,
-      "next": -1,
-      "forkLeft": 124,
-      "forkRight": 125,
+      "nameKey": "seg.lake_5",
+      "seconds": 38,
+      "stripCount": 5938,
+      "checkpointTicks": 684,
+      "next": 124,
+      "forkLeft": -1,
+      "forkRight": -1,
       "curveProfile": [
-        0,
-        0,
-        0
+        1,
+        2,
+        2,
+        1
       ],
       "hillProfile": [
+        1,
+        2,
         0,
         -1,
-        -2,
-        -1,
-        0
+        0,
+        1
       ],
       "trafficSeed": 523,
-      "scenerySet": 3
+      "scenerySet": 8
     },
     {
       "id": 124,
-      "nameKey": "seg.canyon_6L",
-      "seconds": 40,
-      "stripCount": 6250,
-      "checkpointTicks": 720,
-      "next": 126,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
-        -1,
-        -2,
-        -2,
-        -1,
-        0
-      ],
-      "hillProfile": [
-        0,
-        1,
-        2,
-        3,
-        2,
-        1,
-        0
-      ],
-      "trafficSeed": 524,
-      "scenerySet": 3
-    },
-    {
-      "id": 125,
-      "nameKey": "seg.canyon_6R",
-      "seconds": 45,
-      "stripCount": 7031,
-      "checkpointTicks": 810,
-      "next": 126,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
-        1,
-        2,
-        2,
-        1,
-        0
-      ],
-      "hillProfile": [
-        0,
-        -1,
-        -2,
-        -1,
-        0
-      ],
-      "trafficSeed": 525,
-      "scenerySet": 6
-    },
-    {
-      "id": 126,
-      "nameKey": "seg.canyon_7",
-      "seconds": 45,
-      "stripCount": 7031,
-      "checkpointTicks": 810,
-      "next": 127,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
-        1,
-        1,
-        0
-      ],
-      "hillProfile": [
-        0,
-        0,
-        0
-      ],
-      "trafficSeed": 526,
-      "scenerySet": 3
-    },
-    {
-      "id": 127,
-      "nameKey": "seg.canyon_8",
-      "seconds": 55,
-      "stripCount": 8594,
-      "checkpointTicks": 990,
-      "next": 128,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
-        1,
-        2,
-        0,
-        -2,
-        -1,
-        0
-      ],
-      "hillProfile": [
-        0,
-        1,
-        0,
-        -1,
-        0,
-        1,
-        0
-      ],
-      "trafficSeed": 527,
-      "scenerySet": 3
-    },
-    {
-      "id": 128,
-      "nameKey": "seg.canyon_9",
-      "seconds": 40,
-      "stripCount": 6250,
-      "checkpointTicks": 720,
-      "next": 129,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
-        -1,
-        -1,
-        0
-      ],
-      "hillProfile": [
-        0,
-        0,
-        0
-      ],
-      "trafficSeed": 528,
-      "scenerySet": 3
-    },
-    {
-      "id": 129,
       "nameKey": "seg.forest_1",
       "seconds": 50,
       "stripCount": 7813,
       "checkpointTicks": 900,
-      "next": 130,
+      "next": 125,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
+        -1,
+        -2,
+        -1,
+        -2,
+        -1
+      ],
+      "hillProfile": [
         0,
-        1,
-        2,
-        2,
-        1,
+        -1,
+        -2,
+        -1,
         0
+      ],
+      "trafficSeed": 524,
+      "scenerySet": 4
+    },
+    {
+      "id": 125,
+      "nameKey": "seg.forest_2",
+      "seconds": 40,
+      "stripCount": 6250,
+      "checkpointTicks": 720,
+      "next": 126,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        -1,
+        -2,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
@@ -1162,12 +1056,116 @@
         1,
         0
       ],
-      "trafficSeed": 529,
+      "trafficSeed": 525,
       "scenerySet": 4
     },
     {
+      "id": 126,
+      "nameKey": "seg.forest_3",
+      "seconds": 48,
+      "stripCount": 7500,
+      "checkpointTicks": 864,
+      "next": 127,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        2,
+        3,
+        3,
+        2
+      ],
+      "hillProfile": [
+        0,
+        0
+      ],
+      "trafficSeed": 526,
+      "scenerySet": 4
+    },
+    {
+      "id": 127,
+      "nameKey": "seg.forest_4",
+      "seconds": 34,
+      "stripCount": 5313,
+      "checkpointTicks": 612,
+      "next": 128,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        1,
+        2,
+        1,
+        2,
+        1
+      ],
+      "hillProfile": [
+        1,
+        2,
+        0,
+        -1,
+        0,
+        1
+      ],
+      "trafficSeed": 527,
+      "scenerySet": 4
+    },
+    {
+      "id": 128,
+      "nameKey": "seg.forest_5",
+      "seconds": 52,
+      "stripCount": 8125,
+      "checkpointTicks": 936,
+      "next": 129,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        1,
+        2,
+        1,
+        -1,
+        -2,
+        -1
+      ],
+      "hillProfile": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1,
+        0
+      ],
+      "trafficSeed": 528,
+      "scenerySet": 4
+    },
+    {
+      "id": 129,
+      "nameKey": "seg.autumn_1",
+      "seconds": 44,
+      "stripCount": 6875,
+      "checkpointTicks": 792,
+      "next": 130,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        1,
+        2,
+        2,
+        1
+      ],
+      "hillProfile": [
+        1,
+        2,
+        0,
+        -1,
+        0,
+        1
+      ],
+      "trafficSeed": 529,
+      "scenerySet": 9
+    },
+    {
       "id": 130,
-      "nameKey": "seg.forest_2",
+      "nameKey": "seg.autumn_2",
       "seconds": 38,
       "stripCount": 5938,
       "checkpointTicks": 684,
@@ -1175,138 +1173,36 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        0,
-        0
+        -1,
+        -2,
+        -1,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
-        1,
-        0,
         -1,
-        0,
-        1,
+        -2,
+        -1,
         0
       ],
       "trafficSeed": 530,
-      "scenerySet": 4
+      "scenerySet": 9
     },
     {
       "id": 131,
-      "nameKey": "seg.forest_3",
-      "seconds": 48,
-      "stripCount": 7500,
-      "checkpointTicks": 864,
+      "nameKey": "seg.autumn_3",
+      "seconds": 50,
+      "stripCount": 7813,
+      "checkpointTicks": 900,
       "next": 132,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
         -1,
         -2,
         -2,
-        -1,
-        0
-      ],
-      "hillProfile": [
-        0,
-        -1,
-        -2,
-        -1,
-        0
-      ],
-      "trafficSeed": 531,
-      "scenerySet": 4
-    },
-    {
-      "id": 132,
-      "nameKey": "seg.forest_4",
-      "seconds": 35,
-      "stripCount": 5469,
-      "checkpointTicks": 630,
-      "next": 133,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
-        0,
-        0
-      ],
-      "hillProfile": [
-        0,
-        0,
-        0
-      ],
-      "trafficSeed": 532,
-      "scenerySet": 4
-    },
-    {
-      "id": 133,
-      "nameKey": "seg.forest_5",
-      "seconds": 45,
-      "stripCount": 7031,
-      "checkpointTicks": 810,
-      "next": 134,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
-        1,
-        1,
-        0
-      ],
-      "hillProfile": [
-        0,
-        1,
-        0,
-        -1,
-        0,
-        1,
-        0
-      ],
-      "trafficSeed": 533,
-      "scenerySet": 4
-    },
-    {
-      "id": 134,
-      "nameKey": "seg.forest_6",
-      "seconds": 55,
-      "stripCount": 8594,
-      "checkpointTicks": 990,
-      "next": 135,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
-        1,
-        2,
-        0,
-        -2,
-        -1,
-        0
-      ],
-      "hillProfile": [
-        0,
-        0,
-        0
-      ],
-      "trafficSeed": 534,
-      "scenerySet": 4
-    },
-    {
-      "id": 135,
-      "nameKey": "seg.forest_7",
-      "seconds": 40,
-      "stripCount": 6250,
-      "checkpointTicks": 720,
-      "next": 136,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
-        -1,
-        -1,
-        0
+        -1
       ],
       "hillProfile": [
         0,
@@ -1317,41 +1213,142 @@
         1,
         0
       ],
-      "trafficSeed": 535,
-      "scenerySet": 4
+      "trafficSeed": 531,
+      "scenerySet": 9
     },
     {
-      "id": 136,
-      "nameKey": "seg.city_1",
-      "seconds": 50,
-      "stripCount": 7813,
-      "checkpointTicks": 900,
-      "next": 137,
+      "id": 132,
+      "nameKey": "seg.autumn_4",
+      "seconds": 40,
+      "stripCount": 6250,
+      "checkpointTicks": 720,
+      "next": 133,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
+        2,
+        3,
+        3,
+        2
+      ],
+      "hillProfile": [
         0,
-        1,
-        2,
-        2,
-        1,
         0
+      ],
+      "trafficSeed": 532,
+      "scenerySet": 9
+    },
+    {
+      "id": 133,
+      "nameKey": "seg.canyon_1",
+      "seconds": 48,
+      "stripCount": 7500,
+      "checkpointTicks": 864,
+      "next": 134,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        1,
+        2,
+        1,
+        2,
+        1
+      ],
+      "hillProfile": [
+        1,
+        2,
+        0,
+        -1,
+        0,
+        1
+      ],
+      "trafficSeed": 533,
+      "scenerySet": 3
+    },
+    {
+      "id": 134,
+      "nameKey": "seg.canyon_2",
+      "seconds": 34,
+      "stripCount": 5313,
+      "checkpointTicks": 612,
+      "next": 135,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        1,
+        2,
+        1,
+        -1,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
         1,
-        0,
-        -1,
-        0,
+        2,
+        3,
+        2,
         1,
         0
       ],
+      "trafficSeed": 534,
+      "scenerySet": 3
+    },
+    {
+      "id": 135,
+      "nameKey": "seg.canyon_3",
+      "seconds": 52,
+      "stripCount": 8125,
+      "checkpointTicks": 936,
+      "next": 136,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        1,
+        2,
+        2,
+        1
+      ],
+      "hillProfile": [
+        1,
+        2,
+        0,
+        -1,
+        0,
+        1
+      ],
+      "trafficSeed": 535,
+      "scenerySet": 3
+    },
+    {
+      "id": 136,
+      "nameKey": "seg.canyon_4",
+      "seconds": 44,
+      "stripCount": 6875,
+      "checkpointTicks": 792,
+      "next": 137,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        -1,
+        -2,
+        -1,
+        -2,
+        -1
+      ],
+      "hillProfile": [
+        0,
+        -1,
+        -2,
+        -1,
+        0
+      ],
       "trafficSeed": 536,
-      "scenerySet": 5
+      "scenerySet": 3
     },
     {
       "id": 137,
-      "nameKey": "seg.city_2",
+      "nameKey": "seg.canyon_5",
       "seconds": 38,
       "stripCount": 5938,
       "checkpointTicks": 684,
@@ -1359,110 +1356,115 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        0,
-        0
+        -1,
+        -2,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
-        -1,
-        -2,
-        -1,
+        1,
+        2,
+        3,
+        2,
+        1,
         0
       ],
       "trafficSeed": 537,
-      "scenerySet": 5
+      "scenerySet": 3
     },
     {
       "id": 138,
-      "nameKey": "seg.city_3",
-      "seconds": 48,
-      "stripCount": 7500,
-      "checkpointTicks": 864,
+      "nameKey": "seg.mountain_1",
+      "seconds": 50,
+      "stripCount": 7813,
+      "checkpointTicks": 900,
       "next": 139,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        -1,
-        -2,
-        -2,
-        -1,
-        0
+        2,
+        3,
+        3,
+        2
       ],
       "hillProfile": [
-        0,
         0,
         0
       ],
       "trafficSeed": 538,
-      "scenerySet": 5
+      "scenerySet": 10
     },
     {
       "id": 139,
-      "nameKey": "seg.city_4",
-      "seconds": 35,
-      "stripCount": 5469,
-      "checkpointTicks": 630,
+      "nameKey": "seg.mountain_2",
+      "seconds": 40,
+      "stripCount": 6250,
+      "checkpointTicks": 720,
       "next": 140,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        0,
-        0
+        1,
+        2,
+        1,
+        2,
+        1
       ],
       "hillProfile": [
-        0,
         1,
+        2,
         0,
         -1,
         0,
-        1,
-        0
+        1
       ],
       "trafficSeed": 539,
-      "scenerySet": 5
+      "scenerySet": 10
     },
     {
       "id": 140,
-      "nameKey": "seg.city_5",
-      "seconds": 45,
-      "stripCount": 7031,
-      "checkpointTicks": 810,
+      "nameKey": "seg.mountain_3",
+      "seconds": 48,
+      "stripCount": 7500,
+      "checkpointTicks": 864,
       "next": -1,
       "forkLeft": 141,
       "forkRight": 142,
       "curveProfile": [
-        0,
         1,
+        2,
         1,
-        0
+        -1,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
-        0,
+        1,
+        2,
+        3,
+        2,
+        1,
         0
       ],
       "trafficSeed": 540,
-      "scenerySet": 5
+      "scenerySet": 10
     },
     {
       "id": 141,
-      "nameKey": "seg.city_5L",
-      "seconds": 50,
-      "stripCount": 7813,
-      "checkpointTicks": 900,
+      "nameKey": "seg.mountain_3L",
+      "seconds": 53,
+      "stripCount": 8281,
+      "checkpointTicks": 954,
       "next": 143,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
         -1,
         -2,
         -2,
-        -1,
-        0
+        -1
       ],
       "hillProfile": [
         0,
@@ -1474,24 +1476,22 @@
         0
       ],
       "trafficSeed": 541,
-      "scenerySet": 5
+      "scenerySet": 10
     },
     {
       "id": 142,
-      "nameKey": "seg.city_5R",
-      "seconds": 55,
-      "stripCount": 8594,
-      "checkpointTicks": 990,
+      "nameKey": "seg.mountain_3R",
+      "seconds": 58,
+      "stripCount": 9063,
+      "checkpointTicks": 1044,
       "next": 143,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
         1,
         2,
         2,
-        1,
-        0
+        1
       ],
       "hillProfile": [
         0,
@@ -1501,25 +1501,74 @@
         0
       ],
       "trafficSeed": 542,
-      "scenerySet": 6
+      "scenerySet": 11
     },
     {
       "id": 143,
-      "nameKey": "seg.city_6",
-      "seconds": 55,
-      "stripCount": 8594,
-      "checkpointTicks": 990,
+      "nameKey": "seg.mountain_4",
+      "seconds": 34,
+      "stripCount": 5313,
+      "checkpointTicks": 612,
       "next": 144,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
+        1,
+        2,
+        2,
+        1
+      ],
+      "hillProfile": [
         1,
         2,
         0,
+        -1,
+        0,
+        1
+      ],
+      "trafficSeed": 543,
+      "scenerySet": 10
+    },
+    {
+      "id": 144,
+      "nameKey": "seg.alpine_1",
+      "seconds": 52,
+      "stripCount": 8125,
+      "checkpointTicks": 936,
+      "next": 145,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        -1,
+        -2,
+        -1,
+        -2,
+        -1
+      ],
+      "hillProfile": [
+        0,
+        -1,
         -2,
         -1,
         0
+      ],
+      "trafficSeed": 544,
+      "scenerySet": 11
+    },
+    {
+      "id": 145,
+      "nameKey": "seg.alpine_2",
+      "seconds": 44,
+      "stripCount": 6875,
+      "checkpointTicks": 792,
+      "next": 146,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        -1,
+        -2,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
@@ -1530,66 +1579,12 @@
         1,
         0
       ],
-      "trafficSeed": 543,
-      "scenerySet": 5
-    },
-    {
-      "id": 144,
-      "nameKey": "seg.city_7",
-      "seconds": 40,
-      "stripCount": 6250,
-      "checkpointTicks": 720,
-      "next": 145,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
-        -1,
-        -1,
-        0
-      ],
-      "hillProfile": [
-        0,
-        1,
-        0,
-        -1,
-        0,
-        1,
-        0
-      ],
-      "trafficSeed": 544,
-      "scenerySet": 5
-    },
-    {
-      "id": 145,
-      "nameKey": "seg.city_8",
-      "seconds": 50,
-      "stripCount": 7813,
-      "checkpointTicks": 900,
-      "next": 146,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
-        1,
-        2,
-        2,
-        1,
-        0
-      ],
-      "hillProfile": [
-        0,
-        -1,
-        -2,
-        -1,
-        0
-      ],
       "trafficSeed": 545,
-      "scenerySet": 5
+      "scenerySet": 11
     },
     {
       "id": 146,
-      "nameKey": "seg.city_9",
+      "nameKey": "seg.alpine_3",
       "seconds": 38,
       "stripCount": 5938,
       "checkpointTicks": 684,
@@ -1597,83 +1592,61 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        0,
-        0
+        2,
+        3,
+        3,
+        2
       ],
       "hillProfile": [
-        0,
         0,
         0
       ],
       "trafficSeed": 546,
-      "scenerySet": 5
+      "scenerySet": 11
     },
     {
       "id": 147,
-      "nameKey": "seg.night_1",
-      "seconds": 48,
-      "stripCount": 7500,
-      "checkpointTicks": 864,
+      "nameKey": "seg.alpine_4",
+      "seconds": 50,
+      "stripCount": 7813,
+      "checkpointTicks": 900,
       "next": 148,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        -1,
-        -2,
-        -2,
-        -1,
-        0
+        1,
+        2,
+        1,
+        2,
+        1
       ],
       "hillProfile": [
-        0,
         1,
+        2,
         0,
         -1,
         0,
-        1,
-        0
+        1
       ],
       "trafficSeed": 547,
-      "scenerySet": 6
+      "scenerySet": 11
     },
     {
       "id": 148,
-      "nameKey": "seg.night_2",
-      "seconds": 35,
-      "stripCount": 5469,
-      "checkpointTicks": 630,
+      "nameKey": "seg.alpine_5",
+      "seconds": 40,
+      "stripCount": 6250,
+      "checkpointTicks": 720,
       "next": 149,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        0,
-        0
-      ],
-      "hillProfile": [
-        0,
-        0,
-        0
-      ],
-      "trafficSeed": 548,
-      "scenerySet": 6
-    },
-    {
-      "id": 149,
-      "nameKey": "seg.night_3",
-      "seconds": 45,
-      "stripCount": 7031,
-      "checkpointTicks": 810,
-      "next": 150,
-      "forkLeft": -1,
-      "forkRight": -1,
-      "curveProfile": [
-        0,
         1,
+        2,
         1,
-        0
+        -1,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
@@ -1684,34 +1657,56 @@
         1,
         0
       ],
+      "trafficSeed": 548,
+      "scenerySet": 11
+    },
+    {
+      "id": 149,
+      "nameKey": "seg.night_1",
+      "seconds": 48,
+      "stripCount": 7500,
+      "checkpointTicks": 864,
+      "next": 150,
+      "forkLeft": -1,
+      "forkRight": -1,
+      "curveProfile": [
+        1,
+        2,
+        2,
+        1
+      ],
+      "hillProfile": [
+        1,
+        2,
+        0,
+        -1,
+        0,
+        1
+      ],
       "trafficSeed": 549,
       "scenerySet": 6
     },
     {
       "id": 150,
-      "nameKey": "seg.night_4",
-      "seconds": 55,
-      "stripCount": 8594,
-      "checkpointTicks": 990,
+      "nameKey": "seg.night_2",
+      "seconds": 34,
+      "stripCount": 5313,
+      "checkpointTicks": 612,
       "next": 151,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        1,
-        2,
-        0,
+        -1,
         -2,
         -1,
-        0
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
-        1,
-        0,
         -1,
-        0,
-        1,
+        -2,
+        -1,
         0
       ],
       "trafficSeed": 550,
@@ -1719,24 +1714,26 @@
     },
     {
       "id": 151,
-      "nameKey": "seg.night_5",
-      "seconds": 40,
-      "stripCount": 6250,
-      "checkpointTicks": 720,
+      "nameKey": "seg.night_3",
+      "seconds": 52,
+      "stripCount": 8125,
+      "checkpointTicks": 936,
       "next": 152,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
         -1,
-        -1,
-        0
+        -2,
+        -2,
+        -1
       ],
       "hillProfile": [
         0,
-        -1,
-        -2,
-        -1,
+        1,
+        2,
+        3,
+        2,
+        1,
         0
       ],
       "trafficSeed": 551,
@@ -1744,23 +1741,20 @@
     },
     {
       "id": 152,
-      "nameKey": "seg.night_6",
-      "seconds": 50,
-      "stripCount": 7813,
-      "checkpointTicks": 900,
+      "nameKey": "seg.night_4",
+      "seconds": 44,
+      "stripCount": 6875,
+      "checkpointTicks": 792,
       "next": -1,
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        0,
-        1,
         2,
-        2,
-        1,
-        0
+        3,
+        3,
+        2
       ],
       "hillProfile": [
-        0,
         0,
         0
       ],

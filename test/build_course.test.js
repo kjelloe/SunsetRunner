@@ -22,7 +22,7 @@ test("every generated segment carries authoring metadata and a real biome", () =
     // stripCount should reflect ~seconds at the reference cruise (2000).
     const secs = (s.stripCount * ROAD_UNIT) / (2000 * TICK_HZ);
     assert.ok(secs >= 28 && secs <= 70, `seg ${s.id} derived ${secs.toFixed(0)}s off`);
-    assert.ok(s.scenerySet >= 1 && s.scenerySet <= 6);
+    assert.ok(s.scenerySet >= 1 && s.scenerySet <= 11);
   }
 });
 
@@ -49,4 +49,22 @@ test("the whole main route is walkable to a finish", () => {
   }
   assert.equal(id, -1, "route reaches a finish");
   assert.ok(hops >= 40, `route length ${hops}`);
+});
+
+test("no generated leg is a straight line (playtest rule)", () => {
+  for (const s of gen) {
+    const allZero = s.curveProfile.every((v) => v === 0);
+    assert.equal(allZero, false, `segment ${s.id} is a straight line`);
+  }
+});
+
+test("stage 1 showcases a corner and a hill", () => {
+  const first = gen.find((s) => s.id === 100);
+  assert.ok(first.curveProfile.some((v) => v !== 0), "stage 1 has a curve");
+  assert.ok(first.hillProfile.some((v) => v !== 0), "stage 1 has a hill");
+});
+
+test("the tour visits many distinct terrains", () => {
+  const biomes = new Set(gen.map((s) => s.scenerySet));
+  assert.ok(biomes.size >= 8, `expected many terrains, got ${biomes.size}`);
 });

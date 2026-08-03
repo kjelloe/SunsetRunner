@@ -1259,3 +1259,19 @@ Server + client, NO repin (room orchestration; engine untouched).
   test/protocol.test.js (diff parse) + specs/53. PLAYTEST remote countdown item.
 
 Gate: ./test.sh -> 233/233 + 4 Luau gates OK.
+
+---
+
+## marker-0060 — 10-terrain tour + no straight lines (2026-08-03)
+
+Content + generator. CONTENT REPIN 939f1ef8 -> 681e1ad7c6111e75 (engine goldens +
+Luau unchanged; course 4 only). Playtest refinements to grand_tour:
+- No straight lines: build_course CURVES have no sustained 0 run (every leg turns);
+  stage 1 opens on an S-curve + crest (showcase).
+- 10 terrains: scenery.json themes 7 wheat, 8 lake, 9 autumn, 10 mountain, 11
+  alpine added; BANDS progress palm->beach->wheat->lake->forest->autumn->canyon->
+  mountain->alpine->night (50-stage main route, 3 forks with terrain detours).
+- test/build_course.test.js: no-straight rule, stage-1 showcase, terrain variety
+  (>=8); scenerySet range ->11. road_data content-hash repin.
+
+Gate: ./test.sh -> 236/236 + 4 Luau gates OK.
