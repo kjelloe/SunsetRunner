@@ -99,6 +99,59 @@ export function drawSprite(g, sprite, cx, cyBottom, scale) {
       g.ellipse(cx + w * dx * 0.7, y + h * 0.14, w * 0.06, h * 0.16, 0, 0, Math.PI * 2);
       g.fill();
     }
+  } else if (sprite.kind === "snowmobile") {
+    // soft shadow
+    g.fillStyle = "rgba(0,0,0,0.28)";
+    g.beginPath();
+    g.ellipse(cx, cyBottom - h * 0.06, w * 0.5, h * 0.16, 0, 0, Math.PI * 2);
+    g.fill();
+    // skis
+    g.fillStyle = p[2];
+    g.fillRect(x, y + h * 0.72, w, h * 0.12);
+    // body
+    g.fillStyle = p[0];
+    roundRect(g, x + w * 0.08, y + h * 0.28, w * 0.84, h * 0.5, h * 0.18);
+    g.fill();
+    // cowl / windshield
+    g.fillStyle = p[2];
+    roundRect(g, x + w * 0.5, y + h * 0.12, w * 0.34, h * 0.3, h * 0.1);
+    g.fill();
+    // rider
+    g.fillStyle = p[1];
+    g.beginPath();
+    g.ellipse(cx - w * 0.05, y + h * 0.3, w * 0.12, h * 0.2, 0, 0, Math.PI * 2);
+    g.fill();
+  } else if (sprite.kind === "skier") {
+    // skis
+    g.fillStyle = p[2];
+    g.fillRect(x, y + h * 0.9, w, h * 0.08);
+    // legs
+    g.strokeStyle = p[1];
+    g.lineWidth = Math.max(1.5, w * 0.12);
+    g.beginPath();
+    g.moveTo(cx, y + h * 0.55);
+    g.lineTo(cx - w * 0.22, y + h * 0.9);
+    g.moveTo(cx, y + h * 0.55);
+    g.lineTo(cx + w * 0.22, y + h * 0.9);
+    g.stroke();
+    // torso (jacket)
+    g.fillStyle = p[0];
+    roundRect(g, cx - w * 0.2, y + h * 0.2, w * 0.4, h * 0.4, w * 0.14);
+    g.fill();
+    // head
+    g.fillStyle = p[2];
+    g.beginPath();
+    g.ellipse(cx, y + h * 0.12, w * 0.16, h * 0.1, 0, 0, Math.PI * 2);
+    g.fill();
+    // poles
+    g.strokeStyle = p[1];
+    g.lineWidth = Math.max(1, w * 0.05);
+    g.beginPath();
+    g.moveTo(cx - w * 0.28, y + h * 0.3);
+    g.lineTo(cx - w * 0.34, y + h * 0.9);
+    g.moveTo(cx + w * 0.28, y + h * 0.3);
+    g.lineTo(cx + w * 0.34, y + h * 0.9);
+    g.stroke();
   } else if (sprite.kind === "sign") {
     g.fillStyle = p[2];
     g.fillRect(cx - w * 0.05, y + h * 0.45, w * 0.1, h * 0.55); // post

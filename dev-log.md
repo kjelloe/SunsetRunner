@@ -1377,3 +1377,14 @@ Playtest: course 4 was "all corners"; checkpoints appeared too late.
   so gantries appear on the horizon and scale up.
 
 Gate: ./test.sh -> 249/249 + 4 Luau gates OK.
+
+---
+
+## marker-0068 — snowmobile + skier sprites (2026-08-03)
+
+Client + asset content, no engine repin. build_assets catalog gains snowmobile
+(kind snowmobile) + skier (kind skier); sprite_renderer draws both; renderer
+HAZARD_SPRITE already maps kind 3/4 to them. Manifest repinned strip 356->446,
+hash cf64cb17->02a69f4c675cfd3d. assets.test asserts hazard sprites present.
+
+Gate: ./test.sh -> 249/249 + 4 Luau gates OK.

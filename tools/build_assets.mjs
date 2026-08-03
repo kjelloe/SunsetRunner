@@ -17,6 +17,8 @@ const CATALOG = [
   { id: "sign",          kind: "sign", w: 40, h: 48, palette: ["#cccccc", "#c02020", "#555555"] },
   { id: "fir",           kind: "fir",  w: 44, h: 96, palette: ["#4a3218", "#1f6a34", "#eaf2f8"] },
   { id: "wheat",         kind: "crop", w: 44, h: 40, palette: ["#d8b840", "#b89020"] },
+  { id: "snowmobile",    kind: "snowmobile", w: 52, h: 34, palette: ["#202430", "#e0a020", "#aeeaf5"] },
+  { id: "skier",         kind: "skier",      w: 34, h: 60, palette: ["#e04a8a", "#20304a", "#f0f0f0"] },
 ];
 const PAD = 2;
 

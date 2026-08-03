@@ -48,5 +48,5 @@ determinism, lateral advance + despawn, dead-stop collision. `./test.sh` ->
 
 ## Not verified / deferred
 
-Nice snowmobile/skier sprites (currently colour rects) — a follow-up asset slice.
+Snowmobile + skier sprites added (marker-0068). Animals-crossing (savanna) hazard is a future extension.
 On-screen look needs a browser (§17).

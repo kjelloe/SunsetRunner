@@ -1,5 +1,5 @@
 {
-  "stripWidth": 356,
+  "stripWidth": 446,
   "stripHeight": 96,
   "sprites": {
     "player_car": {
@@ -82,6 +82,30 @@
       "palette": [
         "#d8b840",
         "#b89020"
+      ]
+    },
+    "snowmobile": {
+      "x": 358,
+      "y": 0,
+      "w": 52,
+      "h": 34,
+      "kind": "snowmobile",
+      "palette": [
+        "#202430",
+        "#e0a020",
+        "#aeeaf5"
+      ]
+    },
+    "skier": {
+      "x": 412,
+      "y": 0,
+      "w": 34,
+      "h": 60,
+      "kind": "skier",
+      "palette": [
+        "#e04a8a",
+        "#20304a",
+        "#f0f0f0"
       ]
     }
   }
