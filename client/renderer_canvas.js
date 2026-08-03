@@ -16,6 +16,7 @@ import { themeFor } from "./scenery.js";
 import { carColor } from "./car_colors.js";
 import { TUNING } from "./tuning.js";
 import { drawForkPreview } from "./fork_preview.js";
+import { checkpointAhead, CHECKPOINT_DRAW_RANGE } from "./checkpoint_banner.js";
 
 const TRAFFIC_SPRITE = { 1: "traffic_sedan", 2: "traffic_truck" };
 
@@ -55,6 +56,7 @@ export function render(g, view, state, courseSet, assets, scenery) {
   drawRoad(g, view, seat, courseSet, camX, theme);
   drawHaze(g, view);
   if (assets) drawScenery(g, view, camX, assets, strips, theme);
+  drawCheckpointBanner(g, view, camX, strips, seat, courseSet);
   drawTraffic(g, view, state, camX, assets, strips);
   drawGhosts(g, view, state, camX, strips);
   drawPlayerCar(g, view, seat, camX, assets);
@@ -75,6 +77,38 @@ function drawScenery(g, view, camX, assets, strips, theme) {
     const sprite = assets.sprites[kinds[bucket % kinds.length]];
     drawSprite(g, sprite, o.x, o.y, spriteScale(o.half, sprite, 0.9));
   }
+}
+
+// A checkpoint gantry at the upcoming checkpoint boundary: two posts at the road
+// edges and a CHECKPOINT banner slung between them at tree-line height.
+function drawCheckpointBanner(g, view, camX, strips, seat, courseSet) {
+  const ca = checkpointAhead(courseSet, seat);
+  if (!ca || ca.distance < ROAD_UNIT || ca.distance > CHECKPOINT_DRAW_RANGE) return;
+  const s = sampleStrip(strips, ca.distance);
+  const edge = ROAD_HALF_WIDTH * 1.15;
+  const left = onRoad(view, camX, ca.distance, -edge, s.curveX, s.hillY);
+  const right = onRoad(view, camX, ca.distance, edge, s.curveX, s.hillY);
+  if (left.half <= 0) return;
+  const postH = left.half * 1.7; // up to tree-line height, scaled by perspective
+  const postW = Math.max(2, left.half * 0.12);
+  // Posts.
+  g.fillStyle = "#e8e8ec";
+  g.fillRect(left.x - postW / 2, left.y - postH, postW, postH);
+  g.fillRect(right.x - postW / 2, right.y - postH, postW, postH);
+  // Banner slung between the post tops.
+  const topY = Math.min(left.y, right.y) - postH;
+  const bh = Math.max(6, left.half * 0.55);
+  const bx = Math.min(left.x, right.x);
+  const bw = Math.abs(right.x - left.x);
+  g.fillStyle = "#1a3f8a";
+  g.fillRect(bx, topY, bw, bh);
+  g.fillStyle = "#ffe14d";
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  g.font = `bold ${Math.round(bh * 0.7)}px sans-serif`;
+  g.fillText("CHECKPOINT", (left.x + right.x) / 2, topY + bh / 2);
+  g.textAlign = "left";
+  g.textBaseline = "alphabetic";
 }
 
 function drawTraffic(g, view, state, camX, assets, strips) {

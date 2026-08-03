@@ -25,6 +25,7 @@ test("client modules import cleanly and export their entry points", async () => 
   const tuning = await import("../client/tuning.js");
   const countdown = await import("../client/countdown.js");
   const forkPreview = await import("../client/fork_preview.js");
+  const cpBanner = await import("../client/checkpoint_banner.js");
   const splash = await import("../client/splash.js");
   const difficulty = await import("../client/difficulty_select.js");
   const raceSummary = await import("../client/race_summary.js");
@@ -55,6 +56,7 @@ test("client modules import cleanly and export their entry points", async () => 
   assert.equal(typeof tuning.applyTuning, "function");
   assert.equal(typeof countdown.createCountdown, "function");
   assert.equal(typeof forkPreview.forkAhead, "function");
+  assert.equal(typeof cpBanner.checkpointAhead, "function");
   assert.equal(typeof splash.drawSplash, "function");
   assert.equal(typeof difficulty.createDifficultySelect, "function");
   assert.equal(typeof raceSummary.buildSummary, "function");

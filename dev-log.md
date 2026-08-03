@@ -1275,3 +1275,17 @@ Luau unchanged; course 4 only). Playtest refinements to grand_tour:
   (>=8); scenerySet range ->11. road_data content-hash repin.
 
 Gate: ./test.sh -> 236/236 + 4 Luau gates OK.
+
+---
+
+## marker-0061 — checkpoint banners (2026-08-03)
+
+Client-only, renderer, no repin. A CHECKPOINT gantry at each upcoming checkpoint
+boundary: two posts at the road edges + a "CHECKPOINT" banner slung between them
+at tree-line height, projected into the 3D road.
+- client/checkpoint_banner.js checkpointAhead (distance to next checkpoint seg)
+  + CHECKPOINT_DRAW_RANGE; renderer_canvas drawCheckpointBanner (posts + banner).
+- test/checkpoint_banner.test.js (checkpointAhead + render integration draws
+  "CHECKPOINT") + import gate.
+
+Gate: ./test.sh -> 239/239 + 4 Luau gates OK.
