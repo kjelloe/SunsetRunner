@@ -24,6 +24,7 @@ test("client modules import cleanly and export their entry points", async () => 
   const carColors = await import("../client/car_colors.js");
   const tuning = await import("../client/tuning.js");
   const countdown = await import("../client/countdown.js");
+  const forkPreview = await import("../client/fork_preview.js");
   const main = await import("../client/main.js");
 
   assert.equal(typeof projection.projectPoint, "function");
@@ -50,6 +51,7 @@ test("client modules import cleanly and export their entry points", async () => 
   assert.equal(typeof tuning.readTuning, "function");
   assert.equal(typeof tuning.applyTuning, "function");
   assert.equal(typeof countdown.createCountdown, "function");
+  assert.equal(typeof forkPreview.forkAhead, "function");
   assert.equal(typeof banner.drawConnectionBanner, "function");
   assert.equal(typeof main.boot, "function");
 });

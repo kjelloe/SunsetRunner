@@ -1114,3 +1114,18 @@ Client-only, no repin. Fresh LOCAL race freezes (no sim advance) during a
 - test/countdown.test.js + import gate; specs/47.
 
 Gate: ./test.sh -> 200/200 + 4 Luau gates OK.
+
+---
+
+## marker-0050 — fork preview (name + arrows) (2026-08-03)
+
+Client-only, renderer, no repin. ~5s before a fork, "FORK AHEAD" names each
+branch (by scenery theme) + left/right arrows, highlighting the side the car's
+lane position would take. Replaces the bare Q/E hint.
+- client/fork_preview.js: forkAhead (upcoming fork + distance to split),
+  secondsToFork, branchName (reuses scenery theme name), drawForkPreview
+  (shows within 5s or when close; highlights leaning side).
+- renderer_canvas: drawForkHint removed, drawForkPreview(scenery) wired in.
+- test/fork_preview.test.js + import gate; specs/46.
+
+Gate: ./test.sh -> 206/206 + 4 Luau gates OK.

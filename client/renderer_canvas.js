@@ -15,6 +15,7 @@ import { getSegment } from "../shared/road_data.js";
 import { themeFor } from "./scenery.js";
 import { carColor } from "./car_colors.js";
 import { TUNING } from "./tuning.js";
+import { drawForkPreview } from "./fork_preview.js";
 
 const TRAFFIC_SPRITE = { 1: "traffic_sedan", 2: "traffic_truck" };
 
@@ -58,7 +59,7 @@ export function render(g, view, state, courseSet, assets, scenery) {
   drawGhosts(g, view, state, camX, strips);
   drawPlayerCar(g, view, seat, camX, assets);
   drawHud(g, view, state);
-  drawForkHint(g, view, seat, courseSet);
+  drawForkPreview(g, view, seat, courseSet, scenery);
 }
 
 function drawScenery(g, view, camX, assets, strips, theme) {
@@ -151,15 +152,3 @@ function drawHaze(g, view) {
   g.fillRect(0, view.h / 2 - band, view.w, band * 2);
 }
 
-function drawForkHint(g, view, seat, courseSet) {
-  if (seat.segmentId === -1) return;
-  const cur = getSegment(courseSet, seat.segmentId);
-  const isFork = (s) => s && (s.forkLeft >= 0 || s.forkRight >= 0);
-  const nextSeg = cur.next > 0 ? getSegment(courseSet, cur.next) : null;
-  if (!isFork(cur) && !isFork(nextSeg)) return;
-  g.font = "24px monospace";
-  g.textAlign = "center";
-  g.fillStyle = "#ffe14d";
-  g.fillText("◄ Q     FORK     E ►", view.w / 2, 72);
-  g.textAlign = "left";
-}
