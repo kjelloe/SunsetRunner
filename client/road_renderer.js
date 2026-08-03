@@ -63,6 +63,11 @@ export function drawRoad(g, view, seat, courseSet, camX = 0, theme = DEFAULT_THE
     g.fillStyle = band ? theme.grassA : theme.grassB;
     g.fillRect(0, top, view.w, bh);
 
+    // Side terrain: a different ground on one/both sides of the road (e.g. sea on
+    // a beach, ponds on a lake). Painted over the grass; the road covers the mid.
+    if (theme.sideLeft) { g.fillStyle = theme.sideLeft; g.fillRect(0, top, p.x, bh); }
+    if (theme.sideRight) { g.fillStyle = theme.sideRight; g.fillRect(p.x, top, view.w - p.x, bh); }
+
     // rumble: a themed/white band wider than the road, then the road on top
     const rw = Math.max(2, p.w * 0.18);
     g.fillStyle = band ? theme.rumbleA : "#f4f4f4";
@@ -71,6 +76,13 @@ export function drawRoad(g, view, seat, courseSet, camX = 0, theme = DEFAULT_THE
     // road
     g.fillStyle = band ? "#5a5a62" : "#53535b";
     g.fillRect(p.x - p.w, top, p.w * 2, bh);
+
+    // Icy/wet sheen: a lighter centre strip on alternate bands (shimmers as it
+    // scrolls) — alpine ice / wet roads.
+    if (theme.sheen && band) {
+      g.fillStyle = `rgba(220,235,255,${theme.sheen})`;
+      g.fillRect(p.x - p.w * 0.45, top, p.w * 0.9, bh);
+    }
 
     // dashed centre line (dash every 8 strips)
     if (s.worldStrip % 8 < 4) {

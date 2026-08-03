@@ -52,3 +52,13 @@ test("themes carry a roadScale (wide easy / slim alpine), default 1", () => {
   assert.equal(cfg.themes["1"].roadScale, 1); // default when unset
   assert.equal(loadScenery({ themes: { 1: { name: "x" } } }).themes["1"].roadScale, 1);
 });
+
+test("themes carry side terrain + road sheen", () => {
+  const cfg = loadScenery(sceneryJson);
+  assert.equal(cfg.themes["2"].sideRight, "#1f6fb0"); // beach sea on the right
+  assert.equal(cfg.themes["2"].sideLeft, null);
+  assert.equal(cfg.themes["8"].sideLeft, "#2f7aa8"); // lake ponds on the left
+  assert.ok(cfg.themes["11"].sheen > 0); // alpine icy
+  assert.equal(cfg.themes["1"].sheen, 0); // default no sheen
+  assert.equal(loadScenery({ themes: { 1: { name: "x", sheen: 5 } } }).themes["1"].sheen, 1); // clamped
+});

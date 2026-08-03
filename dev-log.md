@@ -1303,3 +1303,17 @@ Client-only, no repin. From playtest ?tune screenshots.
 - test/scenery.test.js roadScale; tuning.md + specs/44 updated.
 
 Gate: ./test.sh -> 240/240 + 4 Luau gates OK.
+
+---
+
+## marker-0063 — side terrain (water) + road sheen (2026-08-03)
+
+Client-only, no repin (tranche 2). Terrains now differ beyond palette:
+- scenery.js theme.sideLeft/sideRight (ground colour per side) + theme.sheen (0..1).
+- road_renderer.drawRoad paints side terrain over the grass (road covers mid) +
+  an icy/wet centre sheen strip on alternate bands.
+- scenery.json: beach sea on the right, lake ponds on the left, alpine icy sheen
+  0.28, mountain 0.12, night 0.15 (wet neon).
+- test/scenery.test.js side/sheen parse + clamp.
+
+Gate: ./test.sh -> 241/241 + 4 Luau gates OK.

@@ -11,6 +11,9 @@ const FALLBACK = {
   sprites: ["palm", "palm", "sign"],
   every: 10,
   roadScale: 1, // multiplies the road width for this terrain (wide easy / slim alpine)
+  sideLeft: null, // ground colour left of the road (e.g. water); null = use grass
+  sideRight: null, // ground colour right of the road
+  sheen: 0, // icy/wet road specular strength 0..1 (alpine/wet)
 };
 
 export function loadScenery(json) {
@@ -27,6 +30,9 @@ export function loadScenery(json) {
       sprites: Array.isArray(t.sprites) && t.sprites.length ? t.sprites : FALLBACK.sprites,
       every: Number.isFinite(t.every) && t.every > 0 ? t.every : FALLBACK.every,
       roadScale: Number.isFinite(t.roadScale) && t.roadScale > 0 ? t.roadScale : 1,
+      sideLeft: typeof t.sideLeft === "string" ? t.sideLeft : null,
+      sideRight: typeof t.sideRight === "string" ? t.sideRight : null,
+      sheen: Number.isFinite(t.sheen) && t.sheen > 0 ? Math.min(1, t.sheen) : 0,
     };
   }
   const def = String((json && json.default) ?? 1);

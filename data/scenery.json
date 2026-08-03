@@ -33,7 +33,8 @@
         "sign"
       ],
       "every": 7,
-      "roadScale": 1.15
+      "roadScale": 1.15,
+      "sideRight": "#1f6fb0"
     },
     "3": {
       "name": "canyon",
@@ -98,7 +99,8 @@
         "palm",
         "palm"
       ],
-      "every": 7
+      "every": 7,
+      "sheen": 0.15
     },
     "7": {
       "name": "wheat",
@@ -131,7 +133,8 @@
         "sign"
       ],
       "every": 8,
-      "roadScale": 1.1
+      "roadScale": 1.1,
+      "sideLeft": "#2f7aa8"
     },
     "9": {
       "name": "autumn",
@@ -165,7 +168,8 @@
         "sign"
       ],
       "every": 7,
-      "roadScale": 0.85
+      "roadScale": 0.85,
+      "sheen": 0.12
     },
     "11": {
       "name": "alpine",
@@ -181,7 +185,8 @@
         "palm"
       ],
       "every": 8,
-      "roadScale": 0.8
+      "roadScale": 0.8,
+      "sheen": 0.28
     }
   }
 }
