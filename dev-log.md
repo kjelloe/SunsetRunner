@@ -1172,3 +1172,21 @@ Engine + client, NO repin (medium=100=identity; goldens + Luau twin unchanged).
   + import gate; specs/50.
 
 Gate: ./test.sh -> 218/218 + 4 Luau gates OK.
+
+---
+
+## marker-0054 — course authoring + grand_tour (55 segments) (2026-08-03)
+
+Content + tooling. CONTENT REPIN (conscious): +55 segments + course 4 ->
+content hash 4cdff42d55b0f6af -> ac01b65fe5711df8, segment count 16 -> 71. Engine
+goldens (courses 1-3) + 4 Luau gates UNCHANGED (grand_tour uses new ids >=100).
+- shared/road_data.js: optional nameKey/seconds per segment (validated, NOT hashed).
+- tools/build_course.mjs: seconds->stripCount @ CRUISE 2000, biome bands, 3
+  rejoining forks, per-seg checkpoints (~90% refill), validates via loadCourseSet,
+  leg-time report; idempotent (drops ids>=100 first); --check dry-run.
+- data/roads.json: course 4 grand_tour, 55 segs, six biomes (sunset/beach/canyon/
+  forest/city/night). data/scenery.json: added themes 5 city, 6 night.
+- Play: ?course=4. test/build_course.test.js (course present, metadata, forks
+  rejoin, walkable to finish). road_data.test count 16->71 + hash repin. specs/48.
+
+Gate: ./test.sh -> 222/222 + 4 Luau gates OK.

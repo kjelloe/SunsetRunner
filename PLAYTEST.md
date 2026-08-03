@@ -1,6 +1,6 @@
 # Playtest checklist — Sunset Runner
 
-The automated suite (`./test.sh`, 194 tests + 4 Luau parity gates) covers engine
+The automated suite (`./test.sh`, 222 tests + 4 Luau parity gates) covers engine
 determinism, the reducer, server room, fairness, and client module loading. It
 does **NOT** cover anything you can only judge with a real browser: visual feel,
 frame rate, camera tuning, touch ergonomics, audio, and real-network multiplayer.
@@ -86,6 +86,15 @@ Open `...index.html?course=3`.
 
 - [ ] **[feel]** Left and right branches curve in mirror directions; both should
   feel equally hard (the engine proves them fair — see it in play).
+
+## 4b. Grand tour — course 4 (marker-0054)
+
+Open `...index.html?course=4`.
+
+- [ ] **[feel]** A long 55-segment tour through six biomes (sunset -> beach ->
+  canyon -> forest -> city -> night) with three forks. Do the biomes read as
+  distinct places? Are legs ~30-60s and checkpoints roughly keeping you alive on
+  Medium (tighter on Hard, generous on Easy)?
 
 ## 5. Mobile touch controls
 

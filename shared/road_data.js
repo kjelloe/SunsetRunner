@@ -50,6 +50,13 @@ export function loadCourseSet(json) {
     if (assertInt(seg.scenerySet, "segment.scenerySet") < 0) {
       throw new RangeError(`segment ${seg.id} scenerySet must be >= 0`);
     }
+    // Optional authoring metadata (specs/48) — display/build only, NOT hashed.
+    if (seg.nameKey !== undefined && typeof seg.nameKey !== "string") {
+      throw new TypeError(`segment ${seg.id} nameKey must be a string`);
+    }
+    if (seg.seconds !== undefined && (!Number.isFinite(seg.seconds) || seg.seconds <= 0)) {
+      throw new RangeError(`segment ${seg.id} seconds must be positive`);
+    }
     segmentsById.set(seg.id, seg);
   }
 

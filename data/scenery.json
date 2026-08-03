@@ -32,6 +32,22 @@
       "rumbleA": "#c85c3a",
       "sprites": ["palm", "palm", "palm", "palm", "sign"],
       "every": 6
+    },
+    "5": {
+      "name": "city",
+      "sky": ["#3a2a54", "#c08fb5"],
+      "grassA": "#6a6a78", "grassB": "#5c5c68",
+      "rumbleA": "#d0c040",
+      "sprites": ["sign", "sign", "palm"],
+      "every": 8
+    },
+    "6": {
+      "name": "night",
+      "sky": ["#0a0a24", "#2a2a5a"],
+      "grassA": "#1a2a3a", "grassB": "#16232f",
+      "rumbleA": "#e05a5a",
+      "sprites": ["sign", "palm", "palm"],
+      "every": 7
     }
   }
 }

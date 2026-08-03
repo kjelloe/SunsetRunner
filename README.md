@@ -2,7 +2,7 @@
 
 **A deterministic, server-authoritative arcade road racer for the browser — with a byte-identical Roblox/Luau twin.**
 
-![tests](https://img.shields.io/badge/tests-194%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-222%20passing-brightgreen)
 ![luau parity](https://img.shields.io/badge/Luau%20parity-4%20gates-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A518-informational)
 ![build](https://img.shields.io/badge/build-none%20(vanilla%20ESM)-blue)
@@ -50,6 +50,7 @@ Open **http://localhost:8000/client/index.html** and drive with **WASD / arrows*
 
 - `?course=2` — the branching **canyon_split** (press **Q / E** at the fork)
 - `?course=3` — the mirror-fair **mirror_valley**
+- `?course=4` — the 55-segment **grand_tour** (six biomes, three forks)
 - `?touch=1` — preview the mobile arrow pad on desktop
 
 ### Play (multiplayer)
@@ -62,7 +63,7 @@ Open **http://localhost:8000/client/index.html?mode=remote** in two tabs.
 ### Test
 
 ```bash
-npm test               # node --test: 194 unit/integration tests
+npm test               # node --test: 222 unit/integration tests
 ./test.sh              # the above + Luau (lune) cross-language parity gates
 ```
 
@@ -104,7 +105,7 @@ specs/    the design brief + numbered decision docs
 
 ## 🧪 Testing & determinism
 
-- `npm test` — 194 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
+- `npm test` — 222 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
 - `./test.sh` — adds the Luau parity gates ([`lune`](https://lune-org.github.io/docs) required; skipped gracefully if absent).
 - `node debugging/replay.mjs` — replay a scenario as a race report.
 - `node debugging/sim_campaign.mjs` — AI "do systems fire?" gate across 5 seeds.

@@ -110,9 +110,9 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-051 big centre race timer (marker-0051)
 - [x] slice-052 splash screen + client asset loading bar (marker-0052)
 - [x] slice-053 difficulty EASY/MEDIUM/HARD select + difficulty.timeScale (local) (marker-0053)
-- [ ] checkpoints after each segment (per-segment checkpointTicks tuned)
-- [ ] course-authoring schema (specs/48): loader accepts nameKey/seconds (not hashed)
-- [ ] tools/build_course.mjs — derive stripCount from seconds + validate graph + report leg times
-- [ ] author 50+ segment course (biomes + rejoining forks, 30-60s/leg @ Medium) + repin
+- [x] slice-054 checkpoints after each segment (grand_tour, ~90% refill) (marker-0054)
+- [x] slice-054 course-authoring: loader nameKey/seconds (not hashed) (marker-0054)
+- [x] slice-054 tools/build_course.mjs (seconds->stripCount, validate, report) (marker-0054)
+- [x] slice-054 grand_tour: 55 segs, 6 biomes, 3 forks (?course=4) + content repin (marker-0054)
 - [ ] time-up UI: Re-join (from current stage) / Spectate (cycle players, name centre-bottom)
 - [ ] server-authoritative countdown for multiplayer

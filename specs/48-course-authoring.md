@@ -74,8 +74,21 @@ makes Easy generous and Hard tight from the SAME course data (no separate course
 - Author in `data/roads.json` (or split into `data/courses/<name>.json` if it gets
   unwieldy — same schema, loader concatenates).
 
-## Open (needs your nod before authoring 50)
+## Implemented (marker-0054)
 
-Confirm the schema above (esp. `seconds`-derived `stripCount` and the difficulty
-`timeScale` model). Then the build order is: loader accepts new fields → difficulty
-select UI → `build_course.mjs` → author the 50-segment course → repin.
+Schema confirmed. Delivered:
+- Loader (`shared/road_data.js`) accepts optional `nameKey` / `seconds` per
+  segment (type-validated, **NOT** hashed).
+- `tools/build_course.mjs` — deterministic generator: `seconds`→`stripCount` at a
+  reference Medium cruise (2000), biome bands, three rejoining forks, per-segment
+  checkpoints (~90% refill), validates the graph via `loadCourseSet`, prints a
+  leg-time report. `--check` reports without writing; re-running is idempotent
+  (drops old ids ≥ 100 first).
+- **`course 4 "grand_tour"`**: 55 segments (ids ≥ 100), 3 forks, six biomes
+  (sunset/beach/canyon/forest/city/night — city/night added to `scenery.json`).
+  Courses 1-3 and every engine golden are untouched; only the **content hash
+  repinned** `4cdff42d55b0f6af → ac01b65fe5711df8` (+ segment count 16 → 71).
+- Play it with `?course=4`.
+
+Remaining: difficulty is wired for local play (specs/50); tuning the exact
+leg times / checkpoint generosity is an iterative playtest pass.
