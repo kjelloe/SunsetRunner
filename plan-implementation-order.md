@@ -116,5 +116,11 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-054 grand_tour: 55 segs, 6 biomes, 3 forks (?course=4) + content repin (marker-0054)
 - [x] slice-055 race summary + restart (local) (marker-0055)
 - [x] slice-059 server race framing: shared countdown + first-joiner difficulty (marker-0059)
+- [x] slice-060 grand_tour 10 terrains + no-straight rule (marker-0060)
+- [x] slice-061 checkpoint banners (marker-0061)
+- [x] slice-062 hills 320 + per-terrain road width (marker-0062)
+- [x] slice-063 side terrain (water) + road sheen (marker-0063)
+- [x] slice-064 fir + wheat sprites (marker-0064)
+- [ ] tranche 3: hittable hazards (snowmobiles kind + skiers/animals crossing)
 - [ ] time-up UI: Re-join (from current stage) / Spectate (cycle players, name centre-bottom)
 - [ ] server-authoritative countdown for multiplayer
