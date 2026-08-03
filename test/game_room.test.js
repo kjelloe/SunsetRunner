@@ -63,3 +63,34 @@ test("room replay is deterministic for identical inputs", () => {
   }
   assert.equal(run(), run());
 });
+
+test("shared countdown freezes the sim until GO, then advances", () => {
+  const room = createRoom(ctx, { startTimeTicks: 1500, countdownTicks: 3 });
+  const id = room.addSeat(1);
+  room.setInput(id, { steer: 0, accel: 1, brake: 0 });
+  assert.equal(room.viewFor(id).countdown, 1); // ceil(3/20) = 1 s
+  const t0 = room.viewFor(id).self.timerTicks;
+  room.tick(); room.tick(); room.tick(); // 3 frozen countdown ticks
+  let v = room.viewFor(id);
+  assert.equal(v.tick, 0); // sim not advanced
+  assert.equal(v.self.timerTicks, t0); // clock frozen
+  assert.equal(v.countdown, 0); // countdown elapsed
+  room.tick(); // GO
+  v = room.viewFor(id);
+  assert.equal(v.tick, 1);
+  assert.ok(v.self.timerTicks < t0); // clock now ticking
+});
+
+test("first joiner sets the room difficulty; later joins don't change it", () => {
+  const room = createRoom(ctx, { startTimeTicks: 1500 });
+  room.addSeat(1, 130); // easy
+  assert.equal(room.timeScale, 130);
+  room.addSeat(2, 75); // hard — ignored, difficulty already locked
+  assert.equal(room.timeScale, 130);
+});
+
+test("no difficulty on join defaults the room to medium (100)", () => {
+  const room = createRoom(ctx, { startTimeTicks: 1500 });
+  room.addSeat(1);
+  assert.equal(room.timeScale, 100);
+});

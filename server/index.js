@@ -19,6 +19,7 @@ import { createRoom } from "./game_room.js";
 import { saveSession, loadSession } from "./session_store.js";
 import { createRateLimiter } from "./rate_limit.js";
 import { C2S, S2C, parseMessage } from "../shared/protocol.js";
+import { DIFFICULTY } from "../shared/constants.js";
 
 const DEFAULT_GRACE_TICKS = 900;
 // Protocol messages are tiny (well under 1 KB); anything larger is junk/abuse.
@@ -117,7 +118,7 @@ export async function startServer(port = 8000, roomOpts = {}) {
       if (!parsed.ok) { ws.send(JSON.stringify({ type: S2C.ERROR, reason: parsed.reason })); return; }
       const msg = parsed.msg;
       if (msg.type === C2S.JOIN) {
-        const seatId = room.addSeat(msg.carId);
+        const seatId = room.addSeat(msg.carId, msg.diff ? DIFFICULTY[msg.diff] : undefined);
         if (seatId === -1) { ws.send(JSON.stringify({ type: S2C.ERROR, reason: "room full" })); return; }
         clients.set(ws, seatId);
         sendWelcome(ws, seatId);
@@ -174,7 +175,7 @@ export async function startServer(port = 8000, roomOpts = {}) {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT) || 8000;
   const statePath = process.env.STATE_FILE || resolve(repoRoot, ".state/session.json");
-  startServer(port, { statePath }).then((h) => {
+  startServer(port, { statePath, countdownTicks: 60 }).then((h) => { // 3 s shared countdown
     console.log(`Sunset Runner server on http://localhost:${h.port}/client/index.html`);
     // SIGTERM/SIGINT (deploy/ctrl-c) -> close() (which saves) -> exit. Wired only
     // in the standalone entrypoint so tests don't accumulate signal handlers.

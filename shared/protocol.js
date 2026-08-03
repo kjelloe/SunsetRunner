@@ -23,7 +23,13 @@ export function parseMessage(raw) {
   if (msg.type === C2S.JOIN) {
     const carId = msg.carId ?? 1;
     if (!Number.isInteger(carId)) return { ok: false, reason: "carId must be int" };
-    return { ok: true, msg: { type: C2S.JOIN, carId } };
+    // Optional difficulty (first joiner sets the race difficulty, specs/50/53).
+    let diff = null;
+    if (msg.diff != null) {
+      if (!["easy", "medium", "hard"].includes(msg.diff)) return { ok: false, reason: "diff must be easy|medium|hard" };
+      diff = msg.diff;
+    }
+    return { ok: true, msg: { type: C2S.JOIN, carId, diff } };
   }
   if (msg.type === C2S.INPUT) {
     if (!TRISTATE.has(msg.steer)) return { ok: false, reason: "steer must be -1|0|1" };

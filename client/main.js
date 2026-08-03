@@ -21,7 +21,7 @@ import { difficultyFromParams, createDifficultySelect, drawDifficultySelect, dif
 import { createAudio } from "./audio.js";
 import { loadScenery } from "./scenery.js";
 import { readTuning, applyTuning, drawTuningHud } from "./tuning.js";
-import { createCountdown } from "./countdown.js";
+import { createCountdown, drawCountdownLabel } from "./countdown.js";
 import { drawSplash } from "./splash.js";
 import { buildSummary, playersFromState, drawRaceSummary, NEW_RACE_SECONDS } from "./race_summary.js";
 
@@ -113,37 +113,41 @@ export async function boot(doc = document) {
   const diffChoice = difficultyFromParams(params);
   const sel = createCarSelect(carSet, choice.carId);
   const diffSel = createDifficultySelect(diffChoice.level);
-  const showDifficulty = !remote && !diffChoice.fromUrl;
+  // Difficulty is picked in both modes now: locally it scales the session; in
+  // remote the FIRST joiner's pick sets the room (specs/53).
+  const showDifficulty = !diffChoice.fromUrl;
   let session = null;
 
   const countdown = createCountdown();
   let activeCarId = choice.carId;
-  let activeTimeScale = remote ? 100 : diffChoice.timeScale;
+  let activeTimeScale = diffChoice.timeScale;
+  let activeDiffLevel = diffChoice.level;
   let raceSummary = null;
   let summaryStart = 0;
   let prevCrashed = 0, prevFinish = -1, prevTimer = NaN; // SFX edge trackers
 
-  function start(carId, timeScale) {
+  function start(carId, timeScale, diffLevel) {
     session = remote
-      ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks, carId })
+      ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks, carId, diff: diffLevel })
       : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig, carId, timeScale });
     if (remote) session.connect();
     activeCarId = carId;
     activeTimeScale = timeScale;
+    activeDiffLevel = diffLevel;
     prevCrashed = 0; prevFinish = -1; prevTimer = NaN;
     raceSummary = null;
     celebration.reset(); // clear finish confetti/splash from the previous race
     countdown.start(performance.now());
     phase = "race";
   }
-  // After the car is chosen, go to difficulty (local) or straight to the race.
+  // After the car is chosen, go to difficulty or straight to the race.
   function afterCar() {
     if (showDifficulty) { phase = "difficulty"; }
-    else start(sel.carId, remote ? 100 : diffChoice.timeScale);
+    else start(sel.carId, diffChoice.timeScale, diffChoice.level);
   }
 
   let phase = choice.fromUrl ? (showDifficulty ? "difficulty" : "race") : "select";
-  if (phase === "race") start(choice.carId, remote ? 100 : diffChoice.timeScale);
+  if (phase === "race") start(choice.carId, diffChoice.timeScale, diffChoice.level);
 
   // Tap-to-choose on touch.
   canvas.addEventListener?.("pointerup", (e) => {
@@ -154,7 +158,7 @@ export async function boot(doc = document) {
       if (sel.handle(carSelectTouchZone(view, x, y)) === "confirm") afterCar();
     } else if (phase === "difficulty") {
       diffSel.setIndex(difficultyTouchZone(view, x)); // tap a button = pick it
-      start(sel.carId, diffSel.timeScale);
+      start(sel.carId, diffSel.timeScale, diffSel.level);
     }
   });
 
@@ -167,7 +171,7 @@ export async function boot(doc = document) {
     let ev;
     while ((ev = readMenuNav()) !== null) {
       if (phase === "select" && sel.handle(ev) === "confirm") { afterCar(); break; }
-      else if (phase === "difficulty" && diffSel.handle(ev) === "confirm") { start(sel.carId, diffSel.timeScale); break; }
+      else if (phase === "difficulty" && diffSel.handle(ev) === "confirm") { start(sel.carId, diffSel.timeScale, diffSel.level); break; }
     }
     if (phase === "select") {
       drawCarSelect(g, view, sel);
@@ -226,6 +230,8 @@ export async function boot(doc = document) {
     if (showTouch) drawTouchControls(g, view);
     if (showTune) drawTuningHud(g, view);
     if (counting) countdown.draw(g, view, now);
+    // Remote: the server owns the shared pre-race countdown (specs/53).
+    if (remote && racing && session.countdown > 0) drawCountdownLabel(g, view, String(session.countdown));
     if (remote) drawConnectionBanner(g, view, session.status, frameCount);
 
     // Race end -> summary of the field + a 30 s countdown to a fresh race.
@@ -237,7 +243,7 @@ export async function boot(doc = document) {
     if (phase === "summary") {
       const secs = NEW_RACE_SECONDS - Math.floor((now - summaryStart) / 1000);
       drawRaceSummary(g, view, raceSummary, secs);
-      if (secs <= 0 && !remote) start(activeCarId, activeTimeScale); // fresh race, same car/difficulty
+      if (secs <= 0 && !remote) start(activeCarId, activeTimeScale, activeDiffLevel); // fresh race, same car/difficulty
     }
     frameCount++;
     requestAnimationFrame(frame);

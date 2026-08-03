@@ -17,6 +17,7 @@ export function createRemoteSession(url, opts = {}) {
   const store = opts.storage || (typeof localStorage !== "undefined" ? localStorage : null);
   const doc = opts.document || (typeof document !== "undefined" ? document : null);
   const carId = opts.carId ?? 1;
+  const diff = opts.diff || null; // difficulty level (first joiner sets the race)
 
   let ws = null;
   let seatId = null;
@@ -70,7 +71,7 @@ export function createRemoteSession(url, opts = {}) {
     ws.onopen = () => {
       // reclaim if we have a token, else a fresh join.
       if (token) ws.send(JSON.stringify({ type: C2S.RECLAIM, token }));
-      else ws.send(JSON.stringify({ type: C2S.JOIN, carId }));
+      else ws.send(JSON.stringify({ type: C2S.JOIN, carId, diff }));
     };
     ws.onmessage = (ev) => {
       const msg = JSON.parse(typeof ev.data === "string" ? ev.data : ev.data.toString());
@@ -92,7 +93,7 @@ export function createRemoteSession(url, opts = {}) {
         predictor = null;
         setStatus("run_ended");
         opts.onReclaimFailed?.();
-        if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.JOIN, carId }));
+        if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.JOIN, carId, diff }));
       }
     };
     ws.onclose = () => { stopSend(); if (!closed) setStatus("reconnecting"); scheduleReconnect(); };
@@ -114,6 +115,7 @@ export function createRemoteSession(url, opts = {}) {
     get seatId() { return seatId; },
     get token() { return token; },
     get status() { return status; },
+    get countdown() { return latest?.countdown ?? 0; }, // seconds until GO (server-driven)
     setInput(input) { held = input; },
     setForkChoice(choice) {
       pendingFork = choice;

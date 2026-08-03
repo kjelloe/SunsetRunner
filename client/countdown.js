@@ -33,18 +33,21 @@ export function createCountdown() {
     get started() { return startedAt !== null; },
     isDone(now) { return startedAt !== null && now - startedAt >= TOTAL; },
     labelAt,
-    draw(g, view, now) {
-      const label = labelAt(now);
-      if (!label) return;
-      g.textAlign = "center";
-      g.textBaseline = "middle";
-      g.fillStyle = label === "GO!" ? "#4ce05a" : "#ffd54a";
-      g.font = `bold ${Math.round(view.h * 0.28)}px sans-serif`;
-      g.fillText(label, view.w / 2, view.h * 0.42);
-      g.textBaseline = "alphabetic";
-      g.textAlign = "left";
-    },
+    draw(g, view, now) { drawCountdownLabel(g, view, labelAt(now)); },
   };
+}
+
+// Draw a big centred countdown label (a number, or "GO!"). Shared by the local
+// countdown and the server-driven shared countdown (specs/53). No-op for falsy.
+export function drawCountdownLabel(g, view, label) {
+  if (!label) return;
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  g.fillStyle = label === "GO!" ? "#4ce05a" : "#ffd54a";
+  g.font = `bold ${Math.round(view.h * 0.28)}px sans-serif`;
+  g.fillText(label, view.w / 2, view.h * 0.42);
+  g.textBaseline = "alphabetic";
+  g.textAlign = "left";
 }
 
 export { TOTAL as COUNTDOWN_MS };

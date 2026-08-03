@@ -1,6 +1,6 @@
 # Playtest checklist — Sunset Runner
 
-The automated suite (`./test.sh`, 227 tests + 4 Luau parity gates) covers engine
+The automated suite (`./test.sh`, 233 tests + 4 Luau parity gates) covers engine
 determinism, the reducer, server room, fairness, and client module loading. It
 does **NOT** cover anything you can only judge with a real browser: visual feel,
 frame rate, camera tuning, touch ergonomics, audio, and real-network multiplayer.
@@ -127,6 +127,8 @@ Open TWO browser tabs at `http://localhost:8000/client/index.html?mode=remote`.
 - [ ] **[bug]** Both tabs join (each is a seat); you see the other car as a
   ghost when you share a segment.
 - [ ] **[bug]** Drive both — positions update live in each tab.
+- [ ] **[bug]** Both tabs see a shared **3-2-1** countdown and start together on
+  GO; the FIRST tab's difficulty pick applies to the room (marker-0059).
 - [ ] **[unverified]** **Prediction feel** (marker-0028): your own car responds
   to input INSTANTLY, not after a round-trip delay. Watch for rubber-banding /
   snapping when the car crashes into traffic (the server correction).

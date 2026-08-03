@@ -11,6 +11,7 @@ import { hashSnapshot } from "../engine/snapshot.js";
 import { getCourse } from "../shared/road_data.js";
 import { inCollisionWindow } from "../shared/collision.js";
 import { S2C } from "../shared/protocol.js";
+import { TICK_HZ } from "../shared/constants.js";
 import { randomUUID } from "node:crypto";
 
 // Filtered rival state (§10): only what a client needs to render a ghost, plus
@@ -54,7 +55,18 @@ export function createRoom(ctx, opts = {}) {
     maxSeats: opts.maxSeats ?? 8,
   });
   // Room ctx for the sim; rivalCollision is a per-room toggle (§10/§11).
-  const simCtx = rivalCollision ? { ...ctx, rivalCollision: 1 } : ctx;
+  // timeScale (difficulty, specs/50) is mutable — the FIRST player to join sets
+  // it; the reducer reads simCtx.timeScale each tick. Default medium (100).
+  const simCtx = { ...ctx, rivalCollision, timeScale: opts.timeScale ?? 100 };
+  let difficultyLocked = opts.timeScale != null;
+
+  // Shared pre-race countdown (specs/53): while > 0 the room FREEZES (no sim
+  // advance) so every seat starts together on GO. Begins when the first seat
+  // joins an empty room. countdownTicks defaults to 0 (off) so unit/integration
+  // tests are unaffected; the standalone server enables it (3 s).
+  const countdownTicksTotal = opts.countdownTicks ?? 0;
+  let countdownRemaining = 0;
+  let raceStarted = false;
   const inputs = new Map(); // seatId -> latest { steer, accel, brake }
   const ackSeq = new Map(); // seatId -> latest input seq received (for client prediction)
   let nextSeatId = 1;
@@ -87,6 +99,8 @@ export function createRoom(ctx, opts = {}) {
   function applyRestore(r) {
     state = r.state;
     nextSeatId = r.nextSeatId;
+    if (r.timeScale != null) { simCtx.timeScale = r.timeScale; difficultyLocked = true; }
+    raceStarted = true; // a restored race is already past its countdown
     presence.clear();
     for (const p of r.presence) presence.set(p.id, { token: p.token, disconnectedTick: state.tick });
     inputs.clear();
@@ -107,8 +121,18 @@ export function createRoom(ctx, opts = {}) {
     get courseId() { return courseId; },
     get seatCount() { return state.seats.filter((s) => s.active).length; },
 
-    addSeat(carId = 1) {
+    get countdown() { return Math.ceil(countdownRemaining / TICK_HZ); }, // seconds
+    get timeScale() { return simCtx.timeScale; },
+
+    // A seat joins with a car and (first joiner only) the race difficulty as a
+    // timeScale int. The first seat in an empty room starts the shared countdown.
+    addSeat(carId = 1, timeScale) {
       if (this.seatCount >= state.race.maxSeats) return -1; // room full
+      if (!raceStarted) {
+        raceStarted = true;
+        countdownRemaining = countdownTicksTotal;
+        if (!difficultyLocked && timeScale != null) { simCtx.timeScale = timeScale; difficultyLocked = true; }
+      }
       const id = nextSeatId++;
       state.seats.push(makeSeat(id, carId, startSegment, startTimeTicks));
       seatsMeta.push({ id, carId });
@@ -172,6 +196,8 @@ export function createRoom(ctx, opts = {}) {
 
     // One authoritative sim step: drain queued inputs, then advance a tick.
     tick() {
+      // Shared pre-race countdown: freeze the whole sim (clock + cars) until GO.
+      if (countdownRemaining > 0) { countdownRemaining--; return state; }
       // Grace sweep: free seats whose disconnect grace has elapsed.
       for (const [seatId, p] of presence) {
         if (p.disconnectedTick !== null && state.tick - p.disconnectedTick > graceTicks) freeSeat(seatId);
@@ -191,6 +217,7 @@ export function createRoom(ctx, opts = {}) {
       return {
         type: S2C.VIEW,
         tick: state.tick,
+        countdown: Math.ceil(countdownRemaining / TICK_HZ), // seconds until GO (0 = racing)
         self,
         ackSeq: ackSeq.get(seatId) ?? 0, // last input seq the server has taken (prediction ack)
         ghosts,
@@ -210,6 +237,7 @@ export function createRoom(ctx, opts = {}) {
         version: 1,
         state,
         nextSeatId,
+        timeScale: simCtx.timeScale,
         presence: [...presence].map(([id, p]) => ({ id, token: p.token, disconnectedTick: p.disconnectedTick })),
         inputs: [...inputs].map(([id, inp]) => ({ id, inp })),
         ackSeq: [...ackSeq],

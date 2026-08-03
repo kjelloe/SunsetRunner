@@ -1241,3 +1241,21 @@ ac01b65fe5711df8 -> 939f1ef82438c7ef, segment count 71 -> 69. Engine goldens
 (courses 1-3) + 4 Luau gates unchanged. road_data.test + build_course.test updated.
 
 Gate: ./test.sh -> 227/227 + 4 Luau gates OK.
+
+---
+
+## marker-0059 — server-authoritative race framing (2026-08-03)
+
+Server + client, NO repin (room orchestration; engine untouched).
+- server/game_room.js: shared countdown freeze (countdownRemaining; tick() holds
+  the sim until GO; viewFor.countdown seconds; countdownTicks default 0, entrypoint
+  60). Room difficulty simCtx.timeScale set by first joiner + locked; getters
+  countdown/timeScale; serialize/restore timeScale; restore marks raceStarted.
+- shared/protocol.js JOIN optional diff (easy|medium|hard); server/index.js maps
+  via DIFFICULTY to first joiner. session_remote sends diff + exposes countdown.
+  main.js shows difficulty in remote too + draws server countdown
+  (countdown.js drawCountdownLabel extracted).
+- test/game_room.test.js (countdown freeze/GO, difficulty lock/default) +
+  test/protocol.test.js (diff parse) + specs/53. PLAYTEST remote countdown item.
+
+Gate: ./test.sh -> 233/233 + 4 Luau gates OK.
