@@ -15,16 +15,24 @@ export function displayTime(timerTicks) {
 
 export function drawHud(g, view, state) {
   const seat = state.seats[0];
-  g.font = "20px monospace";
+
+  // Big TIME readout — the thing the player watches — centred in the top 25%.
+  const time = displayTime(seat.timerTicks);
+  g.textAlign = "center";
+  g.textBaseline = "middle";
+  g.font = `bold ${Math.round(view.h * 0.16)}px sans-serif`;
+  g.fillStyle = time <= 5 ? "#ff5252" : "#ffffff";
+  g.fillText(String(Math.max(0, time)), view.w / 2, view.h * 0.13);
+  g.font = `${Math.round(view.h * 0.03)}px sans-serif`;
+  g.fillStyle = "#ffd54a";
+  g.fillText("TIME", view.w / 2, view.h * 0.24);
+
+  // SPEED stays small, top-left.
+  g.textAlign = "left";
   g.textBaseline = "top";
+  g.font = "20px monospace";
   g.fillStyle = "#ffffff";
   g.fillText(`SPEED ${displaySpeed(seat.speed)}`, 16, 16);
-
-  const time = displayTime(seat.timerTicks);
-  g.fillStyle = time <= 5 ? "#ff5252" : "#ffffff";
-  g.textAlign = "right";
-  g.fillText(`TIME ${time}`, view.w - 16, 16);
-  g.textAlign = "left";
 
   if (seat.finishTicks >= 0) {
     g.fillStyle = "#ffe14d";

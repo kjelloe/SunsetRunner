@@ -1129,3 +1129,14 @@ lane position would take. Replaces the bare Q/E hint.
 - test/fork_preview.test.js + import gate; specs/46.
 
 Gate: ./test.sh -> 206/206 + 4 Luau gates OK.
+
+---
+
+## marker-0051 — big centre race timer (2026-08-03)
+
+Client-only, no repin. TIME is now a big number centred in the top ~13-24% of the
+screen (the thing the player watches); SPEED stays small top-left; FINISH/TIME UP
+retained. Red under 5s.
+- client/hud.js drawHud: big centre time + label; test/hud.test.js added.
+
+Gate: ./test.sh -> 209/209 + 4 Luau gates OK.
