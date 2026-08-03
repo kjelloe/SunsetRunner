@@ -1071,3 +1071,15 @@ pass needs no edit/test round-trip.
 - test/tuning.test.js (parse/clamp/ignore/applyTuning/HUD) + import gate; specs/44.
 
 Gate: ./test.sh -> 194/194 + 4 Luau gates OK.
+
+---
+
+## marker-0047 — feel-knob usable ranges (2026-08-03)
+
+Renderer-only, no repin. Playtest feedback: hill=500 clipped the car through
+crests; a road width ~500 was narrower than the car. Tightened TUNING_FIELDS
+clamps to usable bounds so extreme params can't break the scene:
+depth 0.5-1.4, height 800-2400, roadw 1400-3000, hill 40-320, follow 0.15-0.75,
+nearz 1200-3200. Updated tuning clamp test + specs/44 (recommended values).
+
+Gate: ./test.sh -> 194/194 + 4 Luau gates OK.

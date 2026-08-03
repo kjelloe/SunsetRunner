@@ -15,14 +15,16 @@ export const TUNING = {
   playerNearZ: 2000,  // depth the player car is drawn at (its on-screen size)
 };
 
-// One row per knob: URL param name, clamp range, label for the readout.
+// One row per knob: URL param name, clamp range (usable bounds — outside these
+// the road/car break, e.g. hill>~320 clips the car through crests, roadWidth<~1400
+// is narrower than the car), label for the readout.
 export const TUNING_FIELDS = [
-  { key: "camDepth", param: "depth", min: 0.3, max: 2.0, label: "cam depth (FOV)" },
-  { key: "camHeight", param: "height", min: 400, max: 4000, label: "cam height" },
-  { key: "roadWidth", param: "roadw", min: 800, max: 4000, label: "road width" },
-  { key: "hillScale", param: "hill", min: 0, max: 600, label: "hill scale" },
-  { key: "camFollow", param: "follow", min: 0, max: 1, label: "cam follow" },
-  { key: "playerNearZ", param: "nearz", min: 500, max: 6000, label: "player near-z" },
+  { key: "camDepth", param: "depth", min: 0.5, max: 1.4, label: "cam depth (FOV)" },
+  { key: "camHeight", param: "height", min: 800, max: 2400, label: "cam height" },
+  { key: "roadWidth", param: "roadw", min: 1400, max: 3000, label: "road width" },
+  { key: "hillScale", param: "hill", min: 40, max: 320, label: "hill scale" },
+  { key: "camFollow", param: "follow", min: 0.15, max: 0.75, label: "cam follow" },
+  { key: "playerNearZ", param: "nearz", min: 1200, max: 3200, label: "player near-z" },
 ];
 
 // Parse + clamp overrides from URL params. Returns only the keys actually set,

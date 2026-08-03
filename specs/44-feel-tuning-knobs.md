@@ -12,14 +12,22 @@ part of the deterministic contract; engine goldens and Luau are untouched.
 One mutable `TUNING` object owns the six feel constants; `projection.js`,
 `road_renderer.js`, and `renderer_canvas.js` read it live each frame.
 
-| param | key | default | range | effect |
+| param | key | default | usable range | effect |
 |-------|-----|---------|-------|--------|
-| `depth` | camDepth | 0.84 | 0.3–2.0 | FOV / flatness |
-| `height` | camHeight | 1500 | 400–4000 | camera height |
-| `roadw` | roadWidth | 2000 | 800–4000 | road width |
-| `hill` | hillScale | 180 | 0–600 | crest/dip readability |
-| `follow` | camFollow | 0.4 | 0–1 | how much the camera chases drift |
-| `nearz` | playerNearZ | 2000 | 500–6000 | player car on-screen size |
+| `depth` | camDepth | 0.84 | 0.5–1.4 | FOV / flatness |
+| `height` | camHeight | 1500 | 800–2400 | camera height |
+| `roadw` | roadWidth | 2000 | 1400–3000 | road width |
+| `hill` | hillScale | 180 | 40–320 | crest/dip readability |
+| `follow` | camFollow | 0.4 | 0.15–0.75 | how much the camera chases drift |
+| `nearz` | playerNearZ | 2000 | 1200–3200 | player car on-screen size |
+
+The ranges are **usable bounds**, not just clamps: outside them the scene breaks
+(playtest found `hill=500` clips the car through crests, and a road width near
+500 is narrower than the car). Values are clamped into range, so an extreme param
+can't break rendering (marker-0047 tightened these from the first-pass wide
+bounds). Sensible starting points to A/B from the defaults: `hill` 140–240,
+`roadw` 1800–2400, `depth` 0.7–1.0, `follow` 0.3–0.55, `height` 1200–1900,
+`nearz` 1700–2400.
 
 `readTuning(params)` parses + clamps to each range and returns only the keys set;
 `applyTuning(overrides)` writes them into `TUNING` (boot, from the URL).

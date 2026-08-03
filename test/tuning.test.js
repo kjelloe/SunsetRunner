@@ -11,11 +11,12 @@ test("readTuning parses known params to their TUNING keys", () => {
   assert.deepEqual(o, { hillScale: 300, camFollow: 0.6, camHeight: 2000 });
 });
 
-test("readTuning clamps to each field's range", () => {
-  const o = readTuning(new URLSearchParams("follow=5&hill=-50&depth=99"));
-  assert.equal(o.camFollow, 1); // clamped to max 1
-  assert.equal(o.hillScale, 0); // clamped to min 0
-  assert.equal(o.camDepth, 2.0); // clamped to max 2.0
+test("readTuning clamps to each field's usable range", () => {
+  const o = readTuning(new URLSearchParams("follow=5&hill=-50&depth=99&roadw=200"));
+  assert.equal(o.camFollow, 0.75); // clamped to max
+  assert.equal(o.hillScale, 40); // clamped to min
+  assert.equal(o.camDepth, 1.4); // clamped to max
+  assert.equal(o.roadWidth, 1400); // too-narrow road clamped up to min
 });
 
 test("readTuning ignores non-numeric values", () => {
