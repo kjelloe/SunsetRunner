@@ -10,6 +10,7 @@ local trafficMod = require("./traffic")
 local collision = require("./collision")
 local car = require("./car_data")
 local road = require("./road_data")
+local fixed = require("./fixedmath")
 
 local function apply(state, command, ctx)
 	local next = copyState.cloneState(state)
@@ -60,7 +61,11 @@ local function apply(state, command, ctx)
 				continue
 			end
 			for _, segId in ipairs(r.entered) do
-				local bonus = road.getSegment(ctx.courseSet, segId).checkpointTicks
+				-- Difficulty scales the checkpoint bonus (ctx.timeScale, default 100
+				-- = identity). Integer % via truncDivI32. Mirrors JS.
+				local raw = road.getSegment(ctx.courseSet, segId).checkpointTicks
+				local scale = ctx.timeScale or 100
+				local bonus = if scale == 100 then raw else fixed.truncDivI32(raw * scale, 100)
 				if bonus > 0 then
 					seat.timerTicks += bonus
 					table.insert(next.events, { type = "checkpoint", seatId = seat.id, segmentId = segId, bonus = bonus, tick = next.tick })

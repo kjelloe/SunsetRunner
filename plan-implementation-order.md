@@ -109,7 +109,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-050 fork preview (name branches + arrows) (marker-0050)
 - [x] slice-051 big centre race timer (marker-0051)
 - [x] slice-052 splash screen + client asset loading bar (marker-0052)
-- [ ] difficulty EASY/MEDIUM/HARD select (first player, after car select) + difficulty.timeScale
+- [x] slice-053 difficulty EASY/MEDIUM/HARD select + difficulty.timeScale (local) (marker-0053)
 - [ ] checkpoints after each segment (per-segment checkpointTicks tuned)
 - [ ] course-authoring schema (specs/48): loader accepts nameKey/seconds (not hashed)
 - [ ] tools/build_course.mjs — derive stripCount from seconds + validate graph + report leg times

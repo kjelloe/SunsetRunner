@@ -11,6 +11,7 @@ import { spawnSegmentTraffic, advanceTraffic } from "./traffic.js";
 import { resolveTrafficCollisions, resolveRivalCollisions } from "./collision.js";
 import { getCar } from "../shared/car_data.js";
 import { getSegment } from "../shared/road_data.js";
+import { truncDivI32 } from "../shared/fixedmath.js";
 
 export function apply(state, command, ctx = {}) {
   const v = validate(command);
@@ -52,7 +53,11 @@ export function apply(state, command, ctx = {}) {
       }
       // 7. checkpoints: entering a segment with a bonus extends the timer.
       for (const segId of r.entered) {
-        const bonus = getSegment(ctx.courseSet, segId).checkpointTicks;
+        // Difficulty scales the checkpoint bonus (ctx.timeScale, default 100 =
+        // identity so goldens are unaffected). Integer % via truncDivI32.
+        const raw = getSegment(ctx.courseSet, segId).checkpointTicks;
+        const scale = ctx.timeScale ?? 100;
+        const bonus = scale === 100 ? raw : truncDivI32(raw * scale, 100);
         if (bonus > 0) {
           seat.timerTicks += bonus;
           next.events.push({ type: "checkpoint", seatId: seat.id, segmentId: segId, bonus, tick: next.tick });

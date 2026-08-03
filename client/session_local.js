@@ -10,7 +10,8 @@ export function createLocalSession(courseSet, carSet, opts = {}) {
   const seed = (opts.seed ?? 12345) >>> 0;
   const courseId = opts.courseId ?? 1;
   const carId = opts.carId ?? 1;
-  const ctx = { courseSet, carSet, trafficConfig: opts.trafficConfig };
+  // timeScale scales checkpoint bonuses (difficulty); default medium (100).
+  const ctx = { courseSet, carSet, trafficConfig: opts.trafficConfig, timeScale: opts.timeScale ?? 100 };
   let state = createInitialState({
     seed, courseSet, carSet, courseId, seats: [{ id: 1, carId }],
     startTimeTicks: opts.startTimeTicks, trafficConfig: opts.trafficConfig,

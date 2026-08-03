@@ -17,6 +17,7 @@ import { computeBufferSize } from "./viewport.js";
 import { installWakeLock } from "./wakelock.js";
 import { drawConnectionBanner } from "./connection_banner.js";
 import { carChoiceFromParams, createCarSelect, drawCarSelect, carSelectTouchZone } from "./car_select.js";
+import { difficultyFromParams, createDifficultySelect, drawDifficultySelect, difficultyTouchZone } from "./difficulty_select.js";
 import { createAudio } from "./audio.js";
 import { loadScenery } from "./scenery.js";
 import { readTuning, applyTuning, drawTuningHud } from "./tuning.js";
@@ -103,34 +104,47 @@ export async function boot(doc = document) {
   doc.addEventListener?.("keydown", armAudio);
   canvas.addEventListener?.("pointerdown", armAudio);
 
-  // Two phases: "select" shows the car picker; "race" runs the session. The
-  // session is not created until a car is chosen, so JOIN carries the choice.
+  // Phases: "select" (car) -> "difficulty" -> "race". The session is not created
+  // until both are chosen, so JOIN carries the car and the run uses the timeScale.
+  // ?car=N / ?diff=level skip the respective picker. Difficulty is local-only for
+  // now (remote is server-authoritative; first-player-selects is future work).
   const choice = carChoiceFromParams(params, carSet);
+  const diffChoice = difficultyFromParams(params);
   const sel = createCarSelect(carSet, choice.carId);
-  let phase = choice.fromUrl ? "race" : "select";
+  const diffSel = createDifficultySelect(diffChoice.level);
+  const showDifficulty = !remote && !diffChoice.fromUrl;
   let session = null;
 
-  // A fresh local race counts down 3-2-1-GO! before the sim advances (remote
-  // races are server-authoritative, so no client-side freeze there).
   const countdown = createCountdown();
 
-  function start(carId) {
+  function start(carId, timeScale) {
     session = remote
       ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks, carId })
-      : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig, carId });
+      : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig, carId, timeScale });
     if (remote) session.connect();
     countdown.start(performance.now());
     phase = "race";
   }
-  if (phase === "race") start(choice.carId);
+  // After the car is chosen, go to difficulty (local) or straight to the race.
+  function afterCar() {
+    if (showDifficulty) { phase = "difficulty"; }
+    else start(sel.carId, remote ? 100 : diffChoice.timeScale);
+  }
 
-  // Tap-to-choose on touch: left/right third cycles, centre confirms.
+  let phase = choice.fromUrl ? (showDifficulty ? "difficulty" : "race") : "select";
+  if (phase === "race") start(choice.carId, remote ? 100 : diffChoice.timeScale);
+
+  // Tap-to-choose on touch.
   canvas.addEventListener?.("pointerup", (e) => {
-    if (phase !== "select") return;
     const rect = canvas.getBoundingClientRect?.() || { left: 0, top: 0, width: view.w, height: view.h };
     const x = ((e.clientX - rect.left) / (rect.width || 1)) * view.w;
     const y = ((e.clientY - rect.top) / (rect.height || 1)) * view.h;
-    if (sel.handle(carSelectTouchZone(view, x, y)) === "confirm") start(sel.carId);
+    if (phase === "select") {
+      if (sel.handle(carSelectTouchZone(view, x, y)) === "confirm") afterCar();
+    } else if (phase === "difficulty") {
+      diffSel.setIndex(difficultyTouchZone(view, x)); // tap a button = pick it
+      start(sel.carId, diffSel.timeScale);
+    }
   });
 
   let acc = 0;
@@ -142,10 +156,17 @@ export async function boot(doc = document) {
     // select phase acts on them (arrow keys also steer during the race).
     let ev;
     while ((ev = readMenuNav()) !== null) {
-      if (phase === "select" && sel.handle(ev) === "confirm") { start(sel.carId); break; }
+      if (phase === "select" && sel.handle(ev) === "confirm") { afterCar(); break; }
+      else if (phase === "difficulty" && diffSel.handle(ev) === "confirm") { start(sel.carId, diffSel.timeScale); break; }
     }
     if (phase === "select") {
       drawCarSelect(g, view, sel);
+      frameCount++;
+      requestAnimationFrame(frame);
+      return;
+    }
+    if (phase === "difficulty") {
+      drawDifficultySelect(g, view, diffSel);
       frameCount++;
       requestAnimationFrame(frame);
       return;

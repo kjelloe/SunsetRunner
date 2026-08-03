@@ -16,5 +16,11 @@ export const RIGHT_LANE = LANE_WIDTH;   // 256
 export const FORK_LEFT = -1;
 export const FORK_RIGHT = 1;
 
+// Difficulty scales checkpoint time bonuses as an integer percent
+// (bonus * timeScale / 100). medium = 100 = identity, so the default and every
+// golden (which sets no difficulty) are unaffected. Applied in the reducer.
+export const DIFFICULTY = { easy: 130, medium: 100, hard: 75 };
+export const DEFAULT_TIME_SCALE = 100;
+
 // State schema version — bump on any hashed-state shape change, then repin.
 export const STATE_VERSION = 1;

@@ -1154,3 +1154,21 @@ LOADING bar while client assets load.
 - test/splash.test.js + import gate; specs/49.
 
 Gate: ./test.sh -> 212/212 + 4 Luau gates OK.
+
+---
+
+## marker-0053 — difficulty EASY/MEDIUM/HARD (2026-08-03)
+
+Engine + client, NO repin (medium=100=identity; goldens + Luau twin unchanged).
+- shared/constants.js DIFFICULTY {easy:130,medium:100,hard:75} timeScale %.
+- engine/reducer.js: checkpoint bonus = truncDivI32(raw*timeScale,100) via
+  ctx.timeScale (default 100). luau/reducer.luau mirrors (requires fixedmath).
+- client/difficulty_select.js: three-button picker (createDifficultySelect,
+  difficultyFromParams ?diff=, difficultyTouchZone, draw); main.js difficulty
+  phase after car-select; session_local passes timeScale into ctx.
+- ctx.timeScale is a context knob, not hashed state. Remote = server-authoritative
+  -> difficulty local-only (first-player-selects is future server work).
+- test/difficulty.test.js (600->780 easy /450 hard) + difficulty_select.test.js
+  + import gate; specs/50.
+
+Gate: ./test.sh -> 218/218 + 4 Luau gates OK.

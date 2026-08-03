@@ -168,6 +168,9 @@ interact, so press a key / tap first. `?mute=1` disables it.
   bars; `◄`/`►` (or A/D) cycles cars, Enter/Space (or tap) starts the race.
 - [ ] **[bug]** `?car=3` skips the overlay and starts in that car.
 - [ ] **[feel]** Do the four cars feel distinct (speed vs accel vs grip)?
+- [ ] **[bug]** After the car, a **SELECT DIFFICULTY** screen shows EASY / MEDIUM /
+  HARD (marker-0053); tap/enter one to start. EASY should give noticeably more
+  time at checkpoints than HARD. `?diff=hard` skips it. (Local only for now.)
 
 ## What to report back
 
