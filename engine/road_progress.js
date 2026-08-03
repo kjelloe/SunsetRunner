@@ -3,7 +3,7 @@
 // (forks/checkpoints/timer arrive in later slices). Returns whether the seat
 // just crossed the finish so the reducer can emit the event.
 
-import { ROAD_UNIT } from "../shared/constants.js";
+import { ROAD_UNIT, FORK_LEFT, FORK_RIGHT } from "../shared/constants.js";
 import { getSegment, nextSegment } from "../shared/road_data.js";
 
 function segmentLength(courseSet, segmentId) {
@@ -39,7 +39,12 @@ export function advanceRoad(seat, courseSet, tick) {
   while (seat.roadZ >= segLen) {
     seat.roadZ -= segLen;
     const cur = getSegment(courseSet, seat.segmentId);
-    const nxt = nextSegment(courseSet, seat.segmentId, seat.forkChoice);
+    // Forks are physical: an explicit Q/E choice wins, but with none the branch
+    // follows the car's LANE POSITION — left of centre takes the left fork, at or
+    // right of centre takes the right. So you steer into the fork you want.
+    let choice = seat.forkChoice;
+    if (choice === 0 && isFork(cur)) choice = seat.laneX < 0 ? FORK_LEFT : FORK_RIGHT;
+    const nxt = nextSegment(courseSet, seat.segmentId, choice);
     if (isFork(cur)) seat.forkChoice = 0; // choice consumed at the fork
     if (nxt === -1) {
       seat.segmentId = -1;

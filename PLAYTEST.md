@@ -71,7 +71,9 @@ Open `...index.html?course=2`.
 - [ ] **[bug]** A `◄ Q   FORK   E ►` prompt appears as you approach the fork.
 - [ ] **[bug]** Pressing **Q** takes the left branch, **E** the right (drive it
   twice; the routes differ — right branch grants a checkpoint).
-- [ ] **[bug]** No key at the fork → defaults left.
+- [ ] **[bug]** With NO key, the fork follows your **lane position**: drift left of
+  centre → left branch, at/right of centre → right branch (marker-0048). Steer
+  into a branch and confirm you take it.
 - [ ] **[feel]** Is the fork readable in time to choose?
 
 ## 4. Mirror course — course 3 (mirror_valley)

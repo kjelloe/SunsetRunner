@@ -34,7 +34,13 @@ local function advanceRoad(seat, courseSet, tick: number)
 	while seat.roadZ >= segLen do
 		seat.roadZ -= segLen
 		local cur = road.getSegment(courseSet, seat.segmentId)
-		local nxt = road.nextSegment(courseSet, seat.segmentId, seat.forkChoice)
+		-- Forks are physical: explicit Q/E choice wins, else follow lane position
+		-- (left of centre -> left fork, at/right of centre -> right). Mirrors JS.
+		local choice = seat.forkChoice
+		if choice == 0 and isFork(cur) then
+			if seat.laneX < 0 then choice = -1 else choice = 1 end
+		end
+		local nxt = road.nextSegment(courseSet, seat.segmentId, choice)
 		if isFork(cur) then
 			seat.forkChoice = 0
 		end

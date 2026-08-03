@@ -1,12 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { loadCourseSet } from "../shared/road_data.js";
+import { loadCourseSet, getSegment } from "../shared/road_data.js";
 import { loadCarSet } from "../shared/car_data.js";
 import { loadTrafficConfig } from "../shared/traffic_data.js";
 import { createInitialState } from "../engine/state.js";
 import { apply } from "../engine/reducer.js";
 import { runScenario } from "../engine/scenario.js";
+import { advanceRoad } from "../engine/road_progress.js";
+import { ROAD_UNIT } from "../shared/constants.js";
 
 const read = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url)));
 const ctx = {
@@ -46,8 +48,40 @@ test("left and right choices take different routes", () => {
   assert.ok(left.state.seats[0].finishTicks > 0 && right.state.seats[0].finishTicks > 0);
 });
 
-test("no fork choice defaults to left deterministically", () => {
-  const left = runScenario(forkScenario(-1), ctx);
-  const none = runScenario(forkScenario(0), ctx);
-  assert.equal(none.finalHash, left.finalHash);
+// A seat parked at the very end of the course-2 fork segment (11 -> {12|13}),
+// about to cross into the branch on the next advance.
+function seatAtForkEnd(laneX) {
+  const seg = getSegment(ctx.courseSet, 11);
+  const segLen = seg.stripCount * ROAD_UNIT;
+  return { id: 1, segmentId: 11, roadZ: segLen - 1, speed: 4, laneX, forkChoice: 0, finishTicks: -1 };
+}
+
+test("with no explicit choice, lane position picks the fork", () => {
+  const seg = getSegment(ctx.courseSet, 11);
+  const left = seatAtForkEnd(-100);
+  advanceRoad(left, ctx.courseSet, 1);
+  assert.equal(left.segmentId, seg.forkLeft, "left of centre -> left fork");
+
+  const right = seatAtForkEnd(100);
+  advanceRoad(right, ctx.courseSet, 1);
+  assert.equal(right.segmentId, seg.forkRight, "right of centre -> right fork");
+
+  const centre = seatAtForkEnd(0);
+  advanceRoad(centre, ctx.courseSet, 1);
+  assert.equal(centre.segmentId, seg.forkRight, "dead centre -> right fork");
+});
+
+test("an explicit Q/E choice overrides lane position", () => {
+  const seg = getSegment(ctx.courseSet, 11);
+  // Car is right of centre (would take the right fork) but explicitly chose left.
+  const s = seatAtForkEnd(300);
+  s.forkChoice = -1;
+  advanceRoad(s, ctx.courseSet, 1);
+  assert.equal(s.segmentId, seg.forkLeft);
+});
+
+test("no explicit choice follows lane position (centre car matches right)", () => {
+  const right = runScenario(forkScenario(1), ctx);
+  const none = runScenario(forkScenario(0), ctx); // stays centre -> right fork
+  assert.equal(none.finalHash, right.finalHash);
 });

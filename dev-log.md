@@ -1083,3 +1083,19 @@ depth 0.5-1.4, height 800-2400, roadw 1400-3000, hill 40-320, follow 0.15-0.75,
 nearz 1200-3200. Updated tuning clamp test + specs/44 (recommended values).
 
 Gate: ./test.sh -> 194/194 + 4 Luau gates OK.
+
+---
+
+## marker-0048 — forks by lane position (2026-08-03)
+
+Engine change, conscious repin. Forks are now physical: with no explicit Q/E, the
+branch follows the car's laneX (left of centre -> left fork, at/right -> right).
+Explicit choice still overrides.
+- engine/road_progress.js advanceRoad: choice = forkChoice, else laneX<0 ? -1 : 1.
+- luau/road_progress.luau mirrors it (fork_1a gate still byte-identical — that
+  scenario uses an explicit choice, so the new branch never fires).
+- REPIN (AI JS-only golden): AI now routes into the right branch (extra
+  checkpoint) -> checkpoints 1->2, lastTick 297->316, 336dc614->946a2c0bc4652aab.
+- test/forks.test.js: position picks fork (L/R/centre->R), explicit overrides.
+
+Gate: ./test.sh -> 196/196 + 4 Luau gates OK.
