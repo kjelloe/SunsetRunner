@@ -84,10 +84,10 @@ Schema confirmed. Delivered:
   checkpoints (~90% refill), validates the graph via `loadCourseSet`, prints a
   leg-time report. `--check` reports without writing; re-running is idempotent
   (drops old ids ≥ 100 first).
-- **`course 4 "grand_tour"`**: 55 segments (ids ≥ 100), 3 forks, six biomes
+- **`course 4 "grand_tour"`**: 53 segments (ids ≥ 100), a **50-stage main route**, 3 forks, six biomes
   (sunset/beach/canyon/forest/city/night — city/night added to `scenery.json`).
   Courses 1-3 and every engine golden are untouched; only the **content hash
-  repinned** `4cdff42d55b0f6af → ac01b65fe5711df8` (+ segment count 16 → 71).
+  repinned** content hash repinned (finally `939f1ef82438c7ef`, +segment count 16 → 69).
 - Play it with `?course=4`.
 
 Remaining: difficulty is wired for local play (specs/50); tuning the exact

@@ -43,11 +43,13 @@ const HILL_CYCLE = ["flat", "crest", "rolling", "dip", "flat", "rolling"];
 const SEC_CYCLE = [35, 45, 55, 40, 50, 38, 48];
 
 // Biome bands (scenerySet ids from specs/42 + city/night added in scenery.json).
+// Tuned so the MAIN (left-fork) route is exactly 50 stages: 44 line legs (1
+// stage each) + 3 fork legs (fork segment + left branch = 2 stages each) = 50.
 const BANDS = [
-  { biome: 1, name: "sunset", n: 8 },
+  { biome: 1, name: "sunset", n: 7 },
   { biome: 2, name: "beach", n: 9, forkIdx: 4, detour: 3 },
   { biome: 3, name: "canyon", n: 9, forkIdx: 5, detour: 6 },
-  { biome: 4, name: "forest", n: 8 },
+  { biome: 4, name: "forest", n: 7 },
   { biome: 5, name: "city", n: 9, forkIdx: 4, detour: 6 },
   { biome: 6, name: "night", n: 6 },
 ];
@@ -130,6 +132,16 @@ function main() {
   const segCount = generated.length;
   let mainRouteSecs = 0;
   for (const leg of legs) mainRouteSecs += leg.seconds + (leg.type === "fork" ? leg.left.seconds : 0);
+
+  // Count stages along the main (left-fork) route to the finish.
+  const cs = loadCourseSet(roads);
+  let sid = 100, stages = 0;
+  while (sid !== -1 && stages < 500) {
+    const s = generated.find((g) => g.id === sid);
+    stages++;
+    sid = s.forkLeft >= 0 ? s.forkLeft : s.next;
+  }
+  console.log(`main route: ${stages} stages`);
   const outOfRange = generated.filter((s) => { const t = stripsToSeconds(s.stripCount); return t < 30 || t > 65; });
 
   console.log(`grand_tour: ${segCount} segments, ${legs.length} legs, ${legs.filter((l) => l.type === "fork").length} forks`);

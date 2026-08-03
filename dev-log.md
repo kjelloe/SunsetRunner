@@ -1229,3 +1229,15 @@ Client-only, no repin. Playtest fixes to the race-summary restart:
 - specs/51 + PLAYTEST updated to 10s; race_summary.test NEW_RACE_SECONDS assert.
 
 Gate: ./test.sh -> 227/227 + 4 Luau gates OK.
+
+---
+
+## marker-0058 — grand_tour tuned to a 50-stage sample track (2026-08-03)
+
+Content + tooling. Tuned build_course BANDS (sunset 8->7, forest 8->7) so the
+MAIN (left-fork) route is exactly 50 stages; build_course now reports main-route
+stage count. Course 4 now 53 segments / 50-stage route (was 55). CONTENT REPIN
+ac01b65fe5711df8 -> 939f1ef82438c7ef, segment count 71 -> 69. Engine goldens
+(courses 1-3) + 4 Luau gates unchanged. road_data.test + build_course.test updated.
+
+Gate: ./test.sh -> 227/227 + 4 Luau gates OK.
