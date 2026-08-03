@@ -24,7 +24,8 @@ import { readTuning, applyTuning, drawTuningHud } from "./tuning.js";
 import { createCountdown, drawCountdownLabel } from "./countdown.js";
 import { drawSplash } from "./splash.js";
 import { buildSummary, playersFromState, drawRaceSummary, NEW_RACE_SECONDS, stageNumber, stageTotal } from "./race_summary.js";
-import { getCourse } from "../shared/road_data.js";
+import { getCourse, getSegment } from "../shared/road_data.js";
+import { createAnnouncer, stageLabel } from "./stage_announce.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -120,6 +121,8 @@ export async function boot(doc = document) {
   let session = null;
 
   const countdown = createCountdown();
+  const announcer = createAnnouncer();
+  let prevSegmentId = null;
   let activeCarId = choice.carId;
   let activeTimeScale = diffChoice.timeScale;
   let activeDiffLevel = diffChoice.level;
@@ -136,6 +139,7 @@ export async function boot(doc = document) {
     activeTimeScale = timeScale;
     activeDiffLevel = diffLevel;
     prevCrashed = 0; prevFinish = -1; prevTimer = NaN;
+    prevSegmentId = null;
     raceSummary = null;
     celebration.reset(); // clear finish confetti/splash from the previous race
     countdown.start(performance.now());
@@ -216,6 +220,12 @@ export async function boot(doc = document) {
       ? { stage: stageNumber(courseSet, stageStart, state.seats[0].segmentId), total: stageTotal(courseSet, courseId) }
       : {};
     if (state.seats.length) render(g, view, state, courseSet, assets, scenery, hud);
+    // Stage-entry announcement: fire when the car enters a new segment.
+    const selfSeat = state.seats[0];
+    if (racing && selfSeat && selfSeat.segmentId !== -1 && selfSeat.segmentId !== prevSegmentId) {
+      announcer.announce(stageLabel(hud.stage, getSegment(courseSet, selfSeat.segmentId).nameKey), now);
+      prevSegmentId = selfSeat.segmentId;
+    }
     // Audio: engine pitch tracks speed; SFX fire on state edges (crash entered,
     // finish crossed, timer bumped up by a checkpoint).
     const self = state.seats[0];
@@ -237,6 +247,7 @@ export async function boot(doc = document) {
     if (counting) countdown.draw(g, view, now);
     // Remote: the server owns the shared pre-race countdown (specs/53).
     if (remote && racing && session.countdown > 0) drawCountdownLabel(g, view, String(session.countdown));
+    announcer.draw(g, view, now);
     if (remote) drawConnectionBanner(g, view, session.status, frameCount);
 
     // Race end -> summary of the field + a 30 s countdown to a fresh race.

@@ -1,5 +1,5 @@
 // tools/build_course.mjs — generate the big "grand_tour" course (specs/48).
-// Authors think in SECONDS per leg (30-60 s @ Medium); this derives stripCount,
+// Authors think in SECONDS per leg (ramps 60->240 s @ Medium); this derives stripCount,
 // lays out biomes + rejoining forks + per-segment checkpoints, validates the
 // graph, appends it as course 4 (ids >= 100 — courses 1-3 and their goldens are
 // left untouched), and prints a leg-time report. Deterministic (no RNG), so
@@ -24,13 +24,18 @@ const secondsToStrips = (sec) => Math.round((sec * CRUISE * TICK_HZ) / ROAD_UNIT
 const stripsToSeconds = (strips) => (strips * ROAD_UNIT) / (CRUISE * TICK_HZ);
 
 // Curve/hill keyframe shapes (integer, sampled across the segment).
-const SEC_CYCLE = [40, 48, 34, 52, 44, 38, 50];
+// Stage duration RAMPS from 60 s (stage 1) to 240 s (last), so the race gets
+// longer and more demanding as you go (playtest ask). k = 0-based leg index.
+function stageSeconds(k, totalLegs) {
+  return Math.round(60 + 180 * (k / Math.max(1, totalLegs - 1)));
+}
 
 // Balanced ELEMENTS: a leg is a sequence of ~7 s elements (playtest: swap between
 // curve-left / curve-right / straight / hill, each 5-10 s). Keyframes are sampled
-// stepwise across the segment, so one keyframe ≈ one element.
+// stepwise across the segment, so one keyframe ≈ one element — a long leg simply
+// has more elements (no upper cap) so each stays ~7 s.
 function elementCount(seconds) {
-  return Math.max(5, Math.min(9, Math.round(seconds / 7)));
+  return Math.max(5, Math.round(seconds / 7));
 }
 
 // Curve profile: every stage OPENS with a straight (3-8 s), then alternates
@@ -84,10 +89,11 @@ const BANDS = [
 // Flatten bands into an ordered list of "legs"; a leg is a line or a fork.
 function buildLegs() {
   const legs = [];
+  const totalLegs = BANDS.reduce((a, b) => a + b.n, 0);
   let k = 0;
   for (const band of BANDS) {
     for (let i = 0; i < band.n; i++) {
-      const seconds = SEC_CYCLE[k % SEC_CYCLE.length];
+      const seconds = stageSeconds(k, totalLegs);
       const base = {
         name: `${band.name}_${i + 1}`, biome: band.biome, seconds,
         curveProfile: legCurve(seconds, k), hillProfile: legHill(seconds, band.biome),
@@ -171,12 +177,12 @@ function main() {
     sid = s.forkLeft >= 0 ? s.forkLeft : s.next;
   }
   console.log(`main route: ${stages} stages`);
-  const outOfRange = generated.filter((s) => { const t = stripsToSeconds(s.stripCount); return t < 30 || t > 65; });
+  const outOfRange = generated.filter((s) => { const t = stripsToSeconds(s.stripCount); return t < 55 || t > 250; });
 
   console.log(`grand_tour: ${segCount} segments, ${legs.length} legs, ${legs.filter((l) => l.type === "fork").length} forks`);
   console.log(`left-route total ~${Math.round(mainRouteSecs)}s (~${(mainRouteSecs / 60).toFixed(1)} min) @ Medium cruise`);
   console.log(`biomes: ${[...new Set(generated.map((s) => s.scenerySet))].join(", ")}`);
-  if (outOfRange.length) console.log(`WARN: ${outOfRange.length} legs outside 30-65s`);
+  if (outOfRange.length) console.log(`WARN: ${outOfRange.length} legs outside 55-250s`);
 
   if (check) { console.log("(--check: not written)"); return; }
   writeFileSync(roadsPath, JSON.stringify(roads, null, 2) + "\n");

@@ -1410,3 +1410,16 @@ silhouette (body/cabin/windows/headlight/wheels) in the car's identity colour,
 shown while browsing; stat bars shifted down to make room.
 
 Gate: ./test.sh -> 250/250 + 4 Luau gates OK.
+
+---
+
+## marker-0071 — stage durations 60->240s ramp + stage announcement (2026-08-04)
+
+Content repin (course 4) + client. Playtest: stages too short/uniform.
+- build_course stageSeconds ramps 60s (stage 1) -> 240s (last); elementCount
+  uncapped so long legs keep ~7s elements. Content hash f1cc22a2 -> e3f839ac3a731bf3.
+- client/stage_announce.js: "STAGE n — NAME" banner (fade in/out) on entering a
+  new segment; main tracks prevSegmentId, resets per race. build_course.test +
+  report ranges updated to 55-250s.
+
+Gate: ./test.sh -> 253/253 + 4 Luau gates OK.

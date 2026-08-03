@@ -18,10 +18,10 @@ test("grand_tour (course 4) is present and large", () => {
 test("every generated segment carries authoring metadata and a real biome", () => {
   for (const s of gen) {
     assert.equal(typeof s.nameKey, "string");
-    assert.ok(s.seconds >= 30 && s.seconds <= 65, `seg ${s.id} seconds ${s.seconds} out of range`);
+    assert.ok(s.seconds >= 60 && s.seconds <= 250, `seg ${s.id} seconds ${s.seconds} out of range`);
     // stripCount should reflect ~seconds at the reference cruise (2000).
     const secs = (s.stripCount * ROAD_UNIT) / (2000 * TICK_HZ);
-    assert.ok(secs >= 28 && secs <= 70, `seg ${s.id} derived ${secs.toFixed(0)}s off`);
+    assert.ok(secs >= 55 && secs <= 255, `seg ${s.id} derived ${secs.toFixed(0)}s off`);
     assert.ok(s.scenerySet >= 1 && s.scenerySet <= 11);
   }
 });
