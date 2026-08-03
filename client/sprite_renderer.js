@@ -63,6 +63,42 @@ export function drawSprite(g, sprite, cx, cyBottom, scale) {
         g.fill();
       }
     }
+  } else if (sprite.kind === "fir") {
+    g.fillStyle = p[0];
+    g.fillRect(cx - w * 0.06, y + h * 0.82, w * 0.12, h * 0.18); // trunk
+    g.fillStyle = p[1];
+    for (const [ty, tw] of [[0.08, 0.5], [0.34, 0.72], [0.6, 0.92]]) {
+      g.beginPath();
+      g.moveTo(cx, y + h * ty * 0.6);
+      g.lineTo(cx - w * tw * 0.5, y + h * (ty + 0.3));
+      g.lineTo(cx + w * tw * 0.5, y + h * (ty + 0.3));
+      g.closePath();
+      g.fill();
+    }
+    if (p[2]) { // snow cap
+      g.fillStyle = p[2];
+      g.beginPath();
+      g.moveTo(cx, y + h * 0.05);
+      g.lineTo(cx - w * 0.14, y + h * 0.2);
+      g.lineTo(cx + w * 0.14, y + h * 0.2);
+      g.closePath();
+      g.fill();
+    }
+  } else if (sprite.kind === "crop") {
+    g.strokeStyle = p[0];
+    g.lineWidth = Math.max(1, w * 0.06);
+    for (const dx of [-0.3, -0.1, 0.1, 0.3]) {
+      g.beginPath();
+      g.moveTo(cx + w * dx, y + h);
+      g.lineTo(cx + w * dx * 0.7, y + h * 0.12);
+      g.stroke();
+    }
+    g.fillStyle = p[1];
+    for (const dx of [-0.3, -0.1, 0.1, 0.3]) {
+      g.beginPath();
+      g.ellipse(cx + w * dx * 0.7, y + h * 0.14, w * 0.06, h * 0.16, 0, 0, Math.PI * 2);
+      g.fill();
+    }
   } else if (sprite.kind === "sign") {
     g.fillStyle = p[2];
     g.fillRect(cx - w * 0.05, y + h * 0.45, w * 0.1, h * 0.55); // post

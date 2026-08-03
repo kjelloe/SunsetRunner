@@ -13,11 +13,11 @@ test("buildManifest is deterministic and matches the shipped data/assets.json", 
 });
 
 test("strip width and manifest hash are pinned (§18 / gotcha #16)", () => {
-  assert.equal(shipped.stripWidth, 264);
+  assert.equal(shipped.stripWidth, 356);
   assert.equal(shipped.stripHeight, 96);
   const bytes = new TextEncoder().encode(readFileSync(new URL("../data/assets.json", import.meta.url), "utf8"));
   const h = computeFnv1a64(bytes);
-  assert.equal(hashToHex64(h.hashHi, h.hashLo), "09f1ccd63280f8c8");
+  assert.equal(hashToHex64(h.hashHi, h.hashLo), "cf64cb17d40914fc");
 });
 
 test("sprites pack left-to-right without overlap", () => {

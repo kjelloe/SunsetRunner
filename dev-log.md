@@ -1317,3 +1317,14 @@ Client-only, no repin (tranche 2). Terrains now differ beyond palette:
 - test/scenery.test.js side/sheen parse + clamp.
 
 Gate: ./test.sh -> 241/241 + 4 Luau gates OK.
+
+---
+
+## marker-0064 — fir + wheat sprites (2026-08-03)
+
+Client + asset content, no engine repin. build_assets catalog gains fir
+(snow-capped conifer, kind fir) + wheat (kind crop); sprite_renderer draws both.
+scenery.json: forest/mountain/alpine use fir, wheat uses wheat. Manifest repinned
+strip 264->356, hash 09f1ccd6->cf64cb17d40914fc. specs/54 (tranche 2 summary).
+
+Gate: ./test.sh -> 241/241 + 4 Luau gates OK.

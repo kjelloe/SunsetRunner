@@ -1,5 +1,5 @@
 {
-  "stripWidth": 264,
+  "stripWidth": 356,
   "stripHeight": 96,
   "sprites": {
     "player_car": {
@@ -59,6 +59,29 @@
         "#cccccc",
         "#c02020",
         "#555555"
+      ]
+    },
+    "fir": {
+      "x": 266,
+      "y": 0,
+      "w": 44,
+      "h": 96,
+      "kind": "fir",
+      "palette": [
+        "#4a3218",
+        "#1f6a34",
+        "#eaf2f8"
+      ]
+    },
+    "wheat": {
+      "x": 312,
+      "y": 0,
+      "w": 44,
+      "h": 40,
+      "kind": "crop",
+      "palette": [
+        "#d8b840",
+        "#b89020"
       ]
     }
   }

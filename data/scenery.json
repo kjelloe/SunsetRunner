@@ -61,9 +61,8 @@
       "grassB": "#256e37",
       "rumbleA": "#c85c3a",
       "sprites": [
-        "palm",
-        "palm",
-        "palm",
+        "fir",
+        "fir",
         "palm",
         "sign"
       ],
@@ -112,8 +111,9 @@
       "grassB": "#c8b050",
       "rumbleA": "#d06a3a",
       "sprites": [
-        "sign",
-        "palm"
+        "wheat",
+        "wheat",
+        "sign"
       ],
       "every": 9,
       "roadScale": 1.15
@@ -163,8 +163,8 @@
       "grassB": "#6a7a5a",
       "rumbleA": "#c0c0d0",
       "sprites": [
-        "palm",
-        "palm",
+        "fir",
+        "fir",
         "sign"
       ],
       "every": 7,
@@ -181,8 +181,8 @@
       "grassB": "#c8d0d8",
       "rumbleA": "#8090a0",
       "sprites": [
-        "sign",
-        "palm"
+        "fir",
+        "sign"
       ],
       "every": 8,
       "roadScale": 0.8,
