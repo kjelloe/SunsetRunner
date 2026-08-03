@@ -21,6 +21,7 @@ import { createAudio } from "./audio.js";
 import { loadScenery } from "./scenery.js";
 import { readTuning, applyTuning, drawTuningHud } from "./tuning.js";
 import { createCountdown } from "./countdown.js";
+import { drawSplash } from "./splash.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -46,14 +47,32 @@ export async function boot(doc = document) {
   }
   installWakeLock(); // keep the phone awake while driving
 
-  const [roads, cars, checkpoints, traffic, assets, sceneryJson] = await Promise.all([
-    fetch("../data/roads.json").then((r) => r.json()),
-    fetch("../data/cars.json").then((r) => r.json()),
-    fetch("../data/checkpoints.json").then((r) => r.json()),
-    fetch("../data/traffic.json").then((r) => r.json()),
-    fetch("../data/assets.json").then((r) => r.json()),
-    fetch("../data/scenery.json").then((r) => r.json()).catch(() => null),
+  // Splash + client-side asset loading bar. Each fetch bumps a counter; the
+  // splash shows for at least MIN_SPLASH_MS so it doesn't just flash on fast
+  // local loads, then we proceed once everything is in.
+  const splashStart = performance.now();
+  const MIN_SPLASH_MS = 1400;
+  const TOTAL_ASSETS = 6;
+  let loaded = 0;
+  const grab = (path) => fetch(path).then((r) => r.json()).finally(() => { loaded++; });
+  const dataPromise = Promise.all([
+    grab("../data/roads.json"),
+    grab("../data/cars.json"),
+    grab("../data/checkpoints.json"),
+    grab("../data/traffic.json"),
+    grab("../data/assets.json"),
+    grab("../data/scenery.json").catch(() => null),
   ]);
+  await new Promise((resolve) => {
+    function splashFrame() {
+      const el = performance.now() - splashStart;
+      drawSplash(g, view, Math.min(1, el / MIN_SPLASH_MS));
+      if (el >= MIN_SPLASH_MS && loaded >= TOTAL_ASSETS) resolve();
+      else requestAnimationFrame(splashFrame);
+    }
+    requestAnimationFrame(splashFrame);
+  });
+  const [roads, cars, checkpoints, traffic, assets, sceneryJson] = await dataPromise;
   const courseSet = loadCourseSet(roads);
   const carSet = loadCarSet(cars);
   const { startTimeTicks } = loadCheckpointConfig(checkpoints);

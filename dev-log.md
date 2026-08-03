@@ -1140,3 +1140,17 @@ retained. Red under 5s.
 - client/hud.js drawHud: big centre time + label; test/hud.test.js added.
 
 Gate: ./test.sh -> 209/209 + 4 Luau gates OK.
+
+---
+
+## marker-0052 — splash screen + loading bar (2026-08-03)
+
+Client-only, no repin. SUNSET RUNNER splash over a sunset beach + palms with a
+LOADING bar while client assets load.
+- client/splash.js drawSplash(g,view,progress): sunset sky/sun/sea/sand + palm
+  silhouettes + title + clamped loading bar. Fake-ctx-safe.
+- client/main.js boot: per-fetch counter (grab .finally); splash rAF loop until
+  all 6 assets in AND >=1400ms elapsed (no flash), then proceeds.
+- test/splash.test.js + import gate; specs/49.
+
+Gate: ./test.sh -> 212/212 + 4 Luau gates OK.

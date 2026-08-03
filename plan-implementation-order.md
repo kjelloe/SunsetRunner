@@ -108,7 +108,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-049 race countdown 3-2-1-GO! (marker-0049)
 - [x] slice-050 fork preview (name branches + arrows) (marker-0050)
 - [x] slice-051 big centre race timer (marker-0051)
-- [ ] splash screen + client asset loading bar
+- [x] slice-052 splash screen + client asset loading bar (marker-0052)
 - [ ] difficulty EASY/MEDIUM/HARD select (first player, after car select) + difficulty.timeScale
 - [ ] checkpoints after each segment (per-segment checkpointTicks tuned)
 - [ ] course-authoring schema (specs/48): loader accepts nameKey/seconds (not hashed)

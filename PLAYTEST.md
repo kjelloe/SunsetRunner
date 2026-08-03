@@ -17,6 +17,8 @@ python3 -m http.server 8000   # from repo root (or `npm start` for the ws server
 ```
 Open `http://localhost:8000/client/index.html`.
 
+- [ ] **[feel]** A **SUNSET RUNNER** splash over a beach/palms shows first, with a
+  **LOADING** bar filling, then the car-select appears (marker-0052).
 - [ ] **[bug]** Page loads with NO console errors (regression guard: the
   `server/protocol.js` MIME bug, marker-0019).
 - [ ] **[bug]** You see a sunset sky (top), road receding to the horizon, green
