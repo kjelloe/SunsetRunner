@@ -22,4 +22,6 @@ export function checkpointAhead(courseSet, seat) {
   return null;
 }
 
-export const CHECKPOINT_DRAW_RANGE = 45 * ROAD_UNIT; // start drawing within this
+// Draw from the moment the boundary is within the visible road (~horizon) so the
+// gantry appears small on the horizon and scales up as you approach.
+export const CHECKPOINT_DRAW_RANGE = 200 * ROAD_UNIT;

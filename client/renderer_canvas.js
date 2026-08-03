@@ -89,7 +89,7 @@ function drawScenery(g, view, camX, assets, strips, theme) {
 // edges and a CHECKPOINT banner slung between them at tree-line height.
 function drawCheckpointBanner(g, view, camX, strips, seat, courseSet) {
   const ca = checkpointAhead(courseSet, seat);
-  if (!ca || ca.distance < ROAD_UNIT || ca.distance > CHECKPOINT_DRAW_RANGE) return;
+  if (!ca || ca.distance > CHECKPOINT_DRAW_RANGE) return; // visible from horizon until passed
   const s = sampleStrip(strips, ca.distance);
   const edge = ROAD_HALF_WIDTH * 1.15;
   const left = onRoad(view, camX, ca.distance, -edge, s.curveX, s.hillY);

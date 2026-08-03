@@ -386,12 +386,12 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
-        2,
-        1,
-        -1,
+        0,
+        3,
+        0,
         -2,
-        -1
+        0,
+        2
       ],
       "hillProfile": [
         0,
@@ -399,8 +399,7 @@
         2,
         3,
         2,
-        1,
-        0
+        1
       ],
       "trafficSeed": 500,
       "scenerySet": 1
@@ -415,18 +414,22 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
+        0,
+        -2,
+        0,
         2,
-        2,
-        1
+        0,
+        -3,
+        0
       ],
       "hillProfile": [
+        0,
         1,
         2,
-        0,
-        -1,
-        0,
-        1
+        3,
+        2,
+        1,
+        0
       ],
       "trafficSeed": 501,
       "scenerySet": 1
@@ -441,18 +444,18 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
-        -2,
-        -1,
-        -2,
-        -1
+        0,
+        2,
+        0,
+        -3,
+        0
       ],
       "hillProfile": [
         0,
-        -1,
-        -2,
-        -1,
-        0
+        1,
+        2,
+        3,
+        2
       ],
       "trafficSeed": 502,
       "scenerySet": 1
@@ -467,10 +470,13 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
+        0,
+        -3,
+        0,
+        2,
+        0,
         -2,
-        -2,
-        -1
+        0
       ],
       "hillProfile": [
         0,
@@ -494,14 +500,20 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
+        0,
         2,
-        3,
-        3,
-        2
+        0,
+        -2,
+        0,
+        3
       ],
       "hillProfile": [
         0,
-        0
+        1,
+        2,
+        3,
+        2,
+        1
       ],
       "trafficSeed": 504,
       "scenerySet": 1
@@ -516,19 +528,18 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
-        2,
-        1,
-        2,
-        1
+        0,
+        -2,
+        0,
+        3,
+        0
       ],
       "hillProfile": [
+        0,
         1,
         2,
-        0,
-        -1,
-        0,
-        1
+        3,
+        2
       ],
       "trafficSeed": 505,
       "scenerySet": 2
@@ -543,12 +554,13 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
-        2,
-        1,
-        -1,
+        0,
+        3,
+        0,
         -2,
-        -1
+        0,
+        2,
+        0
       ],
       "hillProfile": [
         0,
@@ -572,17 +584,19 @@
       "forkLeft": 108,
       "forkRight": 109,
       "curveProfile": [
-        1,
+        0,
+        -2,
+        0,
         2,
-        2,
-        1
+        0,
+        -3
       ],
       "hillProfile": [
+        0,
         1,
         2,
-        0,
-        -1,
-        0,
+        3,
+        2,
         1
       ],
       "trafficSeed": 507,
@@ -598,16 +612,14 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
         -2,
         -2,
-        -1
+        -2,
+        -2
       ],
       "hillProfile": [
         0,
         1,
-        2,
-        3,
         2,
         1,
         0
@@ -625,10 +637,10 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
         2,
         2,
-        1
+        2,
+        2
       ],
       "hillProfile": [
         0,
@@ -650,17 +662,21 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
-        -2,
-        -1,
-        -2,
-        -1
+        0,
+        2,
+        0,
+        -3,
+        0,
+        2,
+        0
       ],
       "hillProfile": [
         0,
-        -1,
-        -2,
-        -1,
+        1,
+        2,
+        3,
+        2,
+        1,
         0
       ],
       "trafficSeed": 510,
@@ -676,19 +692,18 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
-        -2,
-        -2,
-        -1
+        0,
+        -3,
+        0,
+        2,
+        0
       ],
       "hillProfile": [
         0,
         1,
         2,
         3,
-        2,
-        1,
-        0
+        2
       ],
       "trafficSeed": 511,
       "scenerySet": 2
@@ -703,13 +718,21 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
+        0,
         2,
+        0,
+        -2,
+        0,
         3,
-        3,
-        2
+        0
       ],
       "hillProfile": [
         0,
+        1,
+        2,
+        3,
+        2,
+        1,
         0
       ],
       "trafficSeed": 512,
@@ -725,18 +748,19 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
-        2,
-        1,
-        2,
-        1
+        0,
+        -2,
+        0,
+        3,
+        0,
+        -2
       ],
       "hillProfile": [
+        0,
         1,
         2,
-        0,
-        -1,
-        0,
+        3,
+        2,
         1
       ],
       "trafficSeed": 513,
@@ -752,21 +776,18 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
-        2,
-        1,
-        -1,
+        0,
+        3,
+        0,
         -2,
-        -1
+        0
       ],
       "hillProfile": [
         0,
         1,
         2,
         3,
-        2,
-        1,
-        0
+        2
       ],
       "trafficSeed": 514,
       "scenerySet": 7
@@ -781,18 +802,22 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
+        0,
+        -2,
+        0,
         2,
-        2,
-        1
+        0,
+        -3,
+        0
       ],
       "hillProfile": [
+        0,
         1,
         2,
-        0,
-        -1,
-        0,
-        1
+        3,
+        2,
+        1,
+        0
       ],
       "trafficSeed": 515,
       "scenerySet": 7
@@ -807,18 +832,20 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
-        -2,
-        -1,
-        -2,
-        -1
+        0,
+        2,
+        0,
+        -3,
+        0,
+        2
       ],
       "hillProfile": [
         0,
-        -1,
-        -2,
-        -1,
-        0
+        1,
+        2,
+        3,
+        2,
+        1
       ],
       "trafficSeed": 516,
       "scenerySet": 7
@@ -833,10 +860,13 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
+        0,
+        -3,
+        0,
+        2,
+        0,
         -2,
-        -2,
-        -1
+        0
       ],
       "hillProfile": [
         0,
@@ -860,14 +890,18 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
+        0,
         2,
-        3,
-        3,
-        2
+        0,
+        -2,
+        0
       ],
       "hillProfile": [
         0,
-        0
+        1,
+        2,
+        3,
+        2
       ],
       "trafficSeed": 518,
       "scenerySet": 8
@@ -882,19 +916,22 @@
       "forkLeft": 120,
       "forkRight": 121,
       "curveProfile": [
-        1,
-        2,
-        1,
-        2,
-        1
+        0,
+        -2,
+        0,
+        3,
+        0,
+        -2,
+        0
       ],
       "hillProfile": [
+        0,
         1,
         2,
-        0,
-        -1,
-        0,
-        1
+        3,
+        2,
+        1,
+        0
       ],
       "trafficSeed": 519,
       "scenerySet": 8
@@ -909,16 +946,14 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
         -2,
         -2,
-        -1
+        -2,
+        -2
       ],
       "hillProfile": [
         0,
         1,
-        2,
-        3,
         2,
         1,
         0
@@ -936,10 +971,10 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
         2,
         2,
-        1
+        2,
+        2
       ],
       "hillProfile": [
         0,
@@ -961,12 +996,12 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
-        2,
-        1,
-        -1,
+        0,
+        3,
+        0,
         -2,
-        -1
+        0,
+        2
       ],
       "hillProfile": [
         0,
@@ -974,8 +1009,7 @@
         2,
         3,
         2,
-        1,
-        0
+        1
       ],
       "trafficSeed": 522,
       "scenerySet": 8
@@ -990,18 +1024,18 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
+        0,
+        -2,
+        0,
         2,
-        2,
-        1
+        0
       ],
       "hillProfile": [
+        0,
         1,
         2,
-        0,
-        -1,
-        0,
-        1
+        3,
+        2
       ],
       "trafficSeed": 523,
       "scenerySet": 8
@@ -1016,17 +1050,21 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
-        -2,
-        -1,
-        -2,
-        -1
+        0,
+        2,
+        0,
+        -3,
+        0,
+        2,
+        0
       ],
       "hillProfile": [
         0,
-        -1,
-        -2,
-        -1,
+        1,
+        2,
+        3,
+        2,
+        1,
         0
       ],
       "trafficSeed": 524,
@@ -1042,10 +1080,12 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
-        -2,
-        -2,
-        -1
+        0,
+        -3,
+        0,
+        2,
+        0,
+        -2
       ],
       "hillProfile": [
         0,
@@ -1053,8 +1093,7 @@
         2,
         3,
         2,
-        1,
-        0
+        1
       ],
       "trafficSeed": 525,
       "scenerySet": 4
@@ -1069,13 +1108,21 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
+        0,
         2,
+        0,
+        -2,
+        0,
         3,
-        3,
-        2
+        0
       ],
       "hillProfile": [
         0,
+        1,
+        2,
+        3,
+        2,
+        1,
         0
       ],
       "trafficSeed": 526,
@@ -1091,19 +1138,18 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
-        2,
-        1,
-        2,
-        1
+        0,
+        -2,
+        0,
+        3,
+        0
       ],
       "hillProfile": [
+        0,
         1,
         2,
-        0,
-        -1,
-        0,
-        1
+        3,
+        2
       ],
       "trafficSeed": 527,
       "scenerySet": 4
@@ -1118,12 +1164,13 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
-        2,
-        1,
-        -1,
+        0,
+        3,
+        0,
         -2,
-        -1
+        0,
+        2,
+        0
       ],
       "hillProfile": [
         0,
@@ -1147,17 +1194,19 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
+        0,
+        -2,
+        0,
         2,
-        2,
-        1
+        0,
+        -3
       ],
       "hillProfile": [
+        0,
         1,
         2,
-        0,
-        -1,
-        0,
+        3,
+        2,
         1
       ],
       "trafficSeed": 529,
@@ -1173,18 +1222,18 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
-        -2,
-        -1,
-        -2,
-        -1
+        0,
+        2,
+        0,
+        -3,
+        0
       ],
       "hillProfile": [
         0,
-        -1,
-        -2,
-        -1,
-        0
+        1,
+        2,
+        3,
+        2
       ],
       "trafficSeed": 530,
       "scenerySet": 9
@@ -1199,10 +1248,13 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
+        0,
+        -3,
+        0,
+        2,
+        0,
         -2,
-        -2,
-        -1
+        0
       ],
       "hillProfile": [
         0,
@@ -1226,14 +1278,20 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
+        0,
         2,
-        3,
-        3,
-        2
+        0,
+        -2,
+        0,
+        3
       ],
       "hillProfile": [
         0,
-        0
+        1,
+        2,
+        3,
+        2,
+        1
       ],
       "trafficSeed": 532,
       "scenerySet": 9
@@ -1248,19 +1306,22 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
-        2,
-        1,
-        2,
-        1
+        0,
+        -2,
+        0,
+        3,
+        0,
+        -2,
+        0
       ],
       "hillProfile": [
+        0,
         1,
         2,
-        0,
-        -1,
-        0,
-        1
+        3,
+        2,
+        1,
+        0
       ],
       "trafficSeed": 533,
       "scenerySet": 3
@@ -1275,21 +1336,18 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
-        2,
-        1,
-        -1,
+        0,
+        3,
+        0,
         -2,
-        -1
+        0
       ],
       "hillProfile": [
         0,
         1,
         2,
         3,
-        2,
-        1,
-        0
+        2
       ],
       "trafficSeed": 534,
       "scenerySet": 3
@@ -1304,18 +1362,22 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
+        0,
+        -2,
+        0,
         2,
-        2,
-        1
+        0,
+        -3,
+        0
       ],
       "hillProfile": [
+        0,
         1,
         2,
-        0,
-        -1,
-        0,
-        1
+        3,
+        2,
+        1,
+        0
       ],
       "trafficSeed": 535,
       "scenerySet": 3
@@ -1330,18 +1392,20 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
-        -2,
-        -1,
-        -2,
-        -1
+        0,
+        2,
+        0,
+        -3,
+        0,
+        2
       ],
       "hillProfile": [
         0,
-        -1,
-        -2,
-        -1,
-        0
+        1,
+        2,
+        3,
+        2,
+        1
       ],
       "trafficSeed": 536,
       "scenerySet": 3
@@ -1356,19 +1420,18 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
-        -2,
-        -2,
-        -1
+        0,
+        -3,
+        0,
+        2,
+        0
       ],
       "hillProfile": [
         0,
         1,
         2,
         3,
-        2,
-        1,
-        0
+        2
       ],
       "trafficSeed": 537,
       "scenerySet": 3
@@ -1383,13 +1446,21 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
+        0,
         2,
+        0,
+        -2,
+        0,
         3,
-        3,
-        2
+        0
       ],
       "hillProfile": [
         0,
+        -1,
+        -2,
+        -3,
+        -2,
+        -1,
         0
       ],
       "trafficSeed": 538,
@@ -1405,19 +1476,20 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
-        2,
-        1,
-        2,
-        1
+        0,
+        -2,
+        0,
+        3,
+        0,
+        -2
       ],
       "hillProfile": [
-        1,
-        2,
         0,
         -1,
-        0,
-        1
+        -2,
+        -3,
+        -2,
+        -1
       ],
       "trafficSeed": 539,
       "scenerySet": 10
@@ -1432,20 +1504,21 @@
       "forkLeft": 141,
       "forkRight": 142,
       "curveProfile": [
-        1,
-        2,
-        1,
-        -1,
+        0,
+        3,
+        0,
         -2,
-        -1
+        0,
+        2,
+        0
       ],
       "hillProfile": [
         0,
-        1,
-        2,
-        3,
-        2,
-        1,
+        -1,
+        -2,
+        -3,
+        -2,
+        -1,
         0
       ],
       "trafficSeed": 540,
@@ -1461,16 +1534,14 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
         -2,
         -2,
-        -1
+        -2,
+        -2
       ],
       "hillProfile": [
         0,
         1,
-        2,
-        3,
         2,
         1,
         0
@@ -1488,10 +1559,10 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
         2,
         2,
-        1
+        2,
+        2
       ],
       "hillProfile": [
         0,
@@ -1513,18 +1584,18 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
+        0,
+        -2,
+        0,
         2,
-        2,
-        1
+        0
       ],
       "hillProfile": [
-        1,
-        2,
         0,
         -1,
-        0,
-        1
+        -2,
+        -3,
+        -2
       ],
       "trafficSeed": 543,
       "scenerySet": 10
@@ -1539,15 +1610,19 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
-        -2,
-        -1,
-        -2,
-        -1
+        0,
+        2,
+        0,
+        -3,
+        0,
+        2,
+        0
       ],
       "hillProfile": [
         0,
         -1,
+        -2,
+        -3,
         -2,
         -1,
         0
@@ -1565,19 +1640,20 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
-        -2,
-        -2,
-        -1
+        0,
+        -3,
+        0,
+        2,
+        0,
+        -2
       ],
       "hillProfile": [
         0,
-        1,
-        2,
-        3,
-        2,
-        1,
-        0
+        -1,
+        -2,
+        -3,
+        -2,
+        -1
       ],
       "trafficSeed": 545,
       "scenerySet": 11
@@ -1592,14 +1668,18 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
+        0,
         2,
-        3,
-        3,
-        2
+        0,
+        -2,
+        0
       ],
       "hillProfile": [
         0,
-        0
+        -1,
+        -2,
+        -3,
+        -2
       ],
       "trafficSeed": 546,
       "scenerySet": 11
@@ -1614,19 +1694,22 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
-        2,
-        1,
-        2,
-        1
+        0,
+        -2,
+        0,
+        3,
+        0,
+        -2,
+        0
       ],
       "hillProfile": [
-        1,
-        2,
         0,
         -1,
-        0,
-        1
+        -2,
+        -3,
+        -2,
+        -1,
+        0
       ],
       "trafficSeed": 547,
       "scenerySet": 11
@@ -1641,21 +1724,20 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
-        2,
-        1,
-        -1,
+        0,
+        3,
+        0,
         -2,
-        -1
+        0,
+        2
       ],
       "hillProfile": [
         0,
-        1,
-        2,
-        3,
-        2,
-        1,
-        0
+        -1,
+        -2,
+        -3,
+        -2,
+        -1
       ],
       "trafficSeed": 548,
       "scenerySet": 11
@@ -1670,18 +1752,22 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        1,
+        0,
+        -2,
+        0,
         2,
-        2,
-        1
+        0,
+        -3,
+        0
       ],
       "hillProfile": [
+        0,
         1,
         2,
-        0,
-        -1,
-        0,
-        1
+        3,
+        2,
+        1,
+        0
       ],
       "trafficSeed": 549,
       "scenerySet": 6
@@ -1696,18 +1782,18 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
-        -2,
-        -1,
-        -2,
-        -1
+        0,
+        2,
+        0,
+        -3,
+        0
       ],
       "hillProfile": [
         0,
-        -1,
-        -2,
-        -1,
-        0
+        1,
+        2,
+        3,
+        2
       ],
       "trafficSeed": 550,
       "scenerySet": 6
@@ -1722,10 +1808,13 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
-        -1,
+        0,
+        -3,
+        0,
+        2,
+        0,
         -2,
-        -2,
-        -1
+        0
       ],
       "hillProfile": [
         0,
@@ -1749,14 +1838,20 @@
       "forkLeft": -1,
       "forkRight": -1,
       "curveProfile": [
+        0,
         2,
-        3,
-        3,
-        2
+        0,
+        -2,
+        0,
+        3
       ],
       "hillProfile": [
         0,
-        0
+        1,
+        2,
+        3,
+        2,
+        1
       ],
       "trafficSeed": 552,
       "scenerySet": 6

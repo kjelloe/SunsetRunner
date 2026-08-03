@@ -97,10 +97,13 @@ Open `...index.html?course=3`.
 
 Open `...index.html?course=4`.
 
-- [ ] **[feel]** A long 55-segment tour through six biomes (sunset -> beach ->
-  canyon -> forest -> city -> night) with three forks. Do the biomes read as
-  distinct places? Are legs ~30-60s and checkpoints roughly keeping you alive on
-  Medium (tighter on Hard, generous on Easy)?
+- [ ] **[feel]** A 50-stage tour through ten terrains (palm/beach/wheat/lake/
+  forest/autumn/canyon/mountain/alpine/night) with three visible forks. Each stage
+  OPENS with a short straight then swaps curve/straight/hill elements (marker-0067)
+  — does it stay varied (not all corners)? Mountain/alpine should DESCEND then
+  climb. Snow terrain has crossing snowmobiles/skiers you can hit (marker-0066).
+- [ ] **[bug]** CHECKPOINT gantries appear on the **horizon** and scale up as you
+  approach, staying visible until you pass under them (marker-0067).
 
 ## 5. Mobile touch controls
 

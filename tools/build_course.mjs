@@ -24,28 +24,46 @@ const secondsToStrips = (sec) => Math.round((sec * CRUISE * TICK_HZ) / ROAD_UNIT
 const stripsToSeconds = (strips) => (strips * ROAD_UNIT) / (CRUISE * TICK_HZ);
 
 // Curve/hill keyframe shapes (integer, sampled across the segment).
-// Curve keyframe shapes (integer, stepwise-sampled across the segment). NONE
-// contain a sustained 0 run — every leg is always turning, so the course has no
-// straight lines (playtest rule: no straight for more than ~8 s).
-const CURVES = {
-  sweepL: [-1, -2, -2, -1],
-  sweepR: [1, 2, 2, 1],
-  ess: [1, 2, 1, -1, -2, -1],
-  windL: [-1, -2, -1, -2, -1],
-  windR: [1, 2, 1, 2, 1],
-  hairpin: [2, 3, 3, 2],
-};
-// Hills MAY be flat in spots (a flat + turning road is still not a straight).
-const HILLS = {
-  flat: [0, 0],
-  crest: [0, 1, 2, 3, 2, 1, 0],
-  dip: [0, -1, -2, -1, 0],
-  rolling: [1, 2, 0, -1, 0, 1],
-};
-// Index 0 = stage 1: opens on an S-curve + crest to showcase corners & hills.
-const CURVE_CYCLE = ["ess", "sweepR", "windL", "sweepL", "hairpin", "windR"];
-const HILL_CYCLE = ["crest", "rolling", "dip", "crest", "flat", "rolling"];
 const SEC_CYCLE = [40, 48, 34, 52, 44, 38, 50];
+
+// Balanced ELEMENTS: a leg is a sequence of ~7 s elements (playtest: swap between
+// curve-left / curve-right / straight / hill, each 5-10 s). Keyframes are sampled
+// stepwise across the segment, so one keyframe ≈ one element.
+function elementCount(seconds) {
+  return Math.max(5, Math.min(9, Math.round(seconds / 7)));
+}
+
+// Curve profile: every stage OPENS with a straight (3-8 s), then alternates
+// straight <-> curve each element, flipping curve direction. No two straights are
+// adjacent, so no straight runs longer than ~8 s.
+function legCurve(seconds, k) {
+  const n = elementCount(seconds);
+  const cp = [0]; // element 1 — straight opener
+  let turns = 0;
+  for (let i = 1; i < n; i++) {
+    if (i % 2 === 1) {
+      const sharp = ((k + turns) % 3 === 0) ? 3 : 2;
+      const sign = ((k + turns) % 2 === 0) ? 1 : -1;
+      cp.push(sign * sharp);
+      turns++;
+    } else {
+      cp.push(0); // straight element
+    }
+  }
+  return cp;
+}
+
+// Hill profile: rolling crests/dips. Mountain (10) & alpine (11) emphasise
+// DOWNHILL — the road descends then climbs back.
+function legHill(seconds, biome) {
+  const n = elementCount(seconds);
+  const up = [0, 1, 2, 3, 2, 1, 0, -1, 0];
+  const down = [0, -1, -2, -3, -2, -1, 0, 1, 0]; // descend then climb
+  const pat = (biome === 10 || biome === 11) ? down : up;
+  const hp = [];
+  for (let i = 0; i < n; i++) hp.push(pat[i % pat.length]);
+  return hp;
+}
 
 // Ten terrain bands (scenerySet -> scenery.json themes), a progression from coast
 // to alpine to night. 47 legs + 3 forks (each adds one on-route segment) = a
@@ -70,15 +88,17 @@ function buildLegs() {
   for (const band of BANDS) {
     for (let i = 0; i < band.n; i++) {
       const seconds = SEC_CYCLE[k % SEC_CYCLE.length];
-      const curve = CURVE_CYCLE[k % CURVE_CYCLE.length];
-      const hill = HILL_CYCLE[k % HILL_CYCLE.length];
-      const base = { name: `${band.name}_${i + 1}`, biome: band.biome, seconds, curve, hill };
+      const base = {
+        name: `${band.name}_${i + 1}`, biome: band.biome, seconds,
+        curveProfile: legCurve(seconds, k), hillProfile: legHill(seconds, band.biome),
+      };
       if (band.forkIdx === i) {
-        // A fork: two branches (current biome vs a detour biome) that rejoin.
+        // A fork: two branches (current biome vs a detour biome) that rejoin,
+        // each a constant-direction sweep so the split is clearly visible.
         legs.push({
           type: "fork", ...base,
-          left: { name: `${band.name}_${i + 1}L`, biome: band.biome, seconds: seconds + 5, curve: "sweepL", hill: "crest" },
-          right: { name: `${band.name}_${i + 1}R`, biome: band.detour, seconds: seconds + 10, curve: "sweepR", hill: "dip" },
+          left: { name: `${band.name}_${i + 1}L`, biome: band.biome, seconds: seconds + 5, curveProfile: [-2, -2, -2, -2], hillProfile: [0, 1, 2, 1, 0] },
+          right: { name: `${band.name}_${i + 1}R`, biome: band.detour, seconds: seconds + 10, curveProfile: [2, 2, 2, 2], hillProfile: [0, -1, -2, -1, 0] },
         });
       } else {
         legs.push({ type: "line", ...base });
@@ -102,19 +122,19 @@ function assemble(legs) {
     stripCount: secondsToStrips(o.seconds),
     checkpointTicks: Math.round(o.seconds * TICK_HZ * 0.9), // ~90% refill @ Medium
     next: o.next, forkLeft: o.forkLeft ?? -1, forkRight: o.forkRight ?? -1,
-    curveProfile: CURVES[o.curve], hillProfile: HILLS[o.hill],
+    curveProfile: o.curveProfile, hillProfile: o.hillProfile,
     trafficSeed: 400 + o.id, scenerySet: o.biome,
   });
 
   legs.forEach((leg, idx) => {
     const rejoin = idx + 1 < legs.length ? entry[idx + 1] : finishId;
     if (leg.type === "line") {
-      seg({ id: entry[idx], name: leg.name, seconds: leg.seconds, next: rejoin, curve: leg.curve, hill: leg.hill, biome: leg.biome });
+      seg({ id: entry[idx], name: leg.name, seconds: leg.seconds, next: rejoin, curveProfile: leg.curveProfile, hillProfile: leg.hillProfile, biome: leg.biome });
     } else {
       const forkId = entry[idx], leftId = forkId + 1, rightId = forkId + 2;
-      seg({ id: forkId, name: leg.name, seconds: leg.seconds, next: -1, forkLeft: leftId, forkRight: rightId, curve: leg.curve, hill: leg.hill, biome: leg.biome });
-      seg({ id: leftId, name: leg.left.name, seconds: leg.left.seconds, next: rejoin, curve: leg.left.curve, hill: leg.left.hill, biome: leg.left.biome });
-      seg({ id: rightId, name: leg.right.name, seconds: leg.right.seconds, next: rejoin, curve: leg.right.curve, hill: leg.right.hill, biome: leg.right.biome });
+      seg({ id: forkId, name: leg.name, seconds: leg.seconds, next: -1, forkLeft: leftId, forkRight: rightId, curveProfile: leg.curveProfile, hillProfile: leg.hillProfile, biome: leg.biome });
+      seg({ id: leftId, name: leg.left.name, seconds: leg.left.seconds, next: rejoin, curveProfile: leg.left.curveProfile, hillProfile: leg.left.hillProfile, biome: leg.left.biome });
+      seg({ id: rightId, name: leg.right.name, seconds: leg.right.seconds, next: rejoin, curveProfile: leg.right.curveProfile, hillProfile: leg.right.hillProfile, biome: leg.right.biome });
     }
   });
   return segments;

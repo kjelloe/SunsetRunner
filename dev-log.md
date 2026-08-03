@@ -1361,3 +1361,19 @@ Engine + Luau twin (tranche 3). STATE_VERSION 1->2; FULL conscious repin (course
   hazards. test/hazards.test.js. CLAUDE.md tick order updated. specs/56.
 
 Gate: ./test.sh -> 249/249 + 4 Luau gates OK.
+
+---
+
+## marker-0067 — balanced course elements + downhill + checkpoint horizon (2026-08-03)
+
+Content + client, content repin (course 4 only; engine goldens + Luau unchanged).
+Playtest: course 4 was "all corners"; checkpoints appeared too late.
+- build_course legCurve: every stage OPENS with a straight (3-8s) then alternates
+  straight<->curve elements (~7s each, no two straights adjacent -> no straight
+  >8s), flipping direction. legHill: rolling; mountain(10)/alpine(11) DESCEND
+  then climb (downhill). Fork branches = constant sweeps (visible split).
+- Content hash 681e1ad7 -> f1cc22a21c0be22a.
+- checkpoint_banner: CHECKPOINT_DRAW_RANGE 45 -> 200 strips + draw until passed,
+  so gantries appear on the horizon and scale up.
+
+Gate: ./test.sh -> 249/249 + 4 Luau gates OK.
