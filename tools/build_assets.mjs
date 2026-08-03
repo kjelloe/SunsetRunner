@@ -13,6 +13,8 @@ const CATALOG = [
   { id: "player_car",    kind: "car",  w: 64, h: 32, palette: ["#d02b2b", "#8a1c1c", "#141414"] },
   { id: "traffic_sedan", kind: "car",  w: 48, h: 28, palette: ["#e0c040", "#a08820", "#141414"] },
   { id: "traffic_truck", kind: "car",  w: 56, h: 36, palette: ["#3a6ea5", "#254b73", "#141414"] },
+  { id: "traffic_bus",   kind: "car",  w: 64, h: 42, palette: ["#d06030", "#9a4420", "#141414"] },
+  { id: "traffic_motorcycle", kind: "moto", w: 26, h: 30, palette: ["#20b0a0", "#127066", "#141414"] },
   { id: "palm",          kind: "palm", w: 48, h: 96, palette: ["#6b4a2a", "#2e8b3d"] },
   { id: "sign",          kind: "sign", w: 40, h: 48, palette: ["#cccccc", "#c02020", "#555555"] },
   { id: "fir",           kind: "fir",  w: 44, h: 96, palette: ["#4a3218", "#1f6a34", "#eaf2f8"] },
@@ -35,7 +37,7 @@ export function buildManifest(catalog = CATALOG, pad = PAD) {
 }
 
 // Which sprite id a traffic kind renders as (engine traffic.kind).
-export const TRAFFIC_SPRITE = { 1: "traffic_sedan", 2: "traffic_truck" };
+export const TRAFFIC_SPRITE = { 1: "traffic_sedan", 2: "traffic_truck", 3: "traffic_bus", 4: "traffic_motorcycle" };
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");

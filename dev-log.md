@@ -1423,3 +1423,20 @@ Content repin (course 4) + client. Playtest: stages too short/uniform.
   report ranges updated to 55-250s.
 
 Gate: ./test.sh -> 253/253 + 4 Luau gates OK.
+
+---
+
+## marker-0072 — more traffic: bus + motorcycle, density 6 (2026-08-04)
+
+Content + client, behavioural repin (traffic changed on ALL courses). No Luau
+CODE change (twin reads data/traffic.json -> reproduces the new traffic).
+- data/traffic.json density 4->6 + kinds bus(3, 620) + motorcycle(4, 1050).
+- build_assets traffic_bus (car) + traffic_motorcycle (moto kind); sprite_renderer
+  moto draw; TRAFFIC_SPRITE +3/4 (renderer + build). Manifest strip 446->540, hash
+  02a69f4c->f8972c86dc06b329.
+- REPINS: checkpoint_1a 33cc7af2 (finish 387->450), collision_1a 28b78c37, fork_1a
+  618009433b83304d, physics t500 886bab67 finish 450, AI 3ce72c58 (still finishes).
+  Luau gates reproduce byte-identical.
+- traffic.test density 6 + 4 kinds; assets.test strip 540 + bus/moto present.
+
+Gate: ./test.sh -> 253/253 + 4 Luau gates OK.

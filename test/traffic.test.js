@@ -14,7 +14,8 @@ function emptyState() {
 }
 
 test("traffic config loads and rejects a bad kind speed", () => {
-  assert.equal(cfg.density, 4);
+  assert.equal(cfg.density, 6);
+  assert.equal(cfg.kindsById.size, 4); // sedan, truck, bus, motorcycle
   assert.throws(() => loadTrafficConfig({ density: 1, lanes: [0], kinds: [{ id: 1, nameKey: "x", speed: 0 }] }), /speed must be positive/);
 });
 

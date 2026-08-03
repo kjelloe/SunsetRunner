@@ -46,6 +46,6 @@ test("AI-driven solo race finishes and is pinned (JS-only golden)", () => {
   assert.equal(r.lastTick, 307);
   assert.equal(r.census.finishes.length, 1);
   assert.equal(r.census.checkpoints, 1);
-  assert.equal(r.finalHash, "14fb758bbfccd33a"); // state v2 hazards field (marker-0066); course-1 behaviour unchanged
+  assert.equal(r.finalHash, "3ce72c5877d79295"); // more traffic (marker-0072)
   assert.equal(runAiRace(ctx, { seed: 12345, numSeats: 1 }).finalHash, r.finalHash); // deterministic
 });

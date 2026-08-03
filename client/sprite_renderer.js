@@ -99,6 +99,24 @@ export function drawSprite(g, sprite, cx, cyBottom, scale) {
       g.ellipse(cx + w * dx * 0.7, y + h * 0.14, w * 0.06, h * 0.16, 0, 0, Math.PI * 2);
       g.fill();
     }
+  } else if (sprite.kind === "moto") {
+    g.fillStyle = "rgba(0,0,0,0.28)"; // shadow
+    g.beginPath();
+    g.ellipse(cx, cyBottom - h * 0.05, w * 0.42, h * 0.12, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = p[2]; // wheels
+    g.beginPath();
+    g.arc(cx, y + h * 0.62, w * 0.28, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = p[0]; // body
+    roundRect(g, x + w * 0.3, y + h * 0.28, w * 0.4, h * 0.34, w * 0.14);
+    g.fill();
+    g.fillStyle = p[1]; // rider
+    g.beginPath();
+    g.ellipse(cx, y + h * 0.22, w * 0.18, h * 0.22, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = "#ffdd55"; // tail light
+    g.fillRect(cx - w * 0.06, y + h * 0.4, w * 0.12, h * 0.1);
   } else if (sprite.kind === "snowmobile") {
     // soft shadow
     g.fillStyle = "rgba(0,0,0,0.28)";

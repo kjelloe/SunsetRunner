@@ -4,14 +4,14 @@
   "courseId": 1,
   "carId": 1,
   "accelRun": {
-    "hashAtTick10": "a7ff155ca174e5a4",
-    "hashAtTick100": "418ea0c7d70304a5",
-    "finishTick": 387,
-    "hashAtTick500": "1d8e88763c84ae33",
+    "hashAtTick10": "4f9dcb958f10a27a",
+    "hashAtTick100": "cc4ac8f2181e3d73",
+    "finishTick": 450,
+    "hashAtTick500": "886bab679be47c30",
     "checkpointTick": 108,
     "checkpointBonus": 600,
     "finalTimerTicks": 1822,
-    "initialTrafficCount": 4
+    "initialTrafficCount": 6
   },
   "timeout": {
     "startTimeTicks": 30,

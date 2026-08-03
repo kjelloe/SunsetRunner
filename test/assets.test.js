@@ -13,11 +13,11 @@ test("buildManifest is deterministic and matches the shipped data/assets.json", 
 });
 
 test("strip width and manifest hash are pinned (§18 / gotcha #16)", () => {
-  assert.equal(shipped.stripWidth, 446);
+  assert.equal(shipped.stripWidth, 540);
   assert.equal(shipped.stripHeight, 96);
   const bytes = new TextEncoder().encode(readFileSync(new URL("../data/assets.json", import.meta.url), "utf8"));
   const h = computeFnv1a64(bytes);
-  assert.equal(hashToHex64(h.hashHi, h.hashLo), "02a69f4c675cfd3d");
+  assert.equal(hashToHex64(h.hashHi, h.hashLo), "f8972c86dc06b329");
 });
 
 test("sprites pack left-to-right without overlap", () => {
@@ -30,7 +30,7 @@ test("sprites pack left-to-right without overlap", () => {
 });
 
 test("every sprite the renderer references exists in the manifest", () => {
-  for (const id of ["player_car", "palm", "sign", "fir", "wheat", "snowmobile", "skier"]) assert.ok(shipped.sprites[id], `${id} present`);
+  for (const id of ["player_car", "palm", "sign", "fir", "wheat", "snowmobile", "skier", "traffic_bus", "traffic_motorcycle"]) assert.ok(shipped.sprites[id], `${id} present`);
   for (const kind of [1, 2]) assert.ok(shipped.sprites[TRAFFIC_SPRITE[kind]], `traffic kind ${kind}`);
 });
 

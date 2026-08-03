@@ -18,7 +18,7 @@ import { TUNING } from "./tuning.js";
 import { drawForkPreview } from "./fork_preview.js";
 import { checkpointAhead, CHECKPOINT_DRAW_RANGE } from "./checkpoint_banner.js";
 
-const TRAFFIC_SPRITE = { 1: "traffic_sedan", 2: "traffic_truck" };
+const TRAFFIC_SPRITE = { 1: "traffic_sedan", 2: "traffic_truck", 3: "traffic_bus", 4: "traffic_motorcycle" };
 
 // Project a point at lateral `laneX` onto the road at forward distance `dz`,
 // relative to the CURVED road centre (curveX) and its hill (hillY) at that depth,

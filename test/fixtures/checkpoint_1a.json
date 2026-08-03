@@ -1,5 +1,5 @@
 {
-  "note": "checkpoint_1a milestone fixture. Last repinned: state v2: added cross-hazards (marker-0066); behaviour unchanged on course 1",
+  "note": "checkpoint_1a milestone fixture. Last repinned: more/varied traffic: density 6 + bus/motorcycle kinds (marker-0072)",
   "scenario": {
     "name": "checkpoint_1a",
     "seed": 12345,
@@ -23,12 +23,12 @@
   },
   "expected": {
     "hashes": {
-      "10": "a7ff155ca174e5a4",
-      "100": "418ea0c7d70304a5",
-      "215": "acfea4c7a62e8764"
+      "10": "4f9dcb958f10a27a",
+      "100": "cc4ac8f2181e3d73",
+      "215": "602c790160431ac4"
     },
-    "finalHash": "e38e85c1cab7dd85",
-    "finishTick": 387,
+    "finalHash": "33cc7af24bcbbd5a",
+    "finishTick": 450,
     "census": [
       {
         "type": "checkpoint",
@@ -47,8 +47,16 @@
         "tick": 240
       },
       {
+        "type": "collision",
+        "tick": 370
+      },
+      {
+        "type": "collision",
+        "tick": 425
+      },
+      {
         "type": "finish",
-        "tick": 387
+        "tick": 450
       }
     ]
   }
