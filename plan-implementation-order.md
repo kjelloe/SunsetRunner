@@ -100,3 +100,19 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-045 car identity on ghosts (tint by carId) (marker-0045)
 - [x] slice-046 live feel-tuning knobs (?tune=1 + URL overrides) (marker-0046)
 - [ ] Playwright client smoke / ui-acceptance / perf smoke
+
+## Milestone 6 — Full course + race framing (from playtest, 2026-08-03)
+
+- [x] slice-047 tighten feel-knob ranges (marker-0047)
+- [x] slice-048 forks by lane position (marker-0048)
+- [x] slice-049 race countdown 3-2-1-GO! (marker-0049)
+- [x] slice-050 fork preview (name branches + arrows) (marker-0050)
+- [x] slice-051 big centre race timer (marker-0051)
+- [ ] splash screen + client asset loading bar
+- [ ] difficulty EASY/MEDIUM/HARD select (first player, after car select) + difficulty.timeScale
+- [ ] checkpoints after each segment (per-segment checkpointTicks tuned)
+- [ ] course-authoring schema (specs/48): loader accepts nameKey/seconds (not hashed)
+- [ ] tools/build_course.mjs — derive stripCount from seconds + validate graph + report leg times
+- [ ] author 50+ segment course (biomes + rejoining forks, 30-60s/leg @ Medium) + repin
+- [ ] time-up UI: Re-join (from current stage) / Spectate (cycle players, name centre-bottom)
+- [ ] server-authoritative countdown for multiplayer
