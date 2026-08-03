@@ -121,6 +121,9 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-062 hills 320 + per-terrain road width (marker-0062)
 - [x] slice-063 side terrain (water) + road sheen (marker-0063)
 - [x] slice-064 fir + wheat sprites (marker-0064)
-- [ ] tranche 3: hittable hazards (snowmobiles kind + skiers/animals crossing)
-- [ ] time-up UI: Re-join (from current stage) / Spectate (cycle players, name centre-bottom)
+- [x] slice-065 default course 4 + visible road fork (marker-0065)
+- [x] slice-066 cross-hazards (snowmobiles/skiers), state v2, Luau-twinned (marker-0066)
+- [x] slice-067 balanced course elements + downhill + checkpoint horizon (marker-0067)
+- [ ] snowmobile/skier sprites (currently colour rects)
+- [ ] time-up UI: Re-join / Spectate (cycle players, name centre-bottom) + points
 - [ ] server-authoritative countdown for multiplayer
