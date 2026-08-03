@@ -20,6 +20,7 @@ import { carChoiceFromParams, createCarSelect, drawCarSelect, carSelectTouchZone
 import { createAudio } from "./audio.js";
 import { loadScenery } from "./scenery.js";
 import { readTuning, applyTuning, drawTuningHud } from "./tuning.js";
+import { createCountdown } from "./countdown.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -90,11 +91,16 @@ export async function boot(doc = document) {
   let phase = choice.fromUrl ? "race" : "select";
   let session = null;
 
+  // A fresh local race counts down 3-2-1-GO! before the sim advances (remote
+  // races are server-authoritative, so no client-side freeze there).
+  const countdown = createCountdown();
+
   function start(carId) {
     session = remote
       ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks, carId })
       : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig, carId });
     if (remote) session.connect();
+    countdown.start(performance.now());
     phase = "race";
   }
   if (phase === "race") start(choice.carId);
@@ -134,12 +140,18 @@ export async function boot(doc = document) {
     });
     const fc = readForkChoice() || readTouchFork();
     if (fc !== 0) session.setForkChoice(fc);
+    // Local race freezes during the countdown (clock + car held at the line).
+    const counting = !remote && !countdown.isDone(now);
     if (!remote) {
-      acc += now - last;
-      last = now;
-      while (acc >= SIM_DT) {
-        session.tick(); // local session owns advancement
-        acc -= SIM_DT;
+      if (counting) {
+        last = now; // hold the accumulator so GO! starts smooth, no time jump
+      } else {
+        acc += now - last;
+        last = now;
+        while (acc >= SIM_DT) {
+          session.tick(); // local session owns advancement
+          acc -= SIM_DT;
+        }
       }
     }
     const state = session.getState();
@@ -162,6 +174,7 @@ export async function boot(doc = document) {
     celebration.draw(g, view);
     if (showTouch) drawTouchControls(g, view);
     if (showTune) drawTuningHud(g, view);
+    if (counting) countdown.draw(g, view, now);
     if (remote) drawConnectionBanner(g, view, session.status, frameCount);
     frameCount++;
     requestAnimationFrame(frame);

@@ -1099,3 +1099,18 @@ Explicit choice still overrides.
 - test/forks.test.js: position picks fork (L/R/centre->R), explicit overrides.
 
 Gate: ./test.sh -> 196/196 + 4 Luau gates OK.
+
+---
+
+## marker-0049 — race countdown 3-2-1-GO! (2026-08-03)
+
+Client-only, no repin. Fresh LOCAL race freezes (no sim advance) during a
+3-2-1-GO countdown so clock + car hold at the line until GO.
+- client/countdown.js createCountdown: start/labelAt (3/2/1/GO!)/isDone/draw,
+  time-driven, COUNTDOWN_MS ~3.1s.
+- client/main.js: countdown.start() on race start; frame loop skips tick() +
+  holds `last` while counting (smooth GO, no time jump); draws overlay. Remote is
+  server-authoritative -> countdown local-only for now.
+- test/countdown.test.js + import gate; specs/47.
+
+Gate: ./test.sh -> 200/200 + 4 Luau gates OK.

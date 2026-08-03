@@ -25,6 +25,8 @@ Open `http://localhost:8000/client/index.html`.
 
 ## 1. Solo run — course 1 (sunset_coast)
 
+- [ ] **[bug]** A fresh race shows **3 · 2 · 1 · GO!** and the car/clock stay
+  frozen until GO (marker-0049). TIME does not tick during the countdown.
 - [ ] **[bug]** Up/W accelerates; SPEED climbs; the road scrolls toward you.
 - [ ] **[bug]** Down/S brakes; SPEED drops.
 - [ ] **[bug]** Left/Right (or A/D) move the car sideways; it can go onto the
