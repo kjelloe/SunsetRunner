@@ -37,7 +37,7 @@ function sampleStrip(strips, dz) {
   return { curveX: strips[k].curveX, hillY: strips[k].hillY };
 }
 
-export function render(g, view, state, courseSet, assets, scenery) {
+export function render(g, view, state, courseSet, assets, scenery, hud) {
   const seat = state.seats[0];
   const camX = seat.laneX * TUNING.camFollow;
   const strips = forwardStrips(courseSet, seat.segmentId, seat.roadZ, 220);
@@ -65,7 +65,7 @@ export function render(g, view, state, courseSet, assets, scenery) {
   drawHazards(g, view, state, camX, assets, strips);
   drawGhosts(g, view, state, camX, strips);
   drawPlayerCar(g, view, seat, camX, assets);
-  drawHud(g, view, state);
+  drawHud(g, view, state, hud);
   drawForkPreview(g, view, seat, courseSet, scenery);
   TUNING.roadWidth = baseRoadWidth; // restore the base width for the next frame
 }

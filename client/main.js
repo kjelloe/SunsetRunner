@@ -23,7 +23,8 @@ import { loadScenery } from "./scenery.js";
 import { readTuning, applyTuning, drawTuningHud } from "./tuning.js";
 import { createCountdown, drawCountdownLabel } from "./countdown.js";
 import { drawSplash } from "./splash.js";
-import { buildSummary, playersFromState, drawRaceSummary, NEW_RACE_SECONDS } from "./race_summary.js";
+import { buildSummary, playersFromState, drawRaceSummary, NEW_RACE_SECONDS, stageNumber, stageTotal } from "./race_summary.js";
+import { getCourse } from "../shared/road_data.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -210,7 +211,11 @@ export async function boot(doc = document) {
       last = now; // paused (countdown / summary): keep the accumulator fresh
     }
     const state = session.getState();
-    if (state.seats.length) render(g, view, state, courseSet, assets, scenery);
+    const stageStart = getCourse(courseSet, courseId).startSegment;
+    const hud = state.seats[0]
+      ? { stage: stageNumber(courseSet, stageStart, state.seats[0].segmentId), total: stageTotal(courseSet, courseId) }
+      : {};
+    if (state.seats.length) render(g, view, state, courseSet, assets, scenery, hud);
     // Audio: engine pitch tracks speed; SFX fire on state edges (crash entered,
     // finish crossed, timer bumped up by a checkpoint).
     const self = state.seats[0];

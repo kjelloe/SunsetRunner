@@ -13,7 +13,7 @@ export function displayTime(timerTicks) {
   return Math.ceil(timerTicks / TICK_HZ);
 }
 
-export function drawHud(g, view, state) {
+export function drawHud(g, view, state, hud = {}) {
   const seat = state.seats[0];
 
   // Big TIME readout — the thing the player watches — centred in the top 25%.
@@ -27,18 +27,41 @@ export function drawHud(g, view, state) {
   g.fillStyle = "#ffd54a";
   g.fillText("TIME", view.w / 2, view.h * 0.24);
 
-  // SPEED stays small, top-left.
-  g.textAlign = "left";
-  g.textBaseline = "top";
-  g.font = "20px monospace";
-  g.fillStyle = "#ffffff";
-  g.fillText(`SPEED ${displaySpeed(seat.speed)}`, 16, 16);
+  const big = Math.round(view.h * 0.11); // ~3x the old speed label
+  const label = Math.round(big * 0.3);
+  const pad = Math.round(view.h * 0.04);
+  g.textBaseline = "alphabetic";
 
+  // SPEED — big, bottom-right.
+  g.textAlign = "right";
+  g.fillStyle = "#ffd54a";
+  g.font = `${label}px sans-serif`;
+  g.fillText("SPEED", view.w - pad, view.h - pad - big);
+  g.fillStyle = "#ffffff";
+  g.font = `bold ${big}px sans-serif`;
+  g.fillText(`${displaySpeed(seat.speed)}`, view.w - pad, view.h - pad);
+
+  // STAGE n / NN — same size, bottom-left, distinct colour.
+  if (hud.stage) {
+    g.textAlign = "left";
+    g.fillStyle = "#ffd54a";
+    g.font = `${label}px sans-serif`;
+    g.fillText("STAGE", pad, view.h - pad - big);
+    g.fillStyle = "#4cd6e0";
+    g.font = `bold ${big}px sans-serif`;
+    g.fillText(`${hud.stage}/${hud.total}`, pad, view.h - pad);
+  }
+
+  // FINISH / TIME UP under the timer.
+  g.textAlign = "center";
   if (seat.finishTicks >= 0) {
     g.fillStyle = "#ffe14d";
-    g.fillText("FINISH", 16, 44);
+    g.font = `bold ${Math.round(view.h * 0.06)}px sans-serif`;
+    g.fillText("FINISH", view.w / 2, view.h * 0.33);
   } else if (seat.timedOut) {
     g.fillStyle = "#ff5252";
-    g.fillText("TIME UP", 16, 44);
+    g.font = `bold ${Math.round(view.h * 0.06)}px sans-serif`;
+    g.fillText("TIME UP", view.w / 2, view.h * 0.33);
   }
+  g.textAlign = "left";
 }

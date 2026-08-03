@@ -1388,3 +1388,15 @@ HAZARD_SPRITE already maps kind 3/4 to them. Manifest repinned strip 356->446,
 hash cf64cb17->02a69f4c675cfd3d. assets.test asserts hazard sprites present.
 
 Gate: ./test.sh -> 249/249 + 4 Luau gates OK.
+
+---
+
+## marker-0069 — HUD: big speed (bottom-right) + stage (bottom-left) (2026-08-04)
+
+Client-only, no repin. Playtest HUD rework.
+- hud.js drawHud: SPEED moved to bottom-right at ~3x size; new STAGE n/NN
+  bottom-left (same size, cyan); FINISH/TIME UP under the centre timer.
+- render(...,hud) threads {stage,total}; main computes via race_summary
+  stageNumber + new stageTotal (main-route stage count). test/hud.test.js stage.
+
+Gate: ./test.sh -> 250/250 + 4 Luau gates OK.

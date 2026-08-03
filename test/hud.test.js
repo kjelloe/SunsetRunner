@@ -40,3 +40,11 @@ test("drawHud shows FINISH / TIME UP states", () => {
   drawHud(out.g, { w: 960, h: 540 }, { seats: [{ speed: 0, timerTicks: 0, finishTicks: -1, timedOut: true }] });
   assert.ok(out.texts.includes("TIME UP"));
 });
+
+test("drawHud shows STAGE n/NN when hud info is provided", () => {
+  const { g, texts } = recorder();
+  const seat = { speed: 500, timerTicks: 100, finishTicks: -1, timedOut: false };
+  drawHud(g, { w: 960, h: 540 }, { seats: [seat] }, { stage: 7, total: 50 });
+  assert.ok(texts.includes("STAGE"));
+  assert.ok(texts.includes("7/50"));
+});

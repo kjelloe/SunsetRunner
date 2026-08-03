@@ -26,6 +26,20 @@ export function stageNumber(courseSet, startSegment, segmentId) {
   return dist.get(segmentId) ?? -1;
 }
 
+// Total stages on the main (left-fork) route to the finish.
+export function stageTotal(courseSet, courseId) {
+  let id = getCourse(courseSet, courseId).startSegment;
+  let n = 0;
+  let hops = 0;
+  while (id !== -1 && hops < 500) {
+    const s = getSegment(courseSet, id);
+    n++;
+    id = s.forkLeft >= 0 ? s.forkLeft : s.next;
+    hops++;
+  }
+  return n;
+}
+
 // Rank the field. `players` = [{ carId, segmentId, roadZ, finishTicks, isYou }].
 // Finishers first (earliest finishTick), then non-finishers by stage then roadZ.
 export function buildSummary(courseSet, courseId, carSet, players) {
