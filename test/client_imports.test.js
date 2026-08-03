@@ -27,6 +27,7 @@ test("client modules import cleanly and export their entry points", async () => 
   const forkPreview = await import("../client/fork_preview.js");
   const splash = await import("../client/splash.js");
   const difficulty = await import("../client/difficulty_select.js");
+  const raceSummary = await import("../client/race_summary.js");
   const main = await import("../client/main.js");
 
   assert.equal(typeof projection.projectPoint, "function");
@@ -56,6 +57,7 @@ test("client modules import cleanly and export their entry points", async () => 
   assert.equal(typeof forkPreview.forkAhead, "function");
   assert.equal(typeof splash.drawSplash, "function");
   assert.equal(typeof difficulty.createDifficultySelect, "function");
+  assert.equal(typeof raceSummary.buildSummary, "function");
   assert.equal(typeof banner.drawConnectionBanner, "function");
   assert.equal(typeof main.boot, "function");
 });

@@ -1190,3 +1190,18 @@ goldens (courses 1-3) + 4 Luau gates UNCHANGED (grand_tour uses new ids >=100).
   rejoin, walkable to finish). road_data.test count 16->71 + hash repin. specs/48.
 
 Gate: ./test.sh -> 222/222 + 4 Luau gates OK.
+
+---
+
+## marker-0055 — race summary + restart countdown (2026-08-03)
+
+Client-only, no repin. Race end -> field summary (rank + stage reached) -> 30s
+countdown to a fresh race (local).
+- client/race_summary.js: stageNumber (BFS hops from start), buildSummary
+  (finishers first, then stage/roadZ), playersFromState (self+ghosts),
+  drawRaceSummary, NEW_RACE_SECONDS=30.
+- client/main.js: "summary" phase on self finish/timeout; sim frozen, confetti
+  behind; auto-restart start(activeCarId,activeTimeScale) after 30s (local only).
+- test/race_summary.test.js + import gate; specs/51.
+
+Gate: ./test.sh -> 227/227 + 4 Luau gates OK.

@@ -114,5 +114,6 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-054 course-authoring: loader nameKey/seconds (not hashed) (marker-0054)
 - [x] slice-054 tools/build_course.mjs (seconds->stripCount, validate, report) (marker-0054)
 - [x] slice-054 grand_tour: 55 segs, 6 biomes, 3 forks (?course=4) + content repin (marker-0054)
+- [x] slice-055 race summary + 30s restart (local) (marker-0055)
 - [ ] time-up UI: Re-join (from current stage) / Spectate (cycle players, name centre-bottom)
 - [ ] server-authoritative countdown for multiplayer

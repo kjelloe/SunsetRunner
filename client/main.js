@@ -23,6 +23,7 @@ import { loadScenery } from "./scenery.js";
 import { readTuning, applyTuning, drawTuningHud } from "./tuning.js";
 import { createCountdown } from "./countdown.js";
 import { drawSplash } from "./splash.js";
+import { buildSummary, playersFromState, drawRaceSummary, NEW_RACE_SECONDS } from "./race_summary.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -116,12 +117,21 @@ export async function boot(doc = document) {
   let session = null;
 
   const countdown = createCountdown();
+  let activeCarId = choice.carId;
+  let activeTimeScale = remote ? 100 : diffChoice.timeScale;
+  let raceSummary = null;
+  let summaryStart = 0;
+  let prevCrashed = 0, prevFinish = -1, prevTimer = NaN; // SFX edge trackers
 
   function start(carId, timeScale) {
     session = remote
       ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks, carId })
       : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig, carId, timeScale });
     if (remote) session.connect();
+    activeCarId = carId;
+    activeTimeScale = timeScale;
+    prevCrashed = 0; prevFinish = -1; prevTimer = NaN;
+    raceSummary = null;
     countdown.start(performance.now());
     phase = "race";
   }
@@ -150,7 +160,6 @@ export async function boot(doc = document) {
   let acc = 0;
   let last = performance.now();
   let frameCount = 0;
-  let prevCrashed = 0, prevFinish = -1, prevTimer = NaN; // SFX edge trackers
   function frame(now) {
     // Drain menu-nav events every frame so the queue never leaks; only the
     // select phase acts on them (arrow keys also steer during the race).
@@ -171,28 +180,29 @@ export async function boot(doc = document) {
       requestAnimationFrame(frame);
       return;
     }
-    const kb = readInput();
-    const tc = readTouchInput();
-    session.setInput({
-      steer: kb.steer || tc.steer,
-      accel: kb.accel || tc.accel,
-      brake: kb.brake || tc.brake,
-    });
-    const fc = readForkChoice() || readTouchFork();
-    if (fc !== 0) session.setForkChoice(fc);
+    const racing = phase === "race";
+    if (racing) {
+      const kb = readInput();
+      const tc = readTouchInput();
+      session.setInput({
+        steer: kb.steer || tc.steer,
+        accel: kb.accel || tc.accel,
+        brake: kb.brake || tc.brake,
+      });
+      const fc = readForkChoice() || readTouchFork();
+      if (fc !== 0) session.setForkChoice(fc);
+    }
     // Local race freezes during the countdown (clock + car held at the line).
-    const counting = !remote && !countdown.isDone(now);
-    if (!remote) {
-      if (counting) {
-        last = now; // hold the accumulator so GO! starts smooth, no time jump
-      } else {
-        acc += now - last;
-        last = now;
-        while (acc >= SIM_DT) {
-          session.tick(); // local session owns advancement
-          acc -= SIM_DT;
-        }
+    const counting = racing && !remote && !countdown.isDone(now);
+    if (racing && !remote && !counting) {
+      acc += now - last;
+      last = now;
+      while (acc >= SIM_DT) {
+        session.tick(); // local session owns advancement
+        acc -= SIM_DT;
       }
+    } else {
+      last = now; // paused (countdown / summary): keep the accumulator fresh
     }
     const state = session.getState();
     if (state.seats.length) render(g, view, state, courseSet, assets, scenery);
@@ -209,13 +219,25 @@ export async function boot(doc = document) {
       prevTimer = self.timerTicks;
     }
     // Finish splash: confetti + fireworks once the local car crosses the line.
-    if (state.seats.length && state.seats[0].finishTicks >= 0) celebration.trigger(view);
+    if (self && self.finishTicks >= 0) celebration.trigger(view);
     celebration.update(view);
     celebration.draw(g, view);
     if (showTouch) drawTouchControls(g, view);
     if (showTune) drawTuningHud(g, view);
     if (counting) countdown.draw(g, view, now);
     if (remote) drawConnectionBanner(g, view, session.status, frameCount);
+
+    // Race end -> summary of the field + a 30 s countdown to a fresh race.
+    if (racing && self && (self.finishTicks >= 0 || self.timedOut)) {
+      raceSummary = buildSummary(courseSet, courseId, carSet, playersFromState(state));
+      summaryStart = now;
+      phase = "summary";
+    }
+    if (phase === "summary") {
+      const secs = NEW_RACE_SECONDS - Math.floor((now - summaryStart) / 1000);
+      drawRaceSummary(g, view, raceSummary, secs);
+      if (secs <= 0 && !remote) start(activeCarId, activeTimeScale); // fresh race, same car/difficulty
+    }
     frameCount++;
     requestAnimationFrame(frame);
   }

@@ -1,6 +1,6 @@
 # Playtest checklist — Sunset Runner
 
-The automated suite (`./test.sh`, 222 tests + 4 Luau parity gates) covers engine
+The automated suite (`./test.sh`, 227 tests + 4 Luau parity gates) covers engine
 determinism, the reducer, server room, fairness, and client module loading. It
 does **NOT** cover anything you can only judge with a real browser: visual feel,
 frame rate, camera tuning, touch ergonomics, audio, and real-network multiplayer.
@@ -42,6 +42,9 @@ Open `http://localhost:8000/client/index.html`.
   TIME jump up).
 - [ ] **[bug]** Reaching the end triggers a **FINISH! splash with confetti +
   fireworks** (marker-0031).
+- [ ] **[bug]** After the race ends (finish OR time-up), a **RACE OVER** summary
+  lists the field with the stage each reached, then **NEW RACE IN 30s** counts
+  down and auto-starts a fresh race (marker-0055).
 - [ ] **[feel]** The road **scrolls** and objects whip past — you should now feel
   speed (marker-0030 fixed the static-road bug). Faster = faster scroll?
 - [ ] **[bug]** Idle (don't accelerate) until TIME hits 0 → TIME UP banner, car
