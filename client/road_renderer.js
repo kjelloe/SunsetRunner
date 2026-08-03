@@ -10,6 +10,11 @@ import { projectPoint } from "./projection.js";
 import { DEFAULT_THEME } from "./scenery.js";
 import { TUNING } from "./tuning.js";
 
+const isFork = (seg) => seg.forkLeft >= 0 || seg.forkRight >= 0;
+// Lateral divergence added per strip once past a fork's split — opens a visible
+// grass median between the two branch roads.
+const SPLIT_SEP_PER_STRIP = 26;
+
 export function forwardStrips(courseSet, segmentId, roadZ, count) {
   const out = [];
   if (segmentId === -1) return out;
@@ -20,13 +25,34 @@ export function forwardStrips(courseSet, segmentId, roadZ, count) {
   let worldStrip = stripIdx;                 // absolute-ish strip index (scrolls)
   let curveX = 0;
   let curveDx = 0;
+
+  // Right-branch path, activated once the drawn road passes a fork's split, so the
+  // fork is VISIBLE: the road widens and splits into a left and a right curve.
+  let rSeg = null;
+  let rStripIdx = 0;
+  let rCurveX = 0;
+  let rCurveDx = 0;
+  let sep = 0;
+
   for (let k = 0; k < count; k++) {
     if (stripIdx >= seg.stripCount) {
-      const nxt = nextSegment(courseSet, segId, 0);
-      if (nxt === -1) break;
-      segId = nxt;
-      seg = getSegment(courseSet, segId);
-      stripIdx = 0;
+      if (isFork(seg) && !rSeg) {
+        // Split: the main path follows the left branch; start the right branch.
+        rSeg = getSegment(courseSet, seg.forkRight);
+        rStripIdx = 0;
+        rCurveX = curveX;
+        rCurveDx = curveDx;
+        sep = 0;
+        segId = seg.forkLeft;
+        seg = getSegment(courseSet, segId);
+        stripIdx = 0;
+      } else {
+        const nxt = nextSegment(courseSet, segId, 0);
+        if (nxt === -1) break;
+        segId = nxt;
+        seg = getSegment(courseSet, segId);
+        stripIdx = 0;
+      }
     }
     const cm = seg.curveProfile.length;
     const hm = seg.hillProfile.length;
@@ -34,10 +60,19 @@ export function forwardStrips(courseSet, segmentId, roadZ, count) {
     const hill = seg.hillProfile[Math.floor((stripIdx * hm) / seg.stripCount)] || 0;
     curveDx += curve;
     curveX += curveDx;
-    // Sub-strip offset (ROAD_UNIT - frac) makes the nearest strip slide toward
-    // the camera as the car advances -> the road scrolls smoothly. hillProfile is
-    // direct elevation (rises to a crest and back); TUNING.hillScale makes it read.
-    out.push({ k, worldStrip, worldZ: k * ROAD_UNIT + (ROAD_UNIT - frac), curveX, hillY: hill * TUNING.hillScale });
+    const strip = { k, worldStrip, worldZ: k * ROAD_UNIT + (ROAD_UNIT - frac), curveX, hillY: hill * TUNING.hillScale };
+    if (rSeg) {
+      const rIdx = Math.min(rStripIdx, rSeg.stripCount - 1);
+      const rc = rSeg.curveProfile[Math.floor((rIdx * rSeg.curveProfile.length) / rSeg.stripCount)] || 0;
+      rCurveDx += rc;
+      rCurveX += rCurveDx;
+      sep += SPLIT_SEP_PER_STRIP;
+      strip.forkLeftCurveX = curveX - sep;   // main road pulled left
+      strip.forkRightCurveX = rCurveX + sep; // right branch pulled right
+      strip.forkSep = sep;
+      rStripIdx++;
+    }
+    out.push(strip);
     worldStrip++;
     stripIdx++;
   }
@@ -68,27 +103,33 @@ export function drawRoad(g, view, seat, courseSet, camX = 0, theme = DEFAULT_THE
     if (theme.sideLeft) { g.fillStyle = theme.sideLeft; g.fillRect(0, top, p.x, bh); }
     if (theme.sideRight) { g.fillStyle = theme.sideRight; g.fillRect(p.x, top, view.w - p.x, bh); }
 
-    // rumble: a themed/white band wider than the road, then the road on top
+    // Draw one road ribbon centred at world-x `cx` (rumble + tarmac + sheen +
+    // dash). Only the x shifts per branch — y/half-width are the same at a strip.
     const rw = Math.max(2, p.w * 0.18);
-    g.fillStyle = band ? theme.rumbleA : "#f4f4f4";
-    g.fillRect(p.x - p.w - rw, top, p.w * 2 + rw * 2, bh);
+    const ribbon = (cx) => {
+      const px = projectPoint(view, camX, 0, cx, s.hillY, s.worldZ).x;
+      g.fillStyle = band ? theme.rumbleA : "#f4f4f4";
+      g.fillRect(px - p.w - rw, top, p.w * 2 + rw * 2, bh);
+      g.fillStyle = band ? "#5a5a62" : "#53535b";
+      g.fillRect(px - p.w, top, p.w * 2, bh);
+      if (theme.sheen && band) {
+        g.fillStyle = `rgba(220,235,255,${theme.sheen})`;
+        g.fillRect(px - p.w * 0.45, top, p.w * 0.9, bh);
+      }
+      if (s.worldStrip % 8 < 4) {
+        const dw = Math.max(1, p.w * 0.045);
+        g.fillStyle = "#f2e24a";
+        g.fillRect(px - dw, top, dw * 2, bh);
+      }
+    };
 
-    // road
-    g.fillStyle = band ? "#5a5a62" : "#53535b";
-    g.fillRect(p.x - p.w, top, p.w * 2, bh);
-
-    // Icy/wet sheen: a lighter centre strip on alternate bands (shimmers as it
-    // scrolls) — alpine ice / wet roads.
-    if (theme.sheen && band) {
-      g.fillStyle = `rgba(220,235,255,${theme.sheen})`;
-      g.fillRect(p.x - p.w * 0.45, top, p.w * 0.9, bh);
-    }
-
-    // dashed centre line (dash every 8 strips)
-    if (s.worldStrip % 8 < 4) {
-      const dw = Math.max(1, p.w * 0.045);
-      g.fillStyle = "#f2e24a";
-      g.fillRect(p.x - dw, top, dw * 2, bh);
+    // Past a fork split, draw BOTH branch roads (grass median shows between them);
+    // otherwise the single road.
+    if (s.forkLeftCurveX != null) {
+      ribbon(s.forkLeftCurveX);
+      ribbon(s.forkRightCurveX);
+    } else {
+      ribbon(s.curveX);
     }
   }
 }

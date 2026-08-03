@@ -15,7 +15,8 @@ fail, **[unverified]** = never seen working, watch closely.
 npm test            # expect all pass + 3 "LUAU ... PARITY OK" lines
 python3 -m http.server 8000   # from repo root (or `npm start` for the ws server)
 ```
-Open `http://localhost:8000/client/index.html`.
+Open `http://localhost:8000/client/index.html` (defaults to the **grand_tour**,
+course 4; use `?course=1` for the short fork+finish test track).
 
 - [ ] **[feel]** A **SUNSET RUNNER** splash over a beach/palms shows first, with a
   **LOADING** bar filling, then the car-select appears (marker-0052).
@@ -81,6 +82,8 @@ Open `...index.html?course=2`.
 - [ ] **[bug]** With NO key, the fork follows your **lane position**: drift left of
   centre → left branch, at/right of centre → right branch (marker-0048). Steer
   into a branch and confirm you take it.
+- [ ] **[bug]** The road **visibly splits** at a fork — it widens and the centre
+  line divides into a left and a right curve with grass between (marker-0065).
 - [ ] **[feel]** Is the fork readable in time to choose?
 
 ## 4. Mirror course — course 3 (mirror_valley)

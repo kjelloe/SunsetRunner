@@ -1328,3 +1328,17 @@ scenery.json: forest/mountain/alpine use fir, wheat uses wheat. Manifest repinne
 strip 264->356, hash 09f1ccd6->cf64cb17d40914fc. specs/54 (tranche 2 summary).
 
 Gate: ./test.sh -> 241/241 + 4 Luau gates OK.
+
+---
+
+## marker-0065 — default course 4 + visible road fork (2026-08-03)
+
+Client + server config, no repin.
+- Default course -> 4 (grand_tour): main.js courseId default 4; server entrypoint
+  courseId 4. Old short course still ?course=1 (quick fork+finish test).
+- Visible fork: forwardStrips builds the right branch in parallel past a fork
+  split (forkLeftCurveX/forkRightCurveX + growing sep); drawRoad draws both
+  ribbons (grass median between) so the road physically Y-splits into a left and
+  right curve. test/fork_road.test.js. specs/55.
+
+Gate: ./test.sh -> 244/244 + 4 Luau gates OK.

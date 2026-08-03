@@ -86,7 +86,7 @@ export async function boot(doc = document) {
   // ?car=N picks a car and skips the select overlay (else the overlay shows).
   const params = new URLSearchParams(location.search);
   const remote = params.get("mode") === "remote";
-  const courseId = Number(params.get("course")) || 1;
+  const courseId = Number(params.get("course")) || 4; // grand_tour is the default
   // Live feel-tuning knobs (renderer-only): ?depth=/?height=/?hill=/?follow=/etc
   // override the camera/road constants; ?tune=1 shows the current values on screen.
   applyTuning(readTuning(params));
