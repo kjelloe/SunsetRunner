@@ -44,3 +44,11 @@ test("every course leg's scenerySet resolves to a real theme", () => {
     assert.ok(t && Array.isArray(t.sky), `segment ${s.id} scenerySet ${s.scenerySet} has no theme`);
   }
 });
+
+test("themes carry a roadScale (wide easy / slim alpine), default 1", () => {
+  const cfg = loadScenery(sceneryJson);
+  assert.equal(cfg.themes["2"].roadScale, 1.15); // beach wide
+  assert.equal(cfg.themes["11"].roadScale, 0.8); // alpine slim
+  assert.equal(cfg.themes["1"].roadScale, 1); // default when unset
+  assert.equal(loadScenery({ themes: { 1: { name: "x" } } }).themes["1"].roadScale, 1);
+});

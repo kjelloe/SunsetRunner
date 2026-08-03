@@ -10,7 +10,7 @@ export const TUNING = {
   camDepth: 0.84,     // 1/tan(fov/2) — higher = narrower FOV / flatter
   camHeight: 1500,    // camera height above the road (world units)
   roadWidth: 2000,    // road half-width (world units)
-  hillScale: 180,     // elevation per hillProfile step (crest/dip readability)
+  hillScale: 320,     // elevation per hillProfile step (playtest: 320 to read clearly)
   camFollow: 0.4,     // fraction of the player's lateral offset the camera tracks
   playerNearZ: 2000,  // depth the player car is drawn at (its on-screen size)
 };

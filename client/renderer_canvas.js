@@ -46,6 +46,10 @@ export function render(g, view, state, courseSet, assets, scenery) {
   // scenerySet — renderer-only, no engine coupling.
   const seg = seat.segmentId !== -1 ? getSegment(courseSet, seat.segmentId) : null;
   const theme = themeFor(scenery, seg ? seg.scenerySet : 0);
+  // Per-terrain road width (wide easy stages, slim mountain/alpine) — override the
+  // (possibly ?tune'd) base for this frame, restored at the end of render().
+  const baseRoadWidth = TUNING.roadWidth;
+  TUNING.roadWidth = Math.round(baseRoadWidth * (theme.roadScale ?? 1));
 
   const sky = g.createLinearGradient(0, 0, 0, view.h / 2);
   sky.addColorStop(0, theme.sky[0]);
@@ -62,6 +66,7 @@ export function render(g, view, state, courseSet, assets, scenery) {
   drawPlayerCar(g, view, seat, camX, assets);
   drawHud(g, view, state);
   drawForkPreview(g, view, seat, courseSet, scenery);
+  TUNING.roadWidth = baseRoadWidth; // restore the base width for the next frame
 }
 
 function drawScenery(g, view, camX, assets, strips, theme) {

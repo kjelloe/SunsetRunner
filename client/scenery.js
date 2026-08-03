@@ -10,6 +10,7 @@ const FALLBACK = {
   rumbleA: "#d63a3a",
   sprites: ["palm", "palm", "sign"],
   every: 10,
+  roadScale: 1, // multiplies the road width for this terrain (wide easy / slim alpine)
 };
 
 export function loadScenery(json) {
@@ -25,6 +26,7 @@ export function loadScenery(json) {
       rumbleA: t.rumbleA || FALLBACK.rumbleA,
       sprites: Array.isArray(t.sprites) && t.sprites.length ? t.sprites : FALLBACK.sprites,
       every: Number.isFinite(t.every) && t.every > 0 ? t.every : FALLBACK.every,
+      roadScale: Number.isFinite(t.roadScale) && t.roadScale > 0 ? t.roadScale : 1,
     };
   }
   const def = String((json && json.default) ?? 1);

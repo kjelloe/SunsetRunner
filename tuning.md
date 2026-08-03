@@ -28,11 +28,16 @@ Combine freely with the other switches: `?course=4&tune=1&hill=220`.
 | `depth`  | `camDepth`     | 0.84 | 0.5 – 1.4   | 0.7 – 1.0   | Field of view / flatness. `1/tan(fov/2)`. Higher = narrower FOV, flatter, road reads "longer". Lower = wider/fisheye, more sense of speed. |
 | `height` | `camHeight`    | 1500 | 800 – 2400  | 1200 – 1900 | Camera height above the road (world units). Higher = more top-down, you see further ahead; lower = closer to the tarmac, faster-feeling, less look-ahead. |
 | `roadw`  | `roadWidth`    | 2000 | 1400 – 3000 | 1800 – 2400 | Road half-width (world units). Lower = narrower road (harder, car fills more of it); below ~1400 the car is wider than the lane. |
-| `hill`   | `hillScale`    | 180  | 40 – 320    | 140 – 240   | Crest/dip height. Higher = steeper hills that hide the road beyond a crest; above ~320 the car visually clips through crests. |
+| `hill`   | `hillScale`    | 320  | 40 – 320    | 240 – 320   | Crest/dip height. Higher = steeper hills that hide the road beyond a crest; above ~320 the car visually clips through crests. |
 | `follow` | `camFollow`    | 0.4  | 0.15 – 0.75 | 0.3 – 0.55  | How much the camera chases your lateral drift. 0 = fixed centre (drift shows fully); 1 = camera locked to the car (drift barely visible). |
 | `nearz`  | `playerNearZ`  | 2000 | 1200 – 3200 | 1700 – 2400 | Depth the player car is drawn at → its on-screen size. Lower = bigger car (closer feel); higher = smaller car, more road visible. |
 
 ## Notes
+
+- **Per-stage road width.** Each terrain theme can set a `roadScale` in
+  `data/scenery.json` (wide for easy stages like beach/wheat ~1.15, slim for
+  mountain ~0.85 / alpine ~0.8). It multiplies the base `roadw` per stage, so the
+  road visibly narrows on the hard terrains (marker-0062).
 
 - **Engine feel is separate.** Cornering push (`CURVE_PUSH_DEN`), steering
   (`steerHigh`), and crash behaviour live in `engine/` and are part of the

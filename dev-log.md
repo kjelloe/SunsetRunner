@@ -1289,3 +1289,17 @@ at tree-line height, projected into the 3D road.
   "CHECKPOINT") + import gate.
 
 Gate: ./test.sh -> 239/239 + 4 Luau gates OK.
+
+---
+
+## marker-0062 — tuning feedback: hills 320 + per-stage road width (2026-08-03)
+
+Client-only, no repin. From playtest ?tune screenshots.
+- client/tuning.js: hillScale default 180 -> 320 (hills now read clearly).
+- Per-terrain road width: scenery.js theme.roadScale (default 1); scenery.json
+  beach/wheat 1.15, lake 1.1 (wide/easy), mountain 0.85, alpine 0.8 (slim).
+  renderer_canvas overrides TUNING.roadWidth by theme.roadScale per frame
+  (restored after), so the road narrows on hard terrains.
+- test/scenery.test.js roadScale; tuning.md + specs/44 updated.
+
+Gate: ./test.sh -> 240/240 + 4 Luau gates OK.

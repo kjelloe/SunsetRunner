@@ -3,91 +3,185 @@
   "themes": {
     "1": {
       "name": "sunset",
-      "sky": ["#2b1a54", "#ff7e5f"],
-      "grassA": "#2f9e42", "grassB": "#279137",
+      "sky": [
+        "#2b1a54",
+        "#ff7e5f"
+      ],
+      "grassA": "#2f9e42",
+      "grassB": "#279137",
       "rumbleA": "#d63a3a",
-      "sprites": ["palm", "palm", "sign"],
+      "sprites": [
+        "palm",
+        "palm",
+        "sign"
+      ],
       "every": 10
     },
     "2": {
       "name": "beach",
-      "sky": ["#1a6ab5", "#7fd0e8"],
-      "grassA": "#e4d29a", "grassB": "#d8c488",
+      "sky": [
+        "#1a6ab5",
+        "#7fd0e8"
+      ],
+      "grassA": "#e4d29a",
+      "grassB": "#d8c488",
       "rumbleA": "#e0664a",
-      "sprites": ["palm", "palm", "palm", "sign"],
-      "every": 7
+      "sprites": [
+        "palm",
+        "palm",
+        "palm",
+        "sign"
+      ],
+      "every": 7,
+      "roadScale": 1.15
     },
     "3": {
       "name": "canyon",
-      "sky": ["#5a2a44", "#e8935f"],
-      "grassA": "#b5713a", "grassB": "#a5632f",
+      "sky": [
+        "#5a2a44",
+        "#e8935f"
+      ],
+      "grassA": "#b5713a",
+      "grassB": "#a5632f",
       "rumbleA": "#caa24a",
-      "sprites": ["sign", "palm"],
+      "sprites": [
+        "sign",
+        "palm"
+      ],
       "every": 12
     },
     "4": {
       "name": "forest",
-      "sky": ["#173d2f", "#7bb26a"],
-      "grassA": "#2f7e42", "grassB": "#256e37",
+      "sky": [
+        "#173d2f",
+        "#7bb26a"
+      ],
+      "grassA": "#2f7e42",
+      "grassB": "#256e37",
       "rumbleA": "#c85c3a",
-      "sprites": ["palm", "palm", "palm", "palm", "sign"],
+      "sprites": [
+        "palm",
+        "palm",
+        "palm",
+        "palm",
+        "sign"
+      ],
       "every": 6
     },
     "5": {
       "name": "city",
-      "sky": ["#3a2a54", "#c08fb5"],
-      "grassA": "#6a6a78", "grassB": "#5c5c68",
+      "sky": [
+        "#3a2a54",
+        "#c08fb5"
+      ],
+      "grassA": "#6a6a78",
+      "grassB": "#5c5c68",
       "rumbleA": "#d0c040",
-      "sprites": ["sign", "sign", "palm"],
+      "sprites": [
+        "sign",
+        "sign",
+        "palm"
+      ],
       "every": 8
     },
     "6": {
       "name": "night",
-      "sky": ["#0a0a24", "#2a2a5a"],
-      "grassA": "#1a2a3a", "grassB": "#16232f",
+      "sky": [
+        "#0a0a24",
+        "#2a2a5a"
+      ],
+      "grassA": "#1a2a3a",
+      "grassB": "#16232f",
       "rumbleA": "#e05a5a",
-      "sprites": ["sign", "palm", "palm"],
+      "sprites": [
+        "sign",
+        "palm",
+        "palm"
+      ],
       "every": 7
     },
     "7": {
       "name": "wheat",
-      "sky": ["#6aa0d0", "#d7e2a8"],
-      "grassA": "#d8c060", "grassB": "#c8b050",
+      "sky": [
+        "#6aa0d0",
+        "#d7e2a8"
+      ],
+      "grassA": "#d8c060",
+      "grassB": "#c8b050",
       "rumbleA": "#d06a3a",
-      "sprites": ["sign", "palm"],
-      "every": 9
+      "sprites": [
+        "sign",
+        "palm"
+      ],
+      "every": 9,
+      "roadScale": 1.15
     },
     "8": {
       "name": "lake",
-      "sky": ["#4a7ab0", "#a6d4e6"],
-      "grassA": "#3a8a6a", "grassB": "#31795c",
+      "sky": [
+        "#4a7ab0",
+        "#a6d4e6"
+      ],
+      "grassA": "#3a8a6a",
+      "grassB": "#31795c",
       "rumbleA": "#4aa0c0",
-      "sprites": ["palm", "palm", "sign"],
-      "every": 8
+      "sprites": [
+        "palm",
+        "palm",
+        "sign"
+      ],
+      "every": 8,
+      "roadScale": 1.1
     },
     "9": {
       "name": "autumn",
-      "sky": ["#b0673a", "#e6bd82"],
-      "grassA": "#b0602a", "grassB": "#a0521f",
+      "sky": [
+        "#b0673a",
+        "#e6bd82"
+      ],
+      "grassA": "#b0602a",
+      "grassB": "#a0521f",
       "rumbleA": "#c05020",
-      "sprites": ["palm", "palm", "palm", "sign"],
+      "sprites": [
+        "palm",
+        "palm",
+        "palm",
+        "sign"
+      ],
       "every": 6
     },
     "10": {
       "name": "mountain",
-      "sky": ["#6a80a0", "#d2dae4"],
-      "grassA": "#7a8a6a", "grassB": "#6a7a5a",
+      "sky": [
+        "#6a80a0",
+        "#d2dae4"
+      ],
+      "grassA": "#7a8a6a",
+      "grassB": "#6a7a5a",
       "rumbleA": "#c0c0d0",
-      "sprites": ["palm", "palm", "sign"],
-      "every": 7
+      "sprites": [
+        "palm",
+        "palm",
+        "sign"
+      ],
+      "every": 7,
+      "roadScale": 0.85
     },
     "11": {
       "name": "alpine",
-      "sky": ["#a6b6cc", "#eaf2fa"],
-      "grassA": "#d8e0e8", "grassB": "#c8d0d8",
+      "sky": [
+        "#a6b6cc",
+        "#eaf2fa"
+      ],
+      "grassA": "#d8e0e8",
+      "grassB": "#c8d0d8",
       "rumbleA": "#8090a0",
-      "sprites": ["sign", "palm"],
-      "every": 8
+      "sprites": [
+        "sign",
+        "palm"
+      ],
+      "every": 8,
+      "roadScale": 0.8
     }
   }
 }
