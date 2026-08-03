@@ -1217,3 +1217,15 @@ seat.speed = 0 (was /3). luau mirrored. CONSCIOUS REPINS: checkpoint_1a finish
 (rival) unchanged. collision.test asserts dead stop + stun. specs/52.
 
 Gate: ./test.sh -> 227/227 + 4 Luau gates OK.
+
+---
+
+## marker-0057 — restart polish (10s + clear confetti) (2026-08-03)
+
+Client-only, no repin. Playtest fixes to the race-summary restart:
+- NEW_RACE_SECONDS 30 -> 10 (race_summary.js).
+- start() now calls celebration.reset() so the finish confetti/splash from the
+  previous race clears when the new one begins (was lingering into the new race).
+- specs/51 + PLAYTEST updated to 10s; race_summary.test NEW_RACE_SECONDS assert.
+
+Gate: ./test.sh -> 227/227 + 4 Luau gates OK.

@@ -67,5 +67,5 @@ test("drawRaceSummary renders rows and the restart countdown", () => {
   assert.ok(texts.includes("RACE OVER"));
   assert.ok(texts.some((t) => t.includes("NEW RACE IN 12s")));
   assert.ok(texts.some((t) => t.includes("STAGE 2")));
-  assert.equal(NEW_RACE_SECONDS, 30);
+  assert.equal(NEW_RACE_SECONDS, 10);
 });

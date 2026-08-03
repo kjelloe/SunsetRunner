@@ -7,7 +7,7 @@ import { getCourse, getSegment } from "../shared/road_data.js";
 import { carDisplayName } from "./car_select.js";
 import { carColor } from "./car_colors.js";
 
-export const NEW_RACE_SECONDS = 30;
+export const NEW_RACE_SECONDS = 10;
 
 // 1-based stage = BFS hop distance from the course start to `segmentId`
 // (handles forks). -1 for a finished/invalid segment.

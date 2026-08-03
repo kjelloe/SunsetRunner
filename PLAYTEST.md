@@ -43,7 +43,7 @@ Open `http://localhost:8000/client/index.html`.
 - [ ] **[bug]** Reaching the end triggers a **FINISH! splash with confetti +
   fireworks** (marker-0031).
 - [ ] **[bug]** After the race ends (finish OR time-up), a **RACE OVER** summary
-  lists the field with the stage each reached, then **NEW RACE IN 30s** counts
+  lists the field with the stage each reached, then **NEW RACE IN 10s** counts
   down and auto-starts a fresh race (marker-0055).
 - [ ] **[feel]** The road **scrolls** and objects whip past — you should now feel
   speed (marker-0030 fixed the static-road bug). Faster = faster scroll?

@@ -20,7 +20,7 @@ fresh race with the same car/difficulty. Client-only, no engine change.
 
 New `summary` phase. When `racing` and the self seat finishes or times out, build
 the summary and enter it; the sim is frozen (no ticks), the finish confetti keeps
-animating behind the overlay. After `NEW_RACE_SECONDS` (30), a **local** race
+animating behind the overlay. After `NEW_RACE_SECONDS` (10), a **local** race
 restarts via `start(activeCarId, activeTimeScale)` — a fresh session + 3-2-1-GO.
 
 ## Verified

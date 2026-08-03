@@ -132,6 +132,7 @@ export async function boot(doc = document) {
     activeTimeScale = timeScale;
     prevCrashed = 0; prevFinish = -1; prevTimer = NaN;
     raceSummary = null;
+    celebration.reset(); // clear finish confetti/splash from the previous race
     countdown.start(performance.now());
     phase = "race";
   }
