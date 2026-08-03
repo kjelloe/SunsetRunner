@@ -144,6 +144,9 @@ Open TWO browser tabs at `http://localhost:8000/client/index.html?mode=remote`.
 - [ ] **[feel]** Each rival ghost is **tinted by its car** (red/blue/green/gold,
   marker-0045) matching the colour of its name in the car-select screen — can you
   tell rivals apart? Tints legible against the road/scenery?
+- [ ] **[bug]** Rivals in view show a **name tag** (P2, P3…) above the car that
+  scales as they near from the horizon; rivals further ahead show a small **dot +
+  name near the horizon**, in race order (marker-0073).
 
 ### Reconnect / drop-in (marker-0034)
 

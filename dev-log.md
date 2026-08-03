@@ -1440,3 +1440,17 @@ CODE change (twin reads data/traffic.json -> reproduces the new traffic).
 - traffic.test density 6 + 4 kinds; assets.test strip 540 + bus/moto present.
 
 Gate: ./test.sh -> 253/253 + 4 Luau gates OK.
+
+---
+
+## marker-0073 — multiplayer name tags + horizon dots (2026-08-04)
+
+Client-only, no repin. drawGhosts:
+- In-view rivals (same segment ahead) get a NAME TAG above the car that scales
+  with the projected size (bigger as they near from the horizon).
+- Rivals further along the course get a small DOT + name near the horizon, in
+  race order (top 5). Labels are P{seatId} (real player names TBD — needs a
+  name-entry field); coloured by car identity.
+- test/ghost_labels.test.js (render integration: name tag + horizon label).
+
+Gate: ./test.sh -> 254/254 + 4 Luau gates OK.

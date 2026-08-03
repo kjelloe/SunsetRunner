@@ -160,14 +160,20 @@ function drawHazards(g, view, state, camX, assets, strips) {
   }
 }
 
+const playerLabel = (r) => `P${r.seatId}`;
+const progressOf = (r) => r.segmentId * 1000000 + r.roadZ;
+
 function drawGhosts(g, view, state, camX, strips) {
   const ghosts = state.ghosts || [];
   if (ghosts.length === 0) return;
   const seat = state.seats[0];
-  const ahead = ghosts
+
+  // In-view rivals (same segment ahead): draw the car + a NAME TAG that scales
+  // with the car as it nears from the horizon.
+  const inView = ghosts
     .filter((r) => r.segmentId === seat.segmentId && r.roadZ > seat.roadZ)
     .sort((a, b) => b.roadZ - a.roadZ);
-  for (const r of ahead) {
+  for (const r of inView) {
     const dz = r.roadZ - seat.roadZ;
     if (dz < ROAD_UNIT) continue;
     const s = sampleStrip(strips, dz);
@@ -183,7 +189,38 @@ function drawGhosts(g, view, state, camX, strips) {
       g.lineWidth = 2;
       g.strokeRect(o.x - w / 2, o.y - h, w, h);
     }
+    // Name tag above the car, scaled by the projected size.
+    const fs = Math.max(8, o.half * 0.5);
+    g.font = `bold ${Math.round(fs)}px sans-serif`;
+    g.textAlign = "center";
+    g.textBaseline = "alphabetic";
+    const name = playerLabel(r);
+    const tw = g.measureText ? g.measureText(name).width : name.length * fs * 0.6;
+    g.fillStyle = "rgba(0,0,0,0.55)";
+    g.fillRect(o.x - tw / 2 - fs * 0.3, o.y - h - fs * 1.3, tw + fs * 0.6, fs * 1.2);
+    g.fillStyle = carColor(r.carId);
+    g.fillText(name, o.x, o.y - h - fs * 0.45);
+    g.textAlign = "left";
   }
+
+  // Rivals ahead but out of view (further along the course): a small dot + name
+  // near the horizon, in race order.
+  const selfProgress = progressOf(seat);
+  const farAhead = ghosts
+    .filter((r) => r.segmentId !== seat.segmentId && progressOf(r) > selfProgress)
+    .sort((a, b) => progressOf(a) - progressOf(b))
+    .slice(0, 5);
+  const fs = Math.round(view.h * 0.022);
+  g.font = `${fs}px sans-serif`;
+  farAhead.forEach((r, i) => {
+    const y = view.h * 0.44 + i * fs * 1.3;
+    g.fillStyle = carColor(r.carId);
+    g.beginPath();
+    g.arc(view.w / 2 - fs, y - fs * 0.3, Math.max(2, fs * 0.3), 0, Math.PI * 2);
+    g.fill();
+    g.textAlign = "left";
+    g.fillText(playerLabel(r), view.w / 2 - fs * 0.4, y);
+  });
 }
 
 function drawPlayerCar(g, view, seat, camX, assets) {
