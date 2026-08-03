@@ -124,6 +124,12 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-065 default course 4 + visible road fork (marker-0065)
 - [x] slice-066 cross-hazards (snowmobiles/skiers), state v2, Luau-twinned (marker-0066)
 - [x] slice-067 balanced course elements + downhill + checkpoint horizon (marker-0067)
-- [ ] snowmobile/skier sprites (currently colour rects)
+- [x] slice-068 snowmobile/skier sprites (marker-0068)
+- [x] slice-069 HUD big speed + stage indicator (marker-0069)
+- [x] slice-070 car-select side-profile picture (marker-0070)
+- [x] slice-071 stage durations 60-240s ramp + entry announcement (marker-0071)
+- [x] slice-072 more traffic (bus/motorcycle, density 6) (marker-0072)
+- [x] slice-073 MP name tags + horizon dots (marker-0073)
+- [ ] real player names (name-entry field; tags currently P{seatId})
 - [ ] time-up UI: Re-join / Spectate (cycle players, name centre-bottom) + points
 - [ ] server-authoritative countdown for multiplayer
