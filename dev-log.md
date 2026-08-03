@@ -1400,3 +1400,13 @@ Client-only, no repin. Playtest HUD rework.
   stageNumber + new stageTotal (main-route stage count). test/hud.test.js stage.
 
 Gate: ./test.sh -> 250/250 + 4 Luau gates OK.
+
+---
+
+## marker-0070 — car-select side-profile picture (2026-08-04)
+
+Client-only, no repin. car_select.drawCarProfile draws a side-view car
+silhouette (body/cabin/windows/headlight/wheels) in the car's identity colour,
+shown while browsing; stat bars shifted down to make room.
+
+Gate: ./test.sh -> 250/250 + 4 Luau gates OK.

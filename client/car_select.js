@@ -63,6 +63,46 @@ const STAT_ROWS = [
   ["GRIP", "steerLow"],
 ];
 
+// A simple side-profile car silhouette in `color`, centred at (cx, cy).
+function drawCarProfile(g, cx, cy, w, color) {
+  const h = w * 0.42;
+  const x = cx - w / 2;
+  const top = cy - h / 2;
+  g.fillStyle = "rgba(0,0,0,0.35)"; // shadow
+  g.beginPath();
+  g.ellipse(cx, top + h * 1.02, w * 0.5, h * 0.12, 0, 0, Math.PI * 2);
+  g.fill();
+  g.fillStyle = color; // lower body
+  g.fillRect(x, top + h * 0.45, w, h * 0.35);
+  g.beginPath(); // cabin
+  g.moveTo(x + w * 0.26, top + h * 0.5);
+  g.lineTo(x + w * 0.38, top + h * 0.12);
+  g.lineTo(x + w * 0.66, top + h * 0.12);
+  g.lineTo(x + w * 0.74, top + h * 0.5);
+  g.closePath();
+  g.fill();
+  g.fillStyle = "rgba(180,220,255,0.85)"; // windows
+  g.beginPath();
+  g.moveTo(x + w * 0.34, top + h * 0.46);
+  g.lineTo(x + w * 0.42, top + h * 0.2);
+  g.lineTo(x + w * 0.62, top + h * 0.2);
+  g.lineTo(x + w * 0.68, top + h * 0.46);
+  g.closePath();
+  g.fill();
+  g.fillStyle = "#fff3b0"; // headlight
+  g.fillRect(x + w * 0.92, top + h * 0.5, w * 0.06, h * 0.12);
+  for (const wx of [0.24, 0.76]) { // wheels
+    g.fillStyle = "#141414";
+    g.beginPath();
+    g.arc(x + w * wx, top + h * 0.82, h * 0.22, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = "#555";
+    g.beginPath();
+    g.arc(x + w * wx, top + h * 0.82, h * 0.1, 0, Math.PI * 2);
+    g.fill();
+  }
+}
+
 export function drawCarSelect(g, view, sel) {
   const car = sel.car;
   g.fillStyle = "#1a1030";
@@ -78,9 +118,15 @@ export function drawCarSelect(g, view, sel) {
   g.fillText(carDisplayName(car.nameKey), view.w / 2, view.h * 0.33);
 
   g.font = `${Math.round(view.h * 0.05)}px sans-serif`;
-  g.fillText("◄", view.w * 0.12, view.h * 0.33); // left arrow
-  g.fillText("►", view.w * 0.88, view.h * 0.33); // right arrow
-  g.fillText(`${sel.index + 1} / ${sel.count}`, view.w / 2, view.h * 0.42);
+  g.fillText("◄", view.w * 0.12, view.h * 0.4); // left arrow
+  g.fillText("►", view.w * 0.88, view.h * 0.4); // right arrow
+
+  // Side-profile picture of the car, in its identity colour.
+  drawCarProfile(g, view.w / 2, view.h * 0.44, view.w * 0.34, carColor(car.id));
+  g.textAlign = "center";
+  g.font = `${Math.round(view.h * 0.03)}px sans-serif`;
+  g.fillStyle = "#cfe";
+  g.fillText(`${sel.index + 1} / ${sel.count}`, view.w / 2, view.h * 0.55);
 
   // Stat bars.
   const barX = view.w * 0.30;
@@ -89,7 +135,7 @@ export function drawCarSelect(g, view, sel) {
   g.textAlign = "right";
   g.font = `${Math.round(view.h * 0.035)}px sans-serif`;
   STAT_ROWS.forEach(([label, key], i) => {
-    const y = view.h * 0.52 + i * view.h * 0.08;
+    const y = view.h * 0.6 + i * view.h * 0.07;
     g.fillStyle = "#8fa";
     g.fillText(label, barX - view.w * 0.02, y + barH);
     g.fillStyle = "#332a55";
