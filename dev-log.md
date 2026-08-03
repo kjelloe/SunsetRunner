@@ -1205,3 +1205,15 @@ countdown to a fresh race (local).
 - test/race_summary.test.js + import gate; specs/51.
 
 Gate: ./test.sh -> 227/227 + 4 Luau gates OK.
+
+---
+
+## marker-0056 — traffic crash full stop (2026-08-03)
+
+Engine change (playtest: partial slow made it too easy). Traffic crash now sets
+seat.speed = 0 (was /3). luau mirrored. CONSCIOUS REPINS: checkpoint_1a finish
+297->387 (073dace971711255), fork_1a ->217 (18837aa0a26d9051), physics_1a finish
+387 (t500 2d3230b23f7fa0b7), AI 316/2cp->307/1cp (f4c71ed1b1ac3f46). collision_1a
+(rival) unchanged. collision.test asserts dead stop + stun. specs/52.
+
+Gate: ./test.sh -> 227/227 + 4 Luau gates OK.

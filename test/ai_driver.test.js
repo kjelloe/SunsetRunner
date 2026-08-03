@@ -40,12 +40,12 @@ test("a finished seat gets a neutral input", () => {
 
 test("AI-driven solo race finishes and is pinned (JS-only golden)", () => {
   const r = runAiRace(ctx, { seed: 12345, numSeats: 1 });
-  // Position-based forks (marker-0048): the AI's lateral position at the fork now
-  // routes it into the RIGHT branch (which grants a checkpoint), so it sees 2
-  // checkpoints and finishes later than the old default-left route (was 297/1cp).
-  assert.equal(r.lastTick, 316);
+  // Full-stop traffic crashes (marker-0056) reshape the AI's line: it now takes
+  // the left branch (1 checkpoint) and finishes at 307 (was 316/2cp under the
+  // partial-slow crash of marker-0048).
+  assert.equal(r.lastTick, 307);
   assert.equal(r.census.finishes.length, 1);
-  assert.equal(r.census.checkpoints, 2);
-  assert.equal(r.finalHash, "946a2c0bc4652aab");
+  assert.equal(r.census.checkpoints, 1);
+  assert.equal(r.finalHash, "f4c71ed1b1ac3f46");
   assert.equal(runAiRace(ctx, { seed: 12345, numSeats: 1 }).finalHash, r.finalHash); // deterministic
 });

@@ -1,5 +1,5 @@
 {
-  "note": "fork routing golden \u2014 course 2 (canyon_split): one seat accelerates and takes forkChoice RIGHT at tick 5 (into seg 13, the right branch, which grants a checkpoint@119). A LEFT choice routes into seg 12 and differs (asserted in test/forks.test.js). Repin is a conscious act (dev-log.md). (finalHash repinned at marker-0023 for curve physics)",
+  "note": "fork_1a fixture. Last repinned: traffic crash full stop (marker-0056)",
   "scenario": {
     "name": "fork_1a",
     "seed": 12345,
@@ -40,12 +40,12 @@
       "60": "6a35fe2a58929630",
       "120": "211cd8f11ed974c1"
     },
-    "finalHash": "24bb509ea5326409",
-    "finishTick": 199,
+    "finalHash": "18837aa0a26d9051",
+    "finishTick": 217,
     "census": [
       "checkpoint@119",
       "collision@189",
-      "finish@199"
+      "finish@217"
     ]
   }
 }

@@ -26,7 +26,7 @@ local function resolveTrafficCollisions(state, tick: number)
 		if seat.active ~= 0 and seat.finishTicks < 0 and seat.timedOut == 0 and seat.crashedTicks == 0 then
 			for _, t in ipairs(state.traffic) do
 				if overlapping(seat, t) then
-					seat.speed = fixed.floorDivI32(seat.speed, TRAFFIC_CRASH_DEN)
+					seat.speed = 0 -- full stop on a crash (marker-0056); mirrors JS
 					seat.crashedTicks = CRASH_STUN_TICKS
 					table.insert(events, { type = "collision", kind = "traffic", seatId = seat.id, tick = tick })
 					break

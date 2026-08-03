@@ -1,5 +1,5 @@
 {
-  "note": "checkpoint_1a milestone fixture. Last repinned: course 1 restructured with hills + a fork (marker-0036); default-left path finishes tick 297",
+  "note": "checkpoint_1a milestone fixture. Last repinned: traffic crash is now a full stop (marker-0056), not a 1/3 speed cut",
   "scenario": {
     "name": "checkpoint_1a",
     "seed": 12345,
@@ -25,10 +25,10 @@
     "hashes": {
       "10": "a0303900554ef6a8",
       "100": "e4bad669a5f29321",
-      "215": "1ac285db87777503"
+      "215": "88ea2ae8194b15e8"
     },
-    "finalHash": "96c7d18179ba5b92",
-    "finishTick": 297,
+    "finalHash": "073dace971711255",
+    "finishTick": 387,
     "census": [
       {
         "type": "checkpoint",
@@ -40,11 +40,15 @@
       },
       {
         "type": "collision",
-        "tick": 175
+        "tick": 176
+      },
+      {
+        "type": "collision",
+        "tick": 240
       },
       {
         "type": "finish",
-        "tick": 297
+        "tick": 387
       }
     ]
   }

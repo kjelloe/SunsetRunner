@@ -42,11 +42,12 @@ test("a bump sheds speed and shoves the cars apart", () => {
   assert.ok(BUMP_SLOW > 0);
 });
 
-test("hitting a traffic car cuts speed to a third and emits a traffic collision", () => {
+test("hitting a traffic car is a dead stop and emits a traffic collision", () => {
   const seat = { id: 1, active: 1, finishTicks: -1, timedOut: 0, segmentId: 1, roadZ: 1000, laneX: 0, speed: 900 };
   const state = { seats: [seat], traffic: [{ id: 7, segmentId: 1, roadZ: 1000, laneX: 0, speed: 300, kind: 1 }] };
   const events = resolveTrafficCollisions(state, 5);
-  assert.equal(seat.speed, 300); // floor(900 / 3)
+  assert.equal(seat.speed, 0); // full stop (marker-0056)
+  assert.equal(seat.crashedTicks > 0, true); // stunned/immune after
   assert.equal(events.length, 1);
   assert.equal(events[0].kind, "traffic");
 });

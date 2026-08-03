@@ -5,13 +5,14 @@
 // seat iteration order (§24, gotcha #15). Runs only when the room enables
 // rivalCollision; with 0/1 seats it is a no-op (so checkpoint_1a is untouched).
 
-import { overlapping, BUMP_SLOW, BUMP_PUSH, TRAFFIC_CRASH_DEN, CRASH_STUN_TICKS } from "../shared/collision.js";
-import { clampI32, floorDivI32 } from "../shared/fixedmath.js";
+import { overlapping, BUMP_SLOW, BUMP_PUSH, CRASH_STUN_TICKS } from "../shared/collision.js";
+import { clampI32 } from "../shared/fixedmath.js";
 import { MAX_LANE_OFFSET } from "./car_physics.js";
 
-// Step 9: traffic collision. Hitting a traffic car is an arcade crash — a big
-// speed cut — followed by CRASH_STUN_TICKS of immunity so a car you're overlapping
-// doesn't crash you every tick (you can recover and drive out). Always on.
+// Step 9: traffic collision. Hitting a traffic car is an arcade crash — a DEAD
+// STOP (marker-0056: a partial slow made dodging optional / the game too easy) —
+// followed by CRASH_STUN_TICKS of immunity so a car you're overlapping doesn't
+// crash you every tick (you can recover and drive out). Always on.
 export function resolveTrafficCollisions(state, tick) {
   const events = [];
   for (const seat of state.seats) {
@@ -19,7 +20,7 @@ export function resolveTrafficCollisions(state, tick) {
     if (seat.crashedTicks > 0) continue; // still stunned/immune from the last crash
     for (const t of state.traffic) {
       if (overlapping(seat, t)) {
-        seat.speed = floorDivI32(seat.speed, TRAFFIC_CRASH_DEN);
+        seat.speed = 0; // full stop on a crash
         seat.crashedTicks = CRASH_STUN_TICKS;
         events.push({ type: "collision", kind: "traffic", seatId: seat.id, tick });
         break;
