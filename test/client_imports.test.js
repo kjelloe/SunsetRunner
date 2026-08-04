@@ -31,6 +31,7 @@ test("client modules import cleanly and export their entry points", async () => 
   const nameEntry = await import("../client/name_entry.js");
   const spectate = await import("../client/spectate.js");
   const playerIdMod = await import("../client/player_id.js");
+  const localScores = await import("../client/local_scores.js");
   const difficulty = await import("../client/difficulty_select.js");
   const raceSummary = await import("../client/race_summary.js");
   const main = await import("../client/main.js");
@@ -66,6 +67,7 @@ test("client modules import cleanly and export their entry points", async () => 
   assert.equal(typeof nameEntry.createNameEntry, "function");
   assert.equal(typeof spectate.drawSpectateOverlay, "function");
   assert.equal(typeof playerIdMod.playerId, "function");
+  assert.equal(typeof localScores.recordScore, "function");
   assert.equal(typeof difficulty.createDifficultySelect, "function");
   assert.equal(typeof raceSummary.buildSummary, "function");
   assert.equal(typeof banner.drawConnectionBanner, "function");

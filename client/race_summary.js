@@ -4,6 +4,7 @@
 // fresh race. Pure ranking logic is node-testable.
 
 import { getCourse, getSegment } from "../shared/road_data.js";
+import { TICK_HZ } from "../shared/constants.js";
 import { carDisplayName } from "./car_select.js";
 import { carColor } from "./car_colors.js";
 
@@ -76,6 +77,36 @@ export function playersFromState(state) {
     players.push({ carId: gh.carId, segmentId: gh.segmentId, roadZ: gh.roadZ, finishTicks: gh.finishTicks, isYou: false });
   }
   return players;
+}
+
+// mm:ss from finish ticks.
+function timeStr(ticks) {
+  const s = Math.round(ticks / TICK_HZ);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+// A compact ALL-TIME board (right side): finishers show time, others "St N".
+export function drawLeaderboard(g, view, entries) {
+  if (!entries || !entries.length) return;
+  const x = view.w * 0.98;
+  const nameX = view.w * 0.66;
+  const fs = Math.round(view.h * 0.03);
+  g.textBaseline = "alphabetic";
+  g.fillStyle = "#ffd54a";
+  g.font = `bold ${fs}px sans-serif`;
+  g.textAlign = "left";
+  g.fillText("ALL-TIME", nameX, view.h * 0.24);
+  g.font = `${fs}px sans-serif`;
+  entries.slice(0, 8).forEach((e, i) => {
+    const y = view.h * 0.29 + i * fs * 1.3;
+    g.textAlign = "left";
+    g.fillStyle = "#cfd0e0";
+    g.fillText(`${e.rank}. ${e.name}`, nameX, y);
+    g.textAlign = "right";
+    g.fillStyle = e.finishTicks >= 0 ? "#4ce05a" : "#cfd0e0";
+    g.fillText(e.finishTicks >= 0 ? timeStr(e.finishTicks) : `St ${e.stage}`, x, y);
+  });
+  g.textAlign = "left";
 }
 
 export function drawRaceSummary(g, view, rows, secondsToNewRace) {

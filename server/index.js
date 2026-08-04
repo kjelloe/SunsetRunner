@@ -17,6 +17,7 @@ import { loadTrafficConfig } from "../shared/traffic_data.js";
 import { TICK_HZ } from "../shared/constants.js";
 import { createRoom } from "./game_room.js";
 import { saveSession, loadSession } from "./session_store.js";
+import { createLeaderboard } from "./leaderboard.js";
 import { createRateLimiter } from "./rate_limit.js";
 import { C2S, S2C, parseMessage } from "../shared/protocol.js";
 import { DIFFICULTY } from "../shared/constants.js";
@@ -69,7 +70,8 @@ export async function startServer(port = 8000, roomOpts = {}) {
   const statePath = roomOpts.statePath || null;
   const graceTicks = roomOpts.graceTicks ?? DEFAULT_GRACE_TICKS;
   const restore = statePath ? loadSession(statePath, (graceTicks / TICK_HZ) * 1000) : null;
-  const room = createRoom(ctx, { startTimeTicks: ctx.startTimeTicks, graceTicks, ...roomOpts, restore });
+  const leaderboard = roomOpts.leaderboard || createLeaderboard(roomOpts.leaderboardPath || null);
+  const room = createRoom(ctx, { startTimeTicks: ctx.startTimeTicks, graceTicks, ...roomOpts, restore, leaderboard });
 
   const maxMessageBytes = roomOpts.maxMessageBytes ?? DEFAULT_MAX_MESSAGE_BYTES;
   const server = createServer(serveStatic);
@@ -175,7 +177,7 @@ export async function startServer(port = 8000, roomOpts = {}) {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT) || 8000;
   const statePath = process.env.STATE_FILE || resolve(repoRoot, ".state/session.json");
-  startServer(port, { statePath, countdownTicks: 60, courseId: 4 }).then((h) => { // grand_tour + 3 s countdown
+  startServer(port, { statePath, countdownTicks: 60, courseId: 4, leaderboardPath: resolve(repoRoot, '.state/leaderboard.json') }).then((h) => { // grand_tour + 3 s countdown
     console.log(`Sunset Runner server on http://localhost:${h.port}/client/index.html`);
     // SIGTERM/SIGINT (deploy/ctrl-c) -> close() (which saves) -> exit. Wired only
     // in the standalone entrypoint so tests don't accumulate signal handlers.

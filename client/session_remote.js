@@ -120,6 +120,7 @@ export function createRemoteSession(url, opts = {}) {
     get countdown() { return latest?.countdown ?? 0; }, // seconds until GO (server-driven)
     get points() { return latest?.points ?? 0; },
     get scoreboard() { return latest?.scoreboard || []; },
+    get leaderboard() { return latest?.leaderboard || []; },
     setInput(input) { held = input; },
     setForkChoice(choice) {
       pendingFork = choice;

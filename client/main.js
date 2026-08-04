@@ -23,7 +23,8 @@ import { loadScenery } from "./scenery.js";
 import { readTuning, applyTuning, drawTuningHud } from "./tuning.js";
 import { createCountdown, drawCountdownLabel } from "./countdown.js";
 import { drawSplash } from "./splash.js";
-import { buildSummary, playersFromState, drawRaceSummary, NEW_RACE_SECONDS, stageNumber, stageTotal } from "./race_summary.js";
+import { buildSummary, playersFromState, drawRaceSummary, drawLeaderboard, NEW_RACE_SECONDS, stageNumber, stageTotal } from "./race_summary.js";
+import { recordScore } from "./local_scores.js";
 import { getCourse, getSegment } from "../shared/road_data.js";
 import { carColor } from "./car_colors.js";
 import { createAnnouncer, stageLabel } from "./stage_announce.js";
@@ -138,6 +139,7 @@ export async function boot(doc = document) {
   let activeTimeScale = diffChoice.timeScale;
   let activeDiffLevel = diffChoice.level;
   let raceSummary = null;
+  let allTimeBoard = [];
   let summaryStart = 0;
   let timeUpSel = 0;      // 0 = RE-JOIN, 1 = SPECTATE (multiplayer time-up)
   let spectateIndex = 0;  // which rival is being spectated
@@ -345,6 +347,10 @@ export async function boot(doc = document) {
       raceSummary = sb.length
         ? sb.map((e, i) => ({ rank: i + 1, name: e.name, color: carColor(e.carId), points: e.points, isYou: e.seatId === session.seatId, finished: false }))
         : buildSummary(courseSet, courseId, carSet, playersFromState(state));
+      // All-time board: the server's for MP; a localStorage board for solo.
+      allTimeBoard = remote
+        ? session.leaderboard
+        : recordScore(storage, { name: playerName, finishTicks: self.finishTicks >= 0 ? self.finishTicks : -1, stage: hud.stage || 1 });
       summaryStart = now;
       phase = "summary";
     }
@@ -358,6 +364,7 @@ export async function boot(doc = document) {
         drawRaceSummary(g, view, raceSummary, secs);
         if (secs <= 0) start(activeCarId, activeTimeScale, activeDiffLevel); // fresh race, same car/difficulty
       }
+      drawLeaderboard(g, view, allTimeBoard); // all-time board on the right
     }
     frameCount++;
     requestAnimationFrame(frame);

@@ -5,6 +5,7 @@ import { loadCourseSet } from "../shared/road_data.js";
 import { loadCarSet } from "../shared/car_data.js";
 import { loadTrafficConfig } from "../shared/traffic_data.js";
 import { createRoom } from "../server/game_room.js";
+import { createLeaderboard } from "../server/leaderboard.js";
 
 const read = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url)));
 const ctx = {
@@ -138,4 +139,15 @@ test("points carry across a re-join with the same player id", () => {
   room.removeSeat(s1); // leaves the race
   const s2 = room.addSeat(2, undefined, "Ada", "pid-xyz"); // re-join with the same pid
   assert.equal(room.pointsFor(s2), scored); // score carried over
+});
+
+test("timeouts record the stage reached to the all-time leaderboard", () => {
+  const lb = createLeaderboard(null);
+  const room = createRoom(ctx, { startTimeTicks: 40, leaderboard: lb });
+  const id = room.addSeat(1, undefined, "Ada");
+  for (let i = 0; i < 70; i++) room.tick(); // idle -> times out
+  const top = lb.top(5);
+  assert.ok(top.length >= 1);
+  assert.equal(top[0].name, "Ada");
+  assert.equal(room.viewFor(id).leaderboard[0].name, "Ada");
 });

@@ -108,6 +108,25 @@ export function getSegment(courseSet, segmentId) {
   return seg;
 }
 
+// 1-based stage number = BFS hop distance from the course start to `segmentId`
+// (handles forks). -1 for a finished / invalid segment. Shared by the HUD, the
+// race summary, and the server leaderboard.
+export function stageIndex(courseSet, startSegment, segmentId) {
+  if (segmentId < 0) return -1;
+  const dist = new Map([[startSegment, 1]]);
+  const q = [startSegment];
+  while (q.length) {
+    const id = q.shift();
+    if (id === segmentId) return dist.get(id);
+    const seg = courseSet.segmentsById.get(id);
+    if (!seg) continue;
+    for (const e of [seg.next, seg.forkLeft, seg.forkRight]) {
+      if (e > 0 && !dist.has(e)) { dist.set(e, dist.get(id) + 1); q.push(e); }
+    }
+  }
+  return dist.get(segmentId) ?? -1;
+}
+
 // Resolve the segment a car advances into. For a fork, `choice` selects the
 // branch (FORK_LEFT / FORK_RIGHT); with no choice a fork defaults LEFT
 // deterministically. For a linear segment `choice` is ignored. Returns the next

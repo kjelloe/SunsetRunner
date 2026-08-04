@@ -8,7 +8,7 @@ import { createInitialState, makeSeat } from "../engine/state.js";
 import { apply } from "../engine/reducer.js";
 import { CMD_INPUT, CMD_ADVANCE_TICK, CMD_FORK_CHOICE } from "../engine/commands.js";
 import { hashSnapshot } from "../engine/snapshot.js";
-import { getCourse } from "../shared/road_data.js";
+import { getCourse, stageIndex } from "../shared/road_data.js";
 import { inCollisionWindow } from "../shared/collision.js";
 import { S2C } from "../shared/protocol.js";
 import { TICK_HZ } from "../shared/constants.js";
@@ -91,6 +91,7 @@ export function createRoom(ctx, opts = {}) {
   const playerId = new Map(); // seatId -> persistent player id (pid), so a re-join keeps its score
   const points = new Map(); // pid -> score (server-authoritative, NOT hashed)
   const scoreFor = (seatId) => points.get(playerId.get(seatId)) || 0;
+  const leaderboard = opts.leaderboard || null; // all-time board (persistent)
 
   function freeSeat(seatId) {
     const seat = state.seats.find((s) => s.id === seatId);
@@ -233,6 +234,16 @@ export function createRoom(ctx, opts = {}) {
           const pid = playerId.get(e.seatId) || `seat:${e.seatId}`;
           points.set(pid, Math.max(0, (points.get(pid) || 0) + delta));
         }
+        // All-time board: a finish records its time; a timeout records the stage
+        // reached (finishers rank above by time, others by stage — specs/61).
+        if (leaderboard && e.seatId != null) {
+          const nm = names.get(e.seatId) || `P${e.seatId}`;
+          if (e.type === "finish") leaderboard.add({ name: nm, finishTicks: e.tick, stage: 999999 });
+          else if (e.type === "timeout") {
+            const s = state.seats.find((x) => x.id === e.seatId);
+            leaderboard.add({ name: nm, finishTicks: -1, stage: s ? stageIndex(ctx.courseSet, startSegment, s.segmentId) : 0 });
+          }
+        }
       }
       return state;
     },
@@ -259,6 +270,7 @@ export function createRoom(ctx, opts = {}) {
         scoreboard: state.seats.filter((s) => s.active)
           .map((s) => ({ seatId: s.id, carId: s.carId, name: names.get(s.id) || `P${s.id}`, points: scoreFor(s.id) }))
           .sort((a, b) => b.points - a.points || a.seatId - b.seatId),
+        leaderboard: leaderboard ? leaderboard.top(10) : [], // all-time board
         hash: hashSnapshot(state),
       };
     },

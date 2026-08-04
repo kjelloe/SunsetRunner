@@ -1588,3 +1588,19 @@ segment count 69->49. road_data + build_course tests updated. Engine goldens/Lua
 unchanged (course 4 only).
 
 Gate: ./test.sh -> 273/273 + 4 Luau gates + browser smoke OK.
+
+---
+
+## marker-0084 — all-time leaderboard (2026-08-05)
+
+Server + client, no repin. Persistent high-score board: finishers by time, others
+by stage reached (finishers on top), best run per name.
+- shared/leaderboard.js (rankResults/mergeResult/isBetter); shared/road_data
+  stageIndex (BFS). server/leaderboard.js (file persist); game_room records
+  finish(time)/timeout(stage) events + viewFor.leaderboard; startServer
+  leaderboardPath (.state/leaderboard.json). client/local_scores.js (solo
+  localStorage); race_summary.drawLeaderboard ALL-TIME panel; main records solo +
+  shows server board in MP. session_remote.leaderboard.
+- tests: leaderboard (rank/merge/local), game_room timeout->board. specs/61.
+
+Gate: ./test.sh -> 277/277 + 4 Luau gates + browser smoke OK.
