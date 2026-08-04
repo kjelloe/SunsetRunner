@@ -99,7 +99,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-044 per-leg scenery themes (beach/canyon/forest) (marker-0044)
 - [x] slice-045 car identity on ghosts (tint by carId) (marker-0045)
 - [x] slice-046 live feel-tuning knobs (?tune=1 + URL overrides) (marker-0046)
-- [ ] Playwright client smoke / ui-acceptance / perf smoke
+- [x] slice-081 Playwright headless-browser smoke (boot + canvas + no console errors, local+remote) (marker-0081)
 
 ## Milestone 6 — Full course + race framing (from playtest, 2026-08-03)
 

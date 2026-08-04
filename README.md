@@ -108,7 +108,7 @@ specs/    the design brief + numbered decision docs
 ## 🧪 Testing & determinism
 
 - `npm test` — 269 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
-- `./test.sh` — adds the Luau parity gates ([`lune`](https://lune-org.github.io/docs) required; skipped gracefully if absent).
+- `./test.sh` — adds the Luau parity gates ([`lune`](https://lune-org.github.io/docs) required; skipped gracefully if absent) + a headless-browser smoke (`npm run test:browser`, Playwright; `SKIP_BROWSER=1` to skip).
 - `node debugging/replay.mjs` — replay a scenario as a race report.
 - `node debugging/sim_campaign.mjs` — AI "do systems fire?" gate across 5 seeds.
 - `node debugging/fairness.mjs` — route-mirror / car-swap / traffic-swap report.
