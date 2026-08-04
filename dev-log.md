@@ -1466,3 +1466,16 @@ stages now 94-375 cars (~16-60x). luau/traffic mirrors (math.round). traffic.tes
 scaling case.
 
 Gate: ./test.sh -> 254/254 + 4 Luau gates OK.
+
+---
+
+## marker-0075 — sports-car profiles + first-stage announce delay (2026-08-04)
+
+Client-only, no repin.
+- car_select.drawCarProfile: low sleek sports silhouette (wedge nose, raked
+  cabin, big wheels/hubs, accent stripe) with per-car CAR_STYLE (mid-engine/
+  fastback/long-hood/muscle) so the four cars look distinct.
+- main.js: first stage-entry announcement held until the 3-2-1-GO countdown
+  finishes (preRace gate, local + server countdown), so it doesn't collide with GO.
+
+Gate: ./test.sh -> 255/255 + 4 Luau gates OK.

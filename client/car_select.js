@@ -63,44 +63,73 @@ const STAT_ROWS = [
   ["GRIP", "steerLow"],
 ];
 
-// A simple side-profile car silhouette in `color`, centred at (cx, cy).
-function drawCarProfile(g, cx, cy, w, color) {
-  const h = w * 0.42;
+// Distinct sports-car silhouettes per car (low + sleek, not a family car).
+// cabinFront/cabinRear = greenhouse position (fraction of length); roof = roofline
+// height (fraction of car height — lower is sleeker); rake = windshield rake.
+const CAR_STYLE = {
+  1: { cabinFront: 0.33, cabinRear: 0.60, roof: 0.24, wedge: 0.10 }, // mid-engine (Ferrari-ish)
+  2: { cabinFront: 0.40, cabinRear: 0.74, roof: 0.30, wedge: 0.06 }, // fastback (Porsche-ish)
+  3: { cabinFront: 0.46, cabinRear: 0.70, roof: 0.26, wedge: 0.12 }, // long-hood (Corvette-ish)
+  4: { cabinFront: 0.47, cabinRear: 0.80, roof: 0.33, wedge: 0.05 }, // muscle (Mustang-ish)
+};
+
+// A low, sleek sports-car side profile in `color`, centred at (cx, cy).
+function drawCarProfile(g, cx, cy, w, color, carId) {
+  const st = CAR_STYLE[carId] || CAR_STYLE[1];
+  const h = w * 0.36;
   const x = cx - w / 2;
   const top = cy - h / 2;
+  const px = (fx) => x + w * fx;
+  const py = (fy) => top + h * fy;
+
   g.fillStyle = "rgba(0,0,0,0.35)"; // shadow
   g.beginPath();
-  g.ellipse(cx, top + h * 1.02, w * 0.5, h * 0.12, 0, 0, Math.PI * 2);
+  g.ellipse(cx, py(1.02), w * 0.5, h * 0.12, 0, 0, Math.PI * 2);
   g.fill();
-  g.fillStyle = color; // lower body
-  g.fillRect(x, top + h * 0.45, w, h * 0.35);
-  g.beginPath(); // cabin
-  g.moveTo(x + w * 0.26, top + h * 0.5);
-  g.lineTo(x + w * 0.38, top + h * 0.12);
-  g.lineTo(x + w * 0.66, top + h * 0.12);
-  g.lineTo(x + w * 0.74, top + h * 0.5);
-  g.closePath();
-  g.fill();
-  g.fillStyle = "rgba(180,220,255,0.85)"; // windows
-  g.beginPath();
-  g.moveTo(x + w * 0.34, top + h * 0.46);
-  g.lineTo(x + w * 0.42, top + h * 0.2);
-  g.lineTo(x + w * 0.62, top + h * 0.2);
-  g.lineTo(x + w * 0.68, top + h * 0.46);
-  g.closePath();
-  g.fill();
-  g.fillStyle = "#fff3b0"; // headlight
-  g.fillRect(x + w * 0.92, top + h * 0.5, w * 0.06, h * 0.12);
-  for (const wx of [0.24, 0.76]) { // wheels
-    g.fillStyle = "#141414";
+
+  // Wheels (with a bright hub), drawn before the arches.
+  const wy = py(0.8);
+  for (const wx of [0.22, 0.8]) {
+    g.fillStyle = "#0c0c0c";
     g.beginPath();
-    g.arc(x + w * wx, top + h * 0.82, h * 0.22, 0, Math.PI * 2);
+    g.arc(px(wx), wy, h * 0.3, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = "#555";
+    g.fillStyle = "#888";
     g.beginPath();
-    g.arc(x + w * wx, top + h * 0.82, h * 0.1, 0, Math.PI * 2);
+    g.arc(px(wx), wy, h * 0.13, 0, Math.PI * 2);
     g.fill();
   }
+
+  // Low wedge body: nose lower than the tail, raked cabin.
+  g.fillStyle = color;
+  g.beginPath();
+  g.moveTo(px(0.02), py(0.6 + st.wedge)); // nose tip (low)
+  g.quadraticCurveTo(px(0.0), py(0.5), px(0.12), py(0.5));
+  g.lineTo(px(st.cabinFront), py(0.5));
+  g.lineTo(px(st.cabinFront + 0.06), py(st.roof)); // windshield up to roof
+  g.lineTo(px(st.cabinRear - 0.04), py(st.roof)); // roof
+  g.lineTo(px(st.cabinRear), py(0.5)); // rear glass down
+  g.lineTo(px(0.98), py(0.52)); // rear deck
+  g.quadraticCurveTo(px(1.0), py(0.62), px(0.96), py(0.74));
+  g.lineTo(px(0.04), py(0.74));
+  g.closePath();
+  g.fill();
+
+  // Greenhouse (windows).
+  g.fillStyle = "rgba(180,220,255,0.85)";
+  g.beginPath();
+  g.moveTo(px(st.cabinFront + 0.02), py(0.49));
+  g.lineTo(px(st.cabinFront + 0.07), py(st.roof + 0.03));
+  g.lineTo(px(st.cabinRear - 0.05), py(st.roof + 0.03));
+  g.lineTo(px(st.cabinRear - 0.01), py(0.49));
+  g.closePath();
+  g.fill();
+
+  // Accent side stripe + headlight.
+  g.fillStyle = "rgba(255,255,255,0.22)";
+  g.fillRect(px(0.1), py(0.6), w * 0.8, h * 0.04);
+  g.fillStyle = "#fff3b0";
+  g.fillRect(px(0.02), py(0.54), w * 0.05, h * 0.08);
 }
 
 export function drawCarSelect(g, view, sel) {
@@ -122,7 +151,7 @@ export function drawCarSelect(g, view, sel) {
   g.fillText("►", view.w * 0.88, view.h * 0.4); // right arrow
 
   // Side-profile picture of the car, in its identity colour.
-  drawCarProfile(g, view.w / 2, view.h * 0.44, view.w * 0.34, carColor(car.id));
+  drawCarProfile(g, view.w / 2, view.h * 0.44, view.w * 0.36, carColor(car.id), car.id);
   g.textAlign = "center";
   g.font = `${Math.round(view.h * 0.03)}px sans-serif`;
   g.fillStyle = "#cfe";

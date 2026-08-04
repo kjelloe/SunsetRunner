@@ -220,9 +220,12 @@ export async function boot(doc = document) {
       ? { stage: stageNumber(courseSet, stageStart, state.seats[0].segmentId), total: stageTotal(courseSet, courseId) }
       : {};
     if (state.seats.length) render(g, view, state, courseSet, assets, scenery, hud);
-    // Stage-entry announcement: fire when the car enters a new segment.
+    // Stage-entry announcement: fire when the car enters a new segment — but hold
+    // the FIRST one until the 3-2-1-GO countdown has finished (local or server),
+    // so it doesn't collide with the GO text.
     const selfSeat = state.seats[0];
-    if (racing && selfSeat && selfSeat.segmentId !== -1 && selfSeat.segmentId !== prevSegmentId) {
+    const preRace = counting || (remote && session.countdown > 0);
+    if (racing && !preRace && selfSeat && selfSeat.segmentId !== -1 && selfSeat.segmentId !== prevSegmentId) {
       announcer.announce(stageLabel(hud.stage, getSegment(courseSet, selfSeat.segmentId).nameKey), now);
       prevSegmentId = selfSeat.segmentId;
     }
