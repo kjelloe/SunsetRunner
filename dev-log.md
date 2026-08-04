@@ -1454,3 +1454,15 @@ Client-only, no repin. drawGhosts:
 - test/ghost_labels.test.js (render integration: name tag + horizon label).
 
 Gate: ./test.sh -> 254/254 + 4 Luau gates OK.
+
+---
+
+## marker-0074 — traffic density scales with segment length (2026-08-04)
+
+Engine + Luau, NO repin. Playtest: course 4 felt empty (fixed count spread over
+long stages). Traffic count = max(cfg.density, round(stripCount/100)) — density is
+the FLOOR. Courses 1-3 (all <= 500 strips) stay at 6 -> goldens unchanged; course-4
+stages now 94-375 cars (~16-60x). luau/traffic mirrors (math.round). traffic.test
+scaling case.
+
+Gate: ./test.sh -> 254/254 + 4 Luau gates OK.

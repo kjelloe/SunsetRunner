@@ -69,3 +69,12 @@ test("advanceTraffic moves cars forward and despawns those off the end", () => {
   advanceTraffic(s, courseSet);
   assert.equal(s.traffic.length, 0);
 });
+
+test("traffic scales with segment length (density is the floor)", () => {
+  // A long course-4 segment gets far more than the base density.
+  const long = courseSet.segments.find((s) => s.id >= 100 && s.stripCount > 10000);
+  const state = { seed: 1, traffic: [], hazards: [], spawnedSegments: [], nextTrafficId: 1, nextHazardId: 1 };
+  spawnSegmentTraffic(state, courseSet, cfg, long.id);
+  assert.ok(state.traffic.length > cfg.density * 5, `expected many cars, got ${state.traffic.length}`);
+  assert.equal(state.traffic.length, Math.max(cfg.density, Math.round(long.stripCount / 100)));
+});

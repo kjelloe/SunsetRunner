@@ -10,6 +10,8 @@ import { getSegment } from "../shared/road_data.js";
 import { HAZARD_START, HAZARD_DESPAWN, HAZARD_SPEED, HAZARD_COUNT, HAZARD_SNOWMOBILE, HAZARD_SKIER } from "../shared/collision.js";
 import { absI32 } from "../shared/fixedmath.js";
 
+const STRIPS_PER_CAR = 100; // ~1 traffic car per 100 road strips (density scales with length)
+
 function segmentLength(courseSet, segmentId) {
   return getSegment(courseSet, segmentId).stripCount * ROAD_UNIT;
 }
@@ -26,10 +28,15 @@ export function spawnSegmentTraffic(state, courseSet, cfg, segmentId) {
   if (segmentId === -1 || state.spawnedSegments.includes(segmentId)) return;
   const segLen = segmentLength(courseSet, segmentId);
   const seg = getSegment(courseSet, segmentId);
+  // Traffic scales with segment LENGTH (cfg.density is the FLOOR), so a long
+  // stage is populated and a short one still gets the base count. Courses 1-3
+  // are all short enough to sit at the floor -> their traffic (and goldens) are
+  // unchanged; only the long course-4 stages get much busier.
+  const count = Math.max(cfg.density, Math.round(seg.stripCount / STRIPS_PER_CAR));
   // Segment-seeded (stable per segment within a race) AND race-seeded (so
   // different race seeds produce different traffic — the basis for sweeps).
   let rng = seedSfc32((seg.trafficSeed + state.seed) >>> 0);
-  for (let i = 0; i < cfg.density; i++) {
+  for (let i = 0; i < count; i++) {
     let r = roll(rng, segLen); const roadZ = r.value; rng = r.rng;
     r = roll(rng, cfg.lanes.length); const laneX = cfg.lanes[r.value]; rng = r.rng;
     r = roll(rng, cfg.kinds.length); const kind = cfg.kinds[r.value]; rng = r.rng;
