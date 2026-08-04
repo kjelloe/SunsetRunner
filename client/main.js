@@ -93,6 +93,7 @@ export async function boot(doc = document) {
   const params = new URLSearchParams(location.search);
   const remote = params.get("mode") === "remote";
   const courseId = Number(params.get("course")) || 4; // grand_tour is the default
+  const aiCount = remote ? 0 : (params.has("ai") ? Math.max(0, Number(params.get("ai")) || 0) : 5); // solo AI rivals
   // Live feel-tuning knobs (renderer-only): ?depth=/?height=/?hill=/?follow=/etc
   // override the camera/road constants; ?tune=1 shows the current values on screen.
   applyTuning(readTuning(params));
@@ -145,7 +146,7 @@ export async function boot(doc = document) {
   function start(carId, timeScale, diffLevel) {
     session = remote
       ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks, carId, diff: diffLevel, name: playerName, pid })
-      : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig, carId, timeScale });
+      : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig, carId, timeScale, aiCount });
     if (remote) session.connect();
     activeCarId = carId;
     activeTimeScale = timeScale;

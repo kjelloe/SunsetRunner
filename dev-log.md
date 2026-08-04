@@ -1563,3 +1563,16 @@ test.sh runs it after JS+Luau when playwright is resolvable (SKIP_BROWSER=1 to
 skip); npm run test:browser. specs/60. Summary: js=0 luau=0 browser=0.
 
 Gate: ./test.sh -> 269/269 + 4 Luau gates + browser smoke OK.
+
+---
+
+## marker-0082 — AI opponents in single-player (2026-08-05)
+
+Client-only, no repin. Solo is now a RACE: session_local spawns opts.aiCount AI
+seats (staggered lanes, cars cycled), drives each with engine/ai_driver chooseInput
+each tick, and exposes them as named ghosts (AI_NAMES pool) so they render with
+name tags like real players. main: aiCount default 5 solo (?ai=N override, ?ai=0
+off; remote unchanged). getState now returns {seats:[self], ghosts, ...}.
+test/local_ai.test.js (named ghosts, drive forward, deterministic, ai=0 solo).
+
+Gate: ./test.sh -> 273/273 + 4 Luau gates + browser smoke OK.
