@@ -127,3 +127,15 @@ test("the view is a global traffic feed (spectate can see any segment)", () => {
   const v = room.viewFor(2);
   assert.equal(v.traffic.length, room.getState().traffic.length); // full array, not filtered to the viewer
 });
+
+test("points carry across a re-join with the same player id", () => {
+  const room = createRoom(ctx, { startTimeTicks: 5000 });
+  const s1 = room.addSeat(1, undefined, "Ada", "pid-xyz");
+  room.setInput(s1, { steer: 0, accel: 1, brake: 0 });
+  for (let i = 0; i < 130; i++) room.tick(); // pass the first checkpoint (~108)
+  const scored = room.pointsFor(s1);
+  assert.ok(scored > 0);
+  room.removeSeat(s1); // leaves the race
+  const s2 = room.addSeat(2, undefined, "Ada", "pid-xyz"); // re-join with the same pid
+  assert.equal(room.pointsFor(s2), scored); // score carried over
+});

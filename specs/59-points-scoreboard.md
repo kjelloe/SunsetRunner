@@ -29,5 +29,8 @@ Each tick, `tick()` scores the just-emitted events onto a per-seat tally
 
 ## Not verified / deferred
 
-Points reset on RE-JOIN (new seat) — carrying a score across a re-join would key
-points by token/name (future). No solo scoring yet (multiplayer feature).
+Points now CARRY across a RE-JOIN: keyed by a persistent client `pid`
+(localStorage, sent on JOIN; `client/player_id.js`), the room accumulates score
+under the pid (`playerId` seatId->pid map), so a re-joining player keeps their
+total and earns more from the current stage (marker-0080). No solo scoring yet
+(multiplayer feature).

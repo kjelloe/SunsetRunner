@@ -88,7 +88,9 @@ export function createRoom(ctx, opts = {}) {
   const graceTicks = opts.graceTicks ?? 900; // 45 s at 20 Hz
   const presence = new Map(); // seatId -> { token, disconnectedTick|null }
   const names = new Map(); // seatId -> display name
-  const points = new Map(); // seatId -> score (server-authoritative, NOT hashed)
+  const playerId = new Map(); // seatId -> persistent player id (pid), so a re-join keeps its score
+  const points = new Map(); // pid -> score (server-authoritative, NOT hashed)
+  const scoreFor = (seatId) => points.get(playerId.get(seatId)) || 0;
 
   function freeSeat(seatId) {
     const seat = state.seats.find((s) => s.id === seatId);
@@ -116,7 +118,9 @@ export function createRoom(ctx, opts = {}) {
     names.clear();
     for (const [id, n] of r.names || []) names.set(id, n);
     points.clear();
-    for (const [id, pts] of r.points || []) points.set(id, pts);
+    for (const [pid, pts] of r.points || []) points.set(pid, pts);
+    playerId.clear();
+    for (const [id, pid] of r.playerId || []) playerId.set(id, pid);
     seatsMeta.length = 0;
     for (const m of r.seatsMeta) seatsMeta.push({ ...m });
     recordedInputs.length = 0;
@@ -136,7 +140,7 @@ export function createRoom(ctx, opts = {}) {
 
     // A seat joins with a car and (first joiner only) the race difficulty as a
     // timeScale int. The first seat in an empty room starts the shared countdown.
-    addSeat(carId = 1, timeScale, name) {
+    addSeat(carId = 1, timeScale, name, pid) {
       if (this.seatCount >= state.race.maxSeats) return -1; // room full
       if (!raceStarted) {
         raceStarted = true;
@@ -147,6 +151,7 @@ export function createRoom(ctx, opts = {}) {
       state.seats.push(makeSeat(id, carId, startSegment, startTimeTicks));
       seatsMeta.push({ id, carId });
       names.set(id, name || `P${id}`);
+      playerId.set(id, pid || `seat:${id}`); // pid carries the score across re-joins
       presence.set(id, { token: randomUUID(), disconnectedTick: null });
       return id;
     },
@@ -224,12 +229,15 @@ export function createRoom(ctx, opts = {}) {
         const delta = e.type === "checkpoint" ? POINTS.checkpoint
           : e.type === "finish" ? POINTS.finish
             : e.type === "collision" ? POINTS.collision : 0;
-        if (delta && e.seatId != null) points.set(e.seatId, Math.max(0, (points.get(e.seatId) || 0) + delta));
+        if (delta && e.seatId != null) {
+          const pid = playerId.get(e.seatId) || `seat:${e.seatId}`;
+          points.set(pid, Math.max(0, (points.get(pid) || 0) + delta));
+        }
       }
       return state;
     },
 
-    pointsFor(seatId) { return points.get(seatId) || 0; },
+    pointsFor(seatId) { return scoreFor(seatId); },
 
     viewFor(seatId) {
       const self = state.seats.find((s) => s.id === seatId) || null;
@@ -247,9 +255,9 @@ export function createRoom(ctx, opts = {}) {
         hazards: state.hazards,
         events: state.events,
         standings: computeStandings(state.seats),
-        points: points.get(seatId) || 0, // this player's score
+        points: scoreFor(seatId), // this player's score (pid-keyed)
         scoreboard: state.seats.filter((s) => s.active)
-          .map((s) => ({ seatId: s.id, carId: s.carId, name: names.get(s.id) || `P${s.id}`, points: points.get(s.id) || 0 }))
+          .map((s) => ({ seatId: s.id, carId: s.carId, name: names.get(s.id) || `P${s.id}`, points: scoreFor(s.id) }))
           .sort((a, b) => b.points - a.points || a.seatId - b.seatId),
         hash: hashSnapshot(state),
       };
@@ -268,6 +276,7 @@ export function createRoom(ctx, opts = {}) {
         presence: [...presence].map(([id, p]) => ({ id, token: p.token, disconnectedTick: p.disconnectedTick })),
         names: [...names],
         points: [...points],
+        playerId: [...playerId],
         inputs: [...inputs].map(([id, inp]) => ({ id, inp })),
         ackSeq: [...ackSeq],
         seatsMeta: seatsMeta.map((m) => ({ ...m })),

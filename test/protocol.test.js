@@ -5,7 +5,7 @@ import { parseMessage, C2S } from "../shared/protocol.js";
 test("JOIN carries carId and an optional difficulty", () => {
   const a = parseMessage(JSON.stringify({ type: C2S.JOIN, carId: 2, diff: "hard" }));
   assert.equal(a.ok, true);
-  assert.deepEqual(a.msg, { type: C2S.JOIN, carId: 2, diff: "hard", name: null });
+  assert.deepEqual(a.msg, { type: C2S.JOIN, carId: 2, diff: "hard", name: null, pid: null });
 
   const b = parseMessage(JSON.stringify({ type: C2S.JOIN, carId: 1 }));
   assert.equal(b.ok, true);
@@ -30,4 +30,10 @@ test("JOIN carries a sanitised player name", () => {
   const b = parseMessage(JSON.stringify({ type: C2S.JOIN, carId: 1, name: "abcdefghijklmnop" }));
   assert.equal(b.msg.name.length, 12); // capped
   assert.equal(parseMessage(JSON.stringify({ type: C2S.JOIN, carId: 1 })).msg.name, null);
+});
+
+test("JOIN carries a sanitised persistent pid", () => {
+  const a = parseMessage(JSON.stringify({ type: C2S.JOIN, carId: 1, pid: "p-abc_123!@#" }));
+  assert.equal(a.msg.pid, "p-abc_123");
+  assert.equal(parseMessage(JSON.stringify({ type: C2S.JOIN, carId: 1 })).msg.pid, null);
 });

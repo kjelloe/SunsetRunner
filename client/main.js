@@ -28,6 +28,7 @@ import { getCourse, getSegment } from "../shared/road_data.js";
 import { carColor } from "./car_colors.js";
 import { createAnnouncer, stageLabel } from "./stage_announce.js";
 import { nameFromParams, createNameEntry, rememberName } from "./name_entry.js";
+import { playerId } from "./player_id.js";
 import { drawTimeUpButtons, timeUpTouchZone, drawSpectateOverlay, spectateTouchZone, drawMiniScoreboard } from "./spectate.js";
 
 const SIM_DT = 1000 / TICK_HZ;
@@ -117,6 +118,7 @@ export async function boot(doc = document) {
   const choice = carChoiceFromParams(params, carSet);
   const diffChoice = difficultyFromParams(params);
   const storage = (typeof localStorage !== "undefined") ? localStorage : null;
+  const pid = playerId(storage); // stable score identity across re-joins
   const nameChoice = nameFromParams(params, storage);
   let playerName = nameChoice.name || "Player";
   const nameEntry = createNameEntry(nameChoice.name);
@@ -142,7 +144,7 @@ export async function boot(doc = document) {
 
   function start(carId, timeScale, diffLevel) {
     session = remote
-      ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks, carId, diff: diffLevel, name: playerName })
+      ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks, carId, diff: diffLevel, name: playerName, pid })
       : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig, carId, timeScale });
     if (remote) session.connect();
     activeCarId = carId;

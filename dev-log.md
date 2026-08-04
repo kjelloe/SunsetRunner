@@ -1535,3 +1535,18 @@ scoreboard (spectate.drawMiniScoreboard). game_room test asserts the view carrie
 the full traffic array. specs/58 corrected.
 
 Gate: ./test.sh -> 266/266 + 4 Luau gates OK.
+
+---
+
+## marker-0080 — token-keyed points (carry score across re-join) (2026-08-04)
+
+Server + client, no repin (points not hashed). Points now keyed by a persistent
+client pid so a re-join keeps its score.
+- client/player_id.js: playerId(store) mint+persist in localStorage; main sends
+  pid; session_remote JOIN pid. protocol JOIN pid (sanitised, cap 64).
+- game_room: playerId seatId->pid map; points keyed by pid; scoreFor(seatId) via
+  pid; addSeat(...,pid); viewFor/scoreboard via scoreFor; serialize/restore
+  playerId. Re-join with same pid continues the tally.
+- tests: game_room carry-across-rejoin, protocol pid, player_id; protocol shape.
+
+Gate: ./test.sh -> 269/269 + 4 Luau gates OK.

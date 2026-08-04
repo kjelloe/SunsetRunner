@@ -118,7 +118,7 @@ export async function startServer(port = 8000, roomOpts = {}) {
       if (!parsed.ok) { ws.send(JSON.stringify({ type: S2C.ERROR, reason: parsed.reason })); return; }
       const msg = parsed.msg;
       if (msg.type === C2S.JOIN) {
-        const seatId = room.addSeat(msg.carId, msg.diff ? DIFFICULTY[msg.diff] : undefined, msg.name);
+        const seatId = room.addSeat(msg.carId, msg.diff ? DIFFICULTY[msg.diff] : undefined, msg.name, msg.pid);
         if (seatId === -1) { ws.send(JSON.stringify({ type: S2C.ERROR, reason: "room full" })); return; }
         clients.set(ws, seatId);
         sendWelcome(ws, seatId);

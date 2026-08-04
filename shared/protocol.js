@@ -35,7 +35,14 @@ export function parseMessage(raw) {
       if (typeof msg.name !== "string") return { ok: false, reason: "name must be a string" };
       name = msg.name.replace(/[^\w \-]/g, "").trim().slice(0, 12) || null;
     }
-    return { ok: true, msg: { type: C2S.JOIN, carId, diff, name } };
+    // Optional persistent player id (localStorage) — carries the score across a
+    // re-join. Sanitised (word chars/dash), 64-char cap.
+    let pid = null;
+    if (msg.pid != null) {
+      if (typeof msg.pid !== "string") return { ok: false, reason: "pid must be a string" };
+      pid = msg.pid.replace(/[^\w-]/g, "").slice(0, 64) || null;
+    }
+    return { ok: true, msg: { type: C2S.JOIN, carId, diff, name, pid } };
   }
   if (msg.type === C2S.INPUT) {
     if (!TRISTATE.has(msg.steer)) return { ok: false, reason: "steer must be -1|0|1" };
