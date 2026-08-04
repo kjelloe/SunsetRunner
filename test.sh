@@ -1,6 +1,7 @@
 #!/bin/bash
-# Full self-test: JS unit suite + Luau (lune) cross-language parity, with a
-# summary line. Exit non-zero if either gate fails.
+# Full self-test: JS unit suite + Luau (lune) cross-language parity + an optional
+# headless-browser smoke, with a summary line. Exit non-zero if a gate fails.
+# Set SKIP_BROWSER=1 to skip the browser smoke (adds ~15 s; launches Chromium).
 set -uo pipefail
 cd "$(dirname "$0")"
 
@@ -22,9 +23,21 @@ else
 fi
 
 echo
-if [ "$js_rc" -eq 0 ] && [ "$luau_rc" -eq 0 ]; then
-  echo "SELF-TEST OK (js=$js_rc luau=$luau_rc)"
+echo "== Browser smoke (Playwright) =="
+browser_rc=0
+if [ "${SKIP_BROWSER:-0}" = "1" ]; then
+  echo "SKIP_BROWSER=1 — skipping browser smoke"
+elif node -e "require.resolve('playwright')" >/dev/null 2>&1; then
+  node test/browser_smoke.mjs
+  browser_rc=$?
+else
+  echo "playwright not installed — skipping browser smoke"
+fi
+
+echo
+if [ "$js_rc" -eq 0 ] && [ "$luau_rc" -eq 0 ] && [ "$browser_rc" -eq 0 ]; then
+  echo "SELF-TEST OK (js=$js_rc luau=$luau_rc browser=$browser_rc)"
   exit 0
 fi
-echo "SELF-TEST FAIL (js=$js_rc luau=$luau_rc)"
+echo "SELF-TEST FAIL (js=$js_rc luau=$luau_rc browser=$browser_rc)"
 exit 1

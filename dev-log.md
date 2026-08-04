@@ -1550,3 +1550,16 @@ client pid so a re-join keeps its score.
 - tests: game_room carry-across-rejoin, protocol pid, player_id; protocol shape.
 
 Gate: ./test.sh -> 269/269 + 4 Luau gates OK.
+
+---
+
+## marker-0081 — Playwright browser smoke (2026-08-05)
+
+Test harness, no repin. Headless-Chromium smoke (test/browser_smoke.mjs): boots
+the client against the real server and asserts no console errors + the canvas
+renders, for local AND ?mode=remote (ws connect path / Pitfall #7). playwright
+devDependency; standalone (not node --test) so npm test stays browser-free.
+test.sh runs it after JS+Luau when playwright is resolvable (SKIP_BROWSER=1 to
+skip); npm run test:browser. specs/60. Summary: js=0 luau=0 browser=0.
+
+Gate: ./test.sh -> 269/269 + 4 Luau gates + browser smoke OK.

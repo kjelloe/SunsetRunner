@@ -21,7 +21,8 @@ course 4; use `?course=1` for the short fork+finish test track).
 - [ ] **[feel]** A **SUNSET RUNNER** splash over a beach/palms shows first, with a
   **LOADING** bar filling, then the car-select appears (marker-0052).
 - [ ] **[bug]** Page loads with NO console errors (regression guard: the
-  `server/protocol.js` MIME bug, marker-0019).
+  `server/protocol.js` MIME bug, marker-0019). *Now auto-covered by the
+  Playwright browser smoke — `npm run test:browser` (marker-0081).*
 - [ ] **[bug]** You see a sunset sky (top), road receding to the horizon, green
   shoulders, and a red car near the bottom — NOT the road up in the sky
   (regression guard: the projection flip, marker-0020).

@@ -2,7 +2,7 @@
   "name": "sunset-runner",
   "version": "0.1.0",
   "type": "module",
-  "description": "Sunset Runner — a deterministic, server-authoritative arcade road racer. Fireline-derived stack (new IP).",
+  "description": "Sunset Runner \u2014 a deterministic, server-authoritative arcade road racer. Fireline-derived stack (new IP).",
   "license": "MIT",
   "scripts": {
     "test": "node --test --test-concurrency=4 test/*.test.js",
@@ -10,9 +10,13 @@
     "assets": "node tools/build_assets.mjs",
     "strip": "node tools/render_asset_strip.mjs",
     "sweep": "node tools/sim_sweep.mjs",
-    "campaign": "node debugging/sim_campaign.mjs"
+    "campaign": "node debugging/sim_campaign.mjs",
+    "test:browser": "node test/browser_smoke.mjs"
   },
   "dependencies": {
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
   }
 }
