@@ -130,6 +130,9 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-071 stage durations 60-240s ramp + entry announcement (marker-0071)
 - [x] slice-072 more traffic (bus/motorcycle, density 6) (marker-0072)
 - [x] slice-073 MP name tags + horizon dots (marker-0073)
-- [ ] real player names (name-entry field; tags currently P{seatId})
+- [x] slice-076 real player names (name entry + JOIN name + ghost tags) (marker-0076)
+- [x] slice-077 MP time-up Re-join / Spectate (marker-0077)
+- [ ] points / scoreboard system (for re-join-from-stage scoring)
+- [ ] server-side spectate target feed (traffic around spectated car)
 - [ ] time-up UI: Re-join / Spectate (cycle players, name centre-bottom) + points
 - [ ] server-authoritative countdown for multiplayer
