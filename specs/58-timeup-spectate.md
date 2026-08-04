@@ -21,8 +21,9 @@ overlay with name and index). `./test.sh` → 263/263 + 4 Luau gates.
 
 ## Not verified / deferred
 
-Spectate uses the viewer's traffic feed (filtered to the old segment), so traffic
-isn't shown around the spectated car — a server-side "spectate target" feed would
-fix that. **RE-JOIN restarts from the start, not the current stage**, and there is
+The view is a GLOBAL traffic/hazard feed, so the spectate render already shows the
+traffic around the spectated car (filtered client-side to the target's segment);
+your own stopped car and a live mini-scoreboard are shown too (marker-0079).
+**RE-JOIN restarts from the start, not the current stage**, and there is
 still **no points system** ("earn points from there" is future). Real device
 verification of the flow is pending (§17).

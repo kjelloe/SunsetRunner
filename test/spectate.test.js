@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { drawTimeUpButtons, timeUpTouchZone, drawSpectateOverlay, spectateTouchZone } from "../client/spectate.js";
+import { drawTimeUpButtons, timeUpTouchZone, drawSpectateOverlay, spectateTouchZone, drawMiniScoreboard } from "../client/spectate.js";
 
 test("timeUpTouchZone splits into RE-JOIN (left) / SPECTATE (right)", () => {
   const view = { w: 900, h: 540 };
@@ -36,4 +36,11 @@ test("draws the two buttons and the spectate overlay", () => {
   drawSpectateOverlay(b.g, { w: 960, h: 540 }, "Ada", 0, 3);
   assert.ok(b.texts.some((t) => t.includes("Ada")));
   assert.ok(b.texts.some((t) => t.includes("1/3")));
+});
+
+test("mini scoreboard lists ranked players with points", () => {
+  const { g, texts } = rec();
+  drawMiniScoreboard(g, { w: 960, h: 540 }, [{ seatId: 1, name: "Ada", points: 300 }, { seatId: 2, name: "Bo", points: 100 }], 2);
+  assert.ok(texts.some((t) => t.includes("Ada")));
+  assert.ok(texts.includes("300"));
 });

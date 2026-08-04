@@ -117,3 +117,13 @@ test("checkpoints/finish award points; scoreboard ranks and carries the name", (
   assert.equal(v.scoreboard[0].name, "Ada");
   assert.equal(v.scoreboard[0].points, room.pointsFor(id));
 });
+
+test("the view is a global traffic feed (spectate can see any segment)", () => {
+  const room = createRoom(ctx, { startTimeTicks: 5000 });
+  const a = room.addSeat(1);
+  room.addSeat(2);
+  room.setInput(a, { steer: 0, accel: 1, brake: 0 });
+  for (let i = 0; i < 50; i++) room.tick();
+  const v = room.viewFor(2);
+  assert.equal(v.traffic.length, room.getState().traffic.length); // full array, not filtered to the viewer
+});

@@ -1522,3 +1522,16 @@ built from server scoreboard (N PTS) in MP, stage-based solo. test/game_room.tes
 points+scoreboard. specs/59.
 
 Gate: ./test.sh -> 264/264 + 4 Luau gates OK.
+
+---
+
+## marker-0079 — spectate feed verified + own-car + mini scoreboard (2026-08-04)
+
+Client-only, no repin. #2: the server VIEW is already a GLOBAL traffic/hazard feed
+(viewFor sends state.traffic/state.hazards whole), so the spectate render shows the
+target's traffic correctly (filtered client-side to the target segment). Improved
+spectate: show the spectator's own stopped car among rivals + a live mini
+scoreboard (spectate.drawMiniScoreboard). game_room test asserts the view carries
+the full traffic array. specs/58 corrected.
+
+Gate: ./test.sh -> 266/266 + 4 Luau gates OK.

@@ -28,7 +28,7 @@ import { getCourse, getSegment } from "../shared/road_data.js";
 import { carColor } from "./car_colors.js";
 import { createAnnouncer, stageLabel } from "./stage_announce.js";
 import { nameFromParams, createNameEntry, rememberName } from "./name_entry.js";
-import { drawTimeUpButtons, timeUpTouchZone, drawSpectateOverlay, spectateTouchZone } from "./spectate.js";
+import { drawTimeUpButtons, timeUpTouchZone, drawSpectateOverlay, spectateTouchZone, drawMiniScoreboard } from "./spectate.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -249,9 +249,14 @@ export async function boot(doc = document) {
         const t = ghosts[idx];
         const synthSelf = { carId: t.carId, segmentId: t.segmentId, roadZ: t.roadZ, laneX: t.laneX, speed: t.speed, finishTicks: -1, timerTicks: 0, crashedTicks: 0 };
         const others = ghosts.filter((_, i) => i !== idx);
-        const synthState = { tick: st.tick, seats: [synthSelf], ghosts: others, traffic: st.traffic || [], hazards: st.hazards || [], events: [] };
+        // Show your own (stopped) car among the rivals too.
+        const me = st.seats[0];
+        const meGhost = me ? { seatId: session.seatId, carId: me.carId, name: playerName, segmentId: me.segmentId, roadZ: me.roadZ, laneX: me.laneX, finishTicks: me.finishTicks, collisionActive: 0 } : null;
+        const synthGhosts = meGhost ? [...others, meGhost] : others;
+        const synthState = { tick: st.tick, seats: [synthSelf], ghosts: synthGhosts, traffic: st.traffic || [], hazards: st.hazards || [], events: [] };
         const sStart = getCourse(courseSet, courseId).startSegment;
         render(g, view, synthState, courseSet, assets, scenery, { stage: stageNumber(courseSet, sStart, t.segmentId), total: stageTotal(courseSet, courseId) });
+        drawMiniScoreboard(g, view, session.scoreboard, session.seatId);
         drawSpectateOverlay(g, view, t.name || `P${t.seatId}`, idx, ghosts.length);
       } else {
         g.fillStyle = "#1a1030";

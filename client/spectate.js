@@ -47,6 +47,26 @@ export function drawSpectateOverlay(g, view, name, index, total) {
   g.textAlign = "left";
 }
 
+// A compact live scoreboard (top players by points), top-right. Highlights you.
+export function drawMiniScoreboard(g, view, scoreboard, selfSeatId) {
+  if (!scoreboard || !scoreboard.length) return;
+  const rows = scoreboard.slice(0, 6);
+  const fs = Math.round(view.h * 0.03);
+  const x = view.w - view.w * 0.02;
+  g.textBaseline = "alphabetic";
+  g.font = `${fs}px sans-serif`;
+  rows.forEach((e, i) => {
+    const y = view.h * 0.05 + i * fs * 1.25;
+    g.textAlign = "left";
+    g.fillStyle = e.seatId === selfSeatId ? "#ffffff" : "#cfd0e0";
+    g.fillText(`${i + 1}. ${e.name}`, x - view.w * 0.24, y);
+    g.textAlign = "right";
+    g.fillStyle = "#ffd54a";
+    g.fillText(`${e.points}`, x, y);
+  });
+  g.textAlign = "left";
+}
+
 // Spectate tap: left third = previous, right third = next, centre = re-join.
 export function spectateTouchZone(view, x) {
   const third = view.w / 3;
