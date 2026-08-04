@@ -104,9 +104,11 @@ export function drawRaceSummary(g, view, rows, secondsToNewRace) {
     g.fillText(result, view.w * 0.78, y);
   });
 
-  g.textAlign = "center";
-  g.fillStyle = "#ffffff";
-  g.font = `${Math.round(view.h * 0.05)}px sans-serif`;
-  g.fillText(`NEW RACE IN ${Math.max(0, secondsToNewRace)}s`, view.w / 2, view.h * 0.9);
-  g.textAlign = "left";
+  if (secondsToNewRace >= 0) { // negative -> caller draws its own controls (MP)
+    g.textAlign = "center";
+    g.fillStyle = "#ffffff";
+    g.font = `${Math.round(view.h * 0.05)}px sans-serif`;
+    g.fillText(`NEW RACE IN ${Math.max(0, secondsToNewRace)}s`, view.w / 2, view.h * 0.9);
+    g.textAlign = "left";
+  }
 }

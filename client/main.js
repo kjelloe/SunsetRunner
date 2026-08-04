@@ -27,6 +27,7 @@ import { buildSummary, playersFromState, drawRaceSummary, NEW_RACE_SECONDS, stag
 import { getCourse, getSegment } from "../shared/road_data.js";
 import { createAnnouncer, stageLabel } from "./stage_announce.js";
 import { nameFromParams, createNameEntry, rememberName } from "./name_entry.js";
+import { drawTimeUpButtons, timeUpTouchZone, drawSpectateOverlay, spectateTouchZone } from "./spectate.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -134,6 +135,8 @@ export async function boot(doc = document) {
   let activeDiffLevel = diffChoice.level;
   let raceSummary = null;
   let summaryStart = 0;
+  let timeUpSel = 0;      // 0 = RE-JOIN, 1 = SPECTATE (multiplayer time-up)
+  let spectateIndex = 0;  // which rival is being spectated
   let prevCrashed = 0, prevFinish = -1, prevTimer = NaN; // SFX edge trackers
 
   function start(carId, timeScale, diffLevel) {
@@ -146,6 +149,7 @@ export async function boot(doc = document) {
     activeDiffLevel = diffLevel;
     prevCrashed = 0; prevFinish = -1; prevTimer = NaN;
     prevSegmentId = null;
+    timeUpSel = 0; spectateIndex = 0;
     raceSummary = null;
     celebration.reset(); // clear finish confetti/splash from the previous race
     countdown.start(performance.now());
@@ -186,6 +190,15 @@ export async function boot(doc = document) {
     } else if (phase === "difficulty") {
       diffSel.setIndex(difficultyTouchZone(view, x)); // tap a button = pick it
       start(sel.carId, diffSel.timeScale, diffSel.level);
+    } else if (phase === "summary" && remote) {
+      timeUpSel = timeUpTouchZone(view, x);
+      if (timeUpSel === 0) start(activeCarId, activeTimeScale, activeDiffLevel);
+      else phase = "spectate";
+    } else if (phase === "spectate") {
+      const z = spectateTouchZone(view, x);
+      if (z === "prev") spectateIndex--;
+      else if (z === "next") spectateIndex++;
+      else start(activeCarId, activeTimeScale, activeDiffLevel);
     }
   });
 
@@ -199,6 +212,15 @@ export async function boot(doc = document) {
     while ((ev = readMenuNav()) !== null) {
       if (phase === "select" && sel.handle(ev) === "confirm") { afterCar(); break; }
       else if (phase === "difficulty" && diffSel.handle(ev) === "confirm") { start(sel.carId, diffSel.timeScale, diffSel.level); break; }
+      else if (phase === "summary" && remote) {
+        if (ev === "left") timeUpSel = 0;
+        else if (ev === "right") timeUpSel = 1;
+        else if (ev === "confirm") { if (timeUpSel === 0) start(activeCarId, activeTimeScale, activeDiffLevel); else phase = "spectate"; break; }
+      } else if (phase === "spectate") {
+        if (ev === "left") spectateIndex--;
+        else if (ev === "right") spectateIndex++;
+        else if (ev === "confirm") { start(activeCarId, activeTimeScale, activeDiffLevel); break; }
+      }
     }
     if (phase === "name") {
       nameEntry.draw(g, view);
@@ -214,6 +236,32 @@ export async function boot(doc = document) {
     }
     if (phase === "difficulty") {
       drawDifficultySelect(g, view, diffSel);
+      frameCount++;
+      requestAnimationFrame(frame);
+      return;
+    }
+    if (phase === "spectate") {
+      const st = session.getState();
+      const ghosts = st.ghosts || [];
+      if (ghosts.length) {
+        const idx = ((spectateIndex % ghosts.length) + ghosts.length) % ghosts.length;
+        const t = ghosts[idx];
+        const synthSelf = { carId: t.carId, segmentId: t.segmentId, roadZ: t.roadZ, laneX: t.laneX, speed: t.speed, finishTicks: -1, timerTicks: 0, crashedTicks: 0 };
+        const others = ghosts.filter((_, i) => i !== idx);
+        const synthState = { tick: st.tick, seats: [synthSelf], ghosts: others, traffic: st.traffic || [], hazards: st.hazards || [], events: [] };
+        const sStart = getCourse(courseSet, courseId).startSegment;
+        render(g, view, synthState, courseSet, assets, scenery, { stage: stageNumber(courseSet, sStart, t.segmentId), total: stageTotal(courseSet, courseId) });
+        drawSpectateOverlay(g, view, t.name || `P${t.seatId}`, idx, ghosts.length);
+      } else {
+        g.fillStyle = "#1a1030";
+        g.fillRect(0, 0, view.w, view.h);
+        g.textAlign = "center";
+        g.fillStyle = "#ffffff";
+        g.font = `${Math.round(view.h * 0.045)}px sans-serif`;
+        g.fillText("NO ONE TO SPECTATE — ENTER to re-join", view.w / 2, view.h * 0.5);
+        g.textAlign = "left";
+      }
+      if (remote) drawConnectionBanner(g, view, session.status, frameCount);
       frameCount++;
       requestAnimationFrame(frame);
       return;
@@ -288,9 +336,15 @@ export async function boot(doc = document) {
       phase = "summary";
     }
     if (phase === "summary") {
-      const secs = NEW_RACE_SECONDS - Math.floor((now - summaryStart) / 1000);
-      drawRaceSummary(g, view, raceSummary, secs);
-      if (secs <= 0 && !remote) start(activeCarId, activeTimeScale, activeDiffLevel); // fresh race, same car/difficulty
+      if (remote) {
+        // Multiplayer: RE-JOIN / SPECTATE instead of an auto-restart.
+        drawRaceSummary(g, view, raceSummary, -1);
+        drawTimeUpButtons(g, view, timeUpSel);
+      } else {
+        const secs = NEW_RACE_SECONDS - Math.floor((now - summaryStart) / 1000);
+        drawRaceSummary(g, view, raceSummary, secs);
+        if (secs <= 0) start(activeCarId, activeTimeScale, activeDiffLevel); // fresh race, same car/difficulty
+      }
     }
     frameCount++;
     requestAnimationFrame(frame);

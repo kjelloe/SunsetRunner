@@ -1494,3 +1494,18 @@ Client + server, no repin. Players name themselves; the name tags rivals.
   specs/57.
 
 Gate: ./test.sh -> 260/260 + 4 Luau gates OK.
+
+---
+
+## marker-0077 — multiplayer time-up: Re-join / Spectate (2026-08-04)
+
+Client-only, no repin. Remote race end -> RE-JOIN / SPECTATE (was local auto-restart).
+- client/spectate.js: drawTimeUpButtons + timeUpTouchZone; drawSpectateOverlay +
+  spectateTouchZone. race_summary skips the countdown line when secs<0.
+- main.js: remote summary shows buttons (nav ◄►/Enter/tap); "spectate" phase
+  renders a rival's POV (synthetic self from the ghost) + name centre-bottom, ◄►
+  cycles, Enter/centre re-joins. session stays live.
+- DEFERRED: re-join restarts from start (not current stage); no points system;
+  spectate traffic feed is the viewer's. test/spectate.test.js. specs/58.
+
+Gate: ./test.sh -> 263/263 + 4 Luau gates OK.
