@@ -16,9 +16,9 @@ import { randomUUID } from "node:crypto";
 
 // Filtered rival state (§10): only what a client needs to render a ghost, plus
 // collisionActive (1 when in the same segment/window as the viewer).
-function ghostFor(self, s) {
+function ghostFor(self, s, name) {
   return {
-    seatId: s.id, carId: s.carId, segmentId: s.segmentId,
+    seatId: s.id, carId: s.carId, name: name || `P${s.id}`, segmentId: s.segmentId,
     roadZ: s.roadZ, laneX: s.laneX, speed: s.speed, finishTicks: s.finishTicks,
     collisionActive: inCollisionWindow(self, s) ? 1 : 0,
   };
@@ -83,6 +83,7 @@ export function createRoom(ctx, opts = {}) {
   // no golden/determinism impact. See specs/33.
   const graceTicks = opts.graceTicks ?? 900; // 45 s at 20 Hz
   const presence = new Map(); // seatId -> { token, disconnectedTick|null }
+  const names = new Map(); // seatId -> display name
 
   function freeSeat(seatId) {
     const seat = state.seats.find((s) => s.id === seatId);
@@ -107,6 +108,8 @@ export function createRoom(ctx, opts = {}) {
     for (const e of r.inputs) inputs.set(e.id, e.inp);
     ackSeq.clear();
     for (const [id, s] of r.ackSeq) ackSeq.set(id, s);
+    names.clear();
+    for (const [id, n] of r.names || []) names.set(id, n);
     seatsMeta.length = 0;
     for (const m of r.seatsMeta) seatsMeta.push({ ...m });
     recordedInputs.length = 0;
@@ -126,7 +129,7 @@ export function createRoom(ctx, opts = {}) {
 
     // A seat joins with a car and (first joiner only) the race difficulty as a
     // timeScale int. The first seat in an empty room starts the shared countdown.
-    addSeat(carId = 1, timeScale) {
+    addSeat(carId = 1, timeScale, name) {
       if (this.seatCount >= state.race.maxSeats) return -1; // room full
       if (!raceStarted) {
         raceStarted = true;
@@ -136,9 +139,12 @@ export function createRoom(ctx, opts = {}) {
       const id = nextSeatId++;
       state.seats.push(makeSeat(id, carId, startSegment, startTimeTicks));
       seatsMeta.push({ id, carId });
+      names.set(id, name || `P${id}`);
       presence.set(id, { token: randomUUID(), disconnectedTick: null });
       return id;
     },
+
+    nameFor(seatId) { return names.get(seatId) ?? `P${seatId}`; },
 
     tokenFor(seatId) { return presence.get(seatId)?.token ?? null; },
 
@@ -212,7 +218,7 @@ export function createRoom(ctx, opts = {}) {
     viewFor(seatId) {
       const self = state.seats.find((s) => s.id === seatId) || null;
       const ghosts = self
-        ? state.seats.filter((s) => s.id !== seatId && s.active).map((s) => ghostFor(self, s))
+        ? state.seats.filter((s) => s.id !== seatId && s.active).map((s) => ghostFor(self, s, names.get(s.id)))
         : [];
       return {
         type: S2C.VIEW,
@@ -240,6 +246,7 @@ export function createRoom(ctx, opts = {}) {
         nextSeatId,
         timeScale: simCtx.timeScale,
         presence: [...presence].map(([id, p]) => ({ id, token: p.token, disconnectedTick: p.disconnectedTick })),
+        names: [...names],
         inputs: [...inputs].map(([id, inp]) => ({ id, inp })),
         ackSeq: [...ackSeq],
         seatsMeta: seatsMeta.map((m) => ({ ...m })),

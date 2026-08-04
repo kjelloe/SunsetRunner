@@ -29,7 +29,13 @@ export function parseMessage(raw) {
       if (!["easy", "medium", "hard"].includes(msg.diff)) return { ok: false, reason: "diff must be easy|medium|hard" };
       diff = msg.diff;
     }
-    return { ok: true, msg: { type: C2S.JOIN, carId, diff } };
+    // Optional player name — sanitised (word chars/space/dash), 12-char cap.
+    let name = null;
+    if (msg.name != null) {
+      if (typeof msg.name !== "string") return { ok: false, reason: "name must be a string" };
+      name = msg.name.replace(/[^\w \-]/g, "").trim().slice(0, 12) || null;
+    }
+    return { ok: true, msg: { type: C2S.JOIN, carId, diff, name } };
   }
   if (msg.type === C2S.INPUT) {
     if (!TRISTATE.has(msg.steer)) return { ok: false, reason: "steer must be -1|0|1" };

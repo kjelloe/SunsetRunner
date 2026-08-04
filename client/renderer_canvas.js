@@ -160,7 +160,7 @@ function drawHazards(g, view, state, camX, assets, strips) {
   }
 }
 
-const playerLabel = (r) => `P${r.seatId}`;
+const playerLabel = (r) => r.name || `P${r.seatId}`;
 const progressOf = (r) => r.segmentId * 1000000 + r.roadZ;
 
 function drawGhosts(g, view, state, camX, strips) {

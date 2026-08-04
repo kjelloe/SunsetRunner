@@ -94,3 +94,13 @@ test("no difficulty on join defaults the room to medium (100)", () => {
   room.addSeat(1);
   assert.equal(room.timeScale, 100);
 });
+
+test("a joined name shows on the rival's ghost view", () => {
+  const room = createRoom(ctx, { startTimeTicks: 1500 });
+  room.addSeat(1, undefined, "Ada");
+  room.addSeat(2, undefined, "Bo");
+  const ghosts = room.viewFor(1).ghosts;
+  const bo = ghosts.find((gh) => gh.seatId === 2);
+  assert.equal(bo.name, "Bo");
+  assert.equal(room.nameFor(2), "Bo");
+});

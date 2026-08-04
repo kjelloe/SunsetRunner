@@ -37,7 +37,7 @@ test("ghosts are filtered rival state with a collisionActive flag", () => {
   assert.equal(view.ghosts.length, 1);
   const g = view.ghosts[0];
   assert.equal(g.seatId, b);
-  assert.deepEqual(Object.keys(g).sort(), ["carId", "collisionActive", "finishTicks", "laneX", "roadZ", "seatId", "segmentId", "speed"]);
+  assert.deepEqual(Object.keys(g).sort(), ["carId", "collisionActive", "finishTicks", "laneX", "name", "roadZ", "seatId", "segmentId", "speed"]);
   assert.equal(g.collisionActive, 1); // co-located at the start line
 });
 

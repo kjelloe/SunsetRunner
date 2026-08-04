@@ -26,6 +26,7 @@ import { drawSplash } from "./splash.js";
 import { buildSummary, playersFromState, drawRaceSummary, NEW_RACE_SECONDS, stageNumber, stageTotal } from "./race_summary.js";
 import { getCourse, getSegment } from "../shared/road_data.js";
 import { createAnnouncer, stageLabel } from "./stage_announce.js";
+import { nameFromParams, createNameEntry, rememberName } from "./name_entry.js";
 
 const SIM_DT = 1000 / TICK_HZ;
 
@@ -113,6 +114,11 @@ export async function boot(doc = document) {
   // now (remote is server-authoritative; first-player-selects is future work).
   const choice = carChoiceFromParams(params, carSet);
   const diffChoice = difficultyFromParams(params);
+  const storage = (typeof localStorage !== "undefined") ? localStorage : null;
+  const nameChoice = nameFromParams(params, storage);
+  let playerName = nameChoice.name || "Player";
+  const nameEntry = createNameEntry(nameChoice.name);
+  const needName = remote && !nameChoice.name; // only prompt in multiplayer, once
   const sel = createCarSelect(carSet, choice.carId);
   const diffSel = createDifficultySelect(diffChoice.level);
   // Difficulty is picked in both modes now: locally it scales the session; in
@@ -132,7 +138,7 @@ export async function boot(doc = document) {
 
   function start(carId, timeScale, diffLevel) {
     session = remote
-      ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks, carId, diff: diffLevel })
+      ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks, carId, diff: diffLevel, name: playerName })
       : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig, carId, timeScale });
     if (remote) session.connect();
     activeCarId = carId;
@@ -151,7 +157,23 @@ export async function boot(doc = document) {
     else start(sel.carId, diffChoice.timeScale, diffChoice.level);
   }
 
-  let phase = choice.fromUrl ? (showDifficulty ? "difficulty" : "race") : "select";
+  // First real screen once any name is settled.
+  function firstPhase() {
+    return choice.fromUrl ? (showDifficulty ? "difficulty" : "race") : "select";
+  }
+  function afterName() {
+    playerName = nameEntry.text.trim() || "Player";
+    rememberName(storage, playerName);
+    phase = firstPhase();
+    if (phase === "race") start(choice.carId, diffChoice.timeScale, diffChoice.level);
+  }
+  // Type the name during the "name" phase (multiplayer, first time).
+  doc.addEventListener?.("keydown", (e) => {
+    if (phase !== "name") return;
+    if (nameEntry.key(e.key) === "confirm") afterName();
+  });
+
+  let phase = needName ? "name" : firstPhase();
   if (phase === "race") start(choice.carId, diffChoice.timeScale, diffChoice.level);
 
   // Tap-to-choose on touch.
@@ -177,6 +199,12 @@ export async function boot(doc = document) {
     while ((ev = readMenuNav()) !== null) {
       if (phase === "select" && sel.handle(ev) === "confirm") { afterCar(); break; }
       else if (phase === "difficulty" && diffSel.handle(ev) === "confirm") { start(sel.carId, diffSel.timeScale, diffSel.level); break; }
+    }
+    if (phase === "name") {
+      nameEntry.draw(g, view);
+      frameCount++;
+      requestAnimationFrame(frame);
+      return;
     }
     if (phase === "select") {
       drawCarSelect(g, view, sel);

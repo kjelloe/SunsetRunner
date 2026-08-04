@@ -18,6 +18,7 @@ export function createRemoteSession(url, opts = {}) {
   const doc = opts.document || (typeof document !== "undefined" ? document : null);
   const carId = opts.carId ?? 1;
   const diff = opts.diff || null; // difficulty level (first joiner sets the race)
+  const name = opts.name || null;
 
   let ws = null;
   let seatId = null;
@@ -71,7 +72,7 @@ export function createRemoteSession(url, opts = {}) {
     ws.onopen = () => {
       // reclaim if we have a token, else a fresh join.
       if (token) ws.send(JSON.stringify({ type: C2S.RECLAIM, token }));
-      else ws.send(JSON.stringify({ type: C2S.JOIN, carId, diff }));
+      else ws.send(JSON.stringify({ type: C2S.JOIN, carId, diff, name }));
     };
     ws.onmessage = (ev) => {
       const msg = JSON.parse(typeof ev.data === "string" ? ev.data : ev.data.toString());
@@ -93,7 +94,7 @@ export function createRemoteSession(url, opts = {}) {
         predictor = null;
         setStatus("run_ended");
         opts.onReclaimFailed?.();
-        if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.JOIN, carId, diff }));
+        if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.JOIN, carId, diff, name }));
       }
     };
     ws.onclose = () => { stopSend(); if (!closed) setStatus("reconnecting"); scheduleReconnect(); };

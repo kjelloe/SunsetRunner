@@ -28,6 +28,7 @@ test("client modules import cleanly and export their entry points", async () => 
   const cpBanner = await import("../client/checkpoint_banner.js");
   const splash = await import("../client/splash.js");
   const announce = await import("../client/stage_announce.js");
+  const nameEntry = await import("../client/name_entry.js");
   const difficulty = await import("../client/difficulty_select.js");
   const raceSummary = await import("../client/race_summary.js");
   const main = await import("../client/main.js");
@@ -60,6 +61,7 @@ test("client modules import cleanly and export their entry points", async () => 
   assert.equal(typeof cpBanner.checkpointAhead, "function");
   assert.equal(typeof splash.drawSplash, "function");
   assert.equal(typeof announce.createAnnouncer, "function");
+  assert.equal(typeof nameEntry.createNameEntry, "function");
   assert.equal(typeof difficulty.createDifficultySelect, "function");
   assert.equal(typeof raceSummary.buildSummary, "function");
   assert.equal(typeof banner.drawConnectionBanner, "function");

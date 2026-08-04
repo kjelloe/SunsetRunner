@@ -1479,3 +1479,18 @@ Client-only, no repin.
   finishes (preRace gate, local + server countdown), so it doesn't collide with GO.
 
 Gate: ./test.sh -> 255/255 + 4 Luau gates OK.
+
+---
+
+## marker-0076 — real player names (2026-08-04)
+
+Client + server, no repin. Players name themselves; the name tags rivals.
+- client/name_entry.js (nameFromParams ?name/localStorage; typed createNameEntry);
+  main.js "name" phase (remote, first time), remembered.
+- protocol JOIN optional name (sanitised, cap 12). game_room addSeat(...,name),
+  ghostFor name, nameFor, serialize/restore names. session_remote sends name;
+  renderer name tags/horizon dots use ghost.name.
+- tests: protocol name, name_entry, game_room name; ghosts/protocol shape updates.
+  specs/57.
+
+Gate: ./test.sh -> 260/260 + 4 Luau gates OK.
