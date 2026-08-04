@@ -32,6 +32,19 @@ export function drawHud(g, view, state, hud = {}) {
   const pad = Math.round(view.h * 0.04);
   g.textBaseline = "alphabetic";
 
+  // SCORE — top-left (multiplayer scoreboard).
+  if (hud.points != null) {
+    g.textAlign = "left";
+    g.textBaseline = "top";
+    g.fillStyle = "#ffd54a";
+    g.font = `${Math.round(view.h * 0.03)}px sans-serif`;
+    g.fillText("SCORE", 16, 14);
+    g.fillStyle = "#ffffff";
+    g.font = `bold ${Math.round(view.h * 0.055)}px sans-serif`;
+    g.fillText(String(hud.points), 16, 14 + Math.round(view.h * 0.032));
+  }
+  g.textBaseline = "alphabetic";
+
   // SPEED — big, bottom-right.
   g.textAlign = "right";
   g.fillStyle = "#ffd54a";

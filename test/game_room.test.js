@@ -104,3 +104,16 @@ test("a joined name shows on the rival's ghost view", () => {
   assert.equal(bo.name, "Bo");
   assert.equal(room.nameFor(2), "Bo");
 });
+
+test("checkpoints/finish award points; scoreboard ranks and carries the name", () => {
+  const room = createRoom(ctx, { startTimeTicks: 5000 });
+  const id = room.addSeat(1, undefined, "Ada");
+  room.setInput(id, { steer: 0, accel: 1, brake: 0 });
+  for (let i = 0; i < 200; i++) room.tick(); // reach the first checkpoint (seg 2)
+  assert.ok(room.pointsFor(id) > 0, "earned points from a checkpoint");
+  const v = room.viewFor(id);
+  assert.equal(v.points, room.pointsFor(id));
+  assert.ok(v.scoreboard.length >= 1);
+  assert.equal(v.scoreboard[0].name, "Ada");
+  assert.equal(v.scoreboard[0].points, room.pointsFor(id));
+});

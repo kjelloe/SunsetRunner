@@ -14,6 +14,10 @@ import { S2C } from "../shared/protocol.js";
 import { TICK_HZ } from "../shared/constants.js";
 import { randomUUID } from "node:crypto";
 
+// Score awarded per race event (server-side scoreboard; not part of the hashed
+// engine state, so no golden/determinism impact).
+const POINTS = { checkpoint: 100, finish: 1000, collision: -30 };
+
 // Filtered rival state (§10): only what a client needs to render a ghost, plus
 // collisionActive (1 when in the same segment/window as the viewer).
 function ghostFor(self, s, name) {
@@ -84,6 +88,7 @@ export function createRoom(ctx, opts = {}) {
   const graceTicks = opts.graceTicks ?? 900; // 45 s at 20 Hz
   const presence = new Map(); // seatId -> { token, disconnectedTick|null }
   const names = new Map(); // seatId -> display name
+  const points = new Map(); // seatId -> score (server-authoritative, NOT hashed)
 
   function freeSeat(seatId) {
     const seat = state.seats.find((s) => s.id === seatId);
@@ -110,6 +115,8 @@ export function createRoom(ctx, opts = {}) {
     for (const [id, s] of r.ackSeq) ackSeq.set(id, s);
     names.clear();
     for (const [id, n] of r.names || []) names.set(id, n);
+    points.clear();
+    for (const [id, pts] of r.points || []) points.set(id, pts);
     seatsMeta.length = 0;
     for (const m of r.seatsMeta) seatsMeta.push({ ...m });
     recordedInputs.length = 0;
@@ -212,8 +219,17 @@ export function createRoom(ctx, opts = {}) {
         state = apply(state, { type: CMD_INPUT, seatId, steer: inp.steer, accel: inp.accel, brake: inp.brake }, simCtx);
       }
       state = apply(state, { type: CMD_ADVANCE_TICK }, simCtx);
+      // Score this tick's events onto the per-seat tally (>= 0).
+      for (const e of state.events) {
+        const delta = e.type === "checkpoint" ? POINTS.checkpoint
+          : e.type === "finish" ? POINTS.finish
+            : e.type === "collision" ? POINTS.collision : 0;
+        if (delta && e.seatId != null) points.set(e.seatId, Math.max(0, (points.get(e.seatId) || 0) + delta));
+      }
       return state;
     },
+
+    pointsFor(seatId) { return points.get(seatId) || 0; },
 
     viewFor(seatId) {
       const self = state.seats.find((s) => s.id === seatId) || null;
@@ -231,6 +247,10 @@ export function createRoom(ctx, opts = {}) {
         hazards: state.hazards,
         events: state.events,
         standings: computeStandings(state.seats),
+        points: points.get(seatId) || 0, // this player's score
+        scoreboard: state.seats.filter((s) => s.active)
+          .map((s) => ({ seatId: s.id, carId: s.carId, name: names.get(s.id) || `P${s.id}`, points: points.get(s.id) || 0 }))
+          .sort((a, b) => b.points - a.points || a.seatId - b.seatId),
         hash: hashSnapshot(state),
       };
     },
@@ -247,6 +267,7 @@ export function createRoom(ctx, opts = {}) {
         timeScale: simCtx.timeScale,
         presence: [...presence].map(([id, p]) => ({ id, token: p.token, disconnectedTick: p.disconnectedTick })),
         names: [...names],
+        points: [...points],
         inputs: [...inputs].map(([id, inp]) => ({ id, inp })),
         ackSeq: [...ackSeq],
         seatsMeta: seatsMeta.map((m) => ({ ...m })),

@@ -1509,3 +1509,16 @@ Client-only, no repin. Remote race end -> RE-JOIN / SPECTATE (was local auto-res
   spectate traffic feed is the viewer's. test/spectate.test.js. specs/58.
 
 Gate: ./test.sh -> 263/263 + 4 Luau gates OK.
+
+---
+
+## marker-0078 — points / scoreboard (server-authoritative) (2026-08-04)
+
+Server + client, no repin (points not hashed). game_room: per-seat points scored
+from events each tick (checkpoint +100 / finish +1000 / collision -30, clamped>=0);
+pointsFor; viewFor.points + scoreboard (sorted, name+carId); serialize/restore.
+session_remote points/scoreboard getters; HUD SCORE top-left (MP); race summary
+built from server scoreboard (N PTS) in MP, stage-based solo. test/game_room.test
+points+scoreboard. specs/59.
+
+Gate: ./test.sh -> 264/264 + 4 Luau gates OK.

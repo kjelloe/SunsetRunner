@@ -117,6 +117,8 @@ export function createRemoteSession(url, opts = {}) {
     get token() { return token; },
     get status() { return status; },
     get countdown() { return latest?.countdown ?? 0; }, // seconds until GO (server-driven)
+    get points() { return latest?.points ?? 0; },
+    get scoreboard() { return latest?.scoreboard || []; },
     setInput(input) { held = input; },
     setForkChoice(choice) {
       pendingFork = choice;

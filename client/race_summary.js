@@ -93,7 +93,8 @@ export function drawRaceSummary(g, view, rows, secondsToNewRace) {
   g.font = `${Math.round(view.h * 0.04)}px sans-serif`;
   rows.forEach((r, i) => {
     const y = top + i * rowH;
-    const result = r.finished ? "FINISHED" : (r.stage > 0 ? `STAGE ${r.stage}` : "DNS");
+    const result = r.points != null ? `${r.points} PTS`
+      : r.finished ? "FINISHED" : (r.stage > 0 ? `STAGE ${r.stage}` : "DNS");
     g.textAlign = "left";
     g.fillStyle = r.color;
     g.fillText(`${r.rank}.`, view.w * 0.22, y);

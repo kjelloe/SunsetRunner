@@ -25,6 +25,7 @@ import { createCountdown, drawCountdownLabel } from "./countdown.js";
 import { drawSplash } from "./splash.js";
 import { buildSummary, playersFromState, drawRaceSummary, NEW_RACE_SECONDS, stageNumber, stageTotal } from "./race_summary.js";
 import { getCourse, getSegment } from "../shared/road_data.js";
+import { carColor } from "./car_colors.js";
 import { createAnnouncer, stageLabel } from "./stage_announce.js";
 import { nameFromParams, createNameEntry, rememberName } from "./name_entry.js";
 import { drawTimeUpButtons, timeUpTouchZone, drawSpectateOverlay, spectateTouchZone } from "./spectate.js";
@@ -293,7 +294,7 @@ export async function boot(doc = document) {
     const state = session.getState();
     const stageStart = getCourse(courseSet, courseId).startSegment;
     const hud = state.seats[0]
-      ? { stage: stageNumber(courseSet, stageStart, state.seats[0].segmentId), total: stageTotal(courseSet, courseId) }
+      ? { stage: stageNumber(courseSet, stageStart, state.seats[0].segmentId), total: stageTotal(courseSet, courseId), points: remote ? session.points : undefined }
       : {};
     if (state.seats.length) render(g, view, state, courseSet, assets, scenery, hud);
     // Stage-entry announcement: fire when the car enters a new segment — but hold
@@ -331,7 +332,11 @@ export async function boot(doc = document) {
 
     // Race end -> summary of the field + a 30 s countdown to a fresh race.
     if (racing && self && (self.finishTicks >= 0 || self.timedOut)) {
-      raceSummary = buildSummary(courseSet, courseId, carSet, playersFromState(state));
+      // Multiplayer ranks by the server scoreboard (points); solo by stage reached.
+      const sb = remote ? session.scoreboard : [];
+      raceSummary = sb.length
+        ? sb.map((e, i) => ({ rank: i + 1, name: e.name, color: carColor(e.carId), points: e.points, isYou: e.seatId === session.seatId, finished: false }))
+        : buildSummary(courseSet, courseId, carSet, playersFromState(state));
       summaryStart = now;
       phase = "summary";
     }
