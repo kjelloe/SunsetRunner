@@ -23,11 +23,10 @@ const CRUISE = 2000;
 const secondsToStrips = (sec) => Math.round((sec * CRUISE * TICK_HZ) / ROAD_UNIT);
 const stripsToSeconds = (strips) => (strips * ROAD_UNIT) / (CRUISE * TICK_HZ);
 
-// Curve/hill keyframe shapes (integer, sampled across the segment).
-// Stage duration RAMPS from 60 s (stage 1) to 240 s (last), so the race gets
-// longer and more demanding as you go (playtest ask). k = 0-based leg index.
+// Stage duration RAMPS from 60 s (stage 1) to 180 s (last), longer/harder as you
+// go. ~30 stages at ~120 s average ≈ a 1-hour full run. k = 0-based leg index.
 function stageSeconds(k, totalLegs) {
-  return Math.round(60 + 180 * (k / Math.max(1, totalLegs - 1)));
+  return Math.round(60 + 120 * (k / Math.max(1, totalLegs - 1)));
 }
 
 // Balanced ELEMENTS: a leg is a sequence of ~7 s elements (playtest: swap between
@@ -74,16 +73,16 @@ function legHill(seconds, biome) {
 // to alpine to night. 47 legs + 3 forks (each adds one on-route segment) = a
 // 50-stage main route.
 const BANDS = [
-  { biome: 1, name: "palm", n: 5 },
-  { biome: 2, name: "beach", n: 5, forkIdx: 2, detour: 8 },      // detour: lake
-  { biome: 7, name: "wheat", n: 5 },
-  { biome: 8, name: "lake", n: 5, forkIdx: 2, detour: 9 },       // detour: autumn
-  { biome: 4, name: "forest", n: 5 },
-  { biome: 9, name: "autumn", n: 4 },
-  { biome: 3, name: "canyon", n: 5 },
-  { biome: 10, name: "mountain", n: 4, forkIdx: 2, detour: 11 }, // detour: alpine
-  { biome: 11, name: "alpine", n: 5 },
-  { biome: 6, name: "night", n: 4 },
+  { biome: 1, name: "palm", n: 3 },
+  { biome: 2, name: "beach", n: 3, forkIdx: 1, detour: 8 },      // detour: lake
+  { biome: 7, name: "wheat", n: 3 },
+  { biome: 8, name: "lake", n: 3, forkIdx: 1, detour: 9 },       // detour: autumn
+  { biome: 4, name: "forest", n: 3 },
+  { biome: 9, name: "autumn", n: 2 },
+  { biome: 3, name: "canyon", n: 3 },
+  { biome: 10, name: "mountain", n: 2, forkIdx: 1, detour: 11 }, // detour: alpine
+  { biome: 11, name: "alpine", n: 3 },
+  { biome: 6, name: "night", n: 2 },
 ];
 
 // Flatten bands into an ordered list of "legs"; a leg is a line or a fork.

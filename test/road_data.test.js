@@ -24,7 +24,7 @@ test("data/roads.json loads and indexes the sunset_coast course", () => {
   const course = getCourse(cs, 1);
   assert.equal(course.nameKey, "course.sunset_coast");
   assert.equal(course.startSegment, 1);
-  assert.equal(cs.segmentsById.size, 69); // courses 1-3 (16) + grand_tour course 4 (53, 50-stage route, marker-0058)
+  assert.equal(cs.segmentsById.size, 49); // courses 1-3 (16) + grand_tour course 4 (33, 30-stage route, marker-0083)
 });
 
 test("canyon_split (course 2) forks at seg 11 and rejoins at seg 14", () => {
@@ -124,5 +124,5 @@ test("sunset_coast course content hash is pinned", () => {
     w.writeUtf8U16(c.nameKey);
   }
   const h = computeFnv1a64(w.toBytes());
-  assert.equal(hashToHex64(h.hashHi, h.hashLo), "e3f839ac3a731bf3");
+  assert.equal(hashToHex64(h.hashHi, h.hashLo), "6430e6d2f164f9cd");
 });

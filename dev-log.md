@@ -1576,3 +1576,15 @@ off; remote unchanged). getState now returns {seats:[self], ghosts, ...}.
 test/local_ai.test.js (named ghosts, drive forward, deterministic, ai=0 solo).
 
 Gate: ./test.sh -> 273/273 + 4 Luau gates + browser smoke OK.
+
+---
+
+## marker-0083 — shorten grand_tour to 30 stages / ~1 hour (2026-08-05)
+
+Content repin (course 4). Playtest: 2h was too long. BANDS reduced (~3 legs/band,
+3 forks) -> 30-stage main route, 33 segments; stageSeconds ramp 60->180s (was
+->240). Left-route ~3596s (~60 min). Content hash e3f839ac -> 6430e6d2f164f9cd;
+segment count 69->49. road_data + build_course tests updated. Engine goldens/Luau
+unchanged (course 4 only).
+
+Gate: ./test.sh -> 273/273 + 4 Luau gates + browser smoke OK.
