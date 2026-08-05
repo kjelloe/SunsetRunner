@@ -33,6 +33,7 @@ export function createRemoteSession(url, opts = {}) {
   let reconnectTimer = null;
   let reconnectDelay = 1000;
   let closed = false;
+  let watching = false; // spectating an ongoing race, not yet joined (specs/63)
   let status = "idle"; // idle | connecting | live | reconnecting | run_ended
   function setStatus(s) { if (s !== status) { status = s; opts.onStatus?.(s); } }
 
@@ -70,15 +71,22 @@ export function createRemoteSession(url, opts = {}) {
     if (closed || !WebSocketImpl) return ws;
     if (status !== "reconnecting") setStatus("connecting");
     ws = new WebSocketImpl(url);
+    const sendJoin = () => ws.send(JSON.stringify({ type: C2S.JOIN, carId, diff, name, pid }));
     ws.onopen = () => {
-      // reclaim if we have a token, else a fresh join.
+      // Reclaim if we have a token; otherwise wait for HELLO to decide join vs watch.
       if (token) ws.send(JSON.stringify({ type: C2S.RECLAIM, token }));
-      else ws.send(JSON.stringify({ type: C2S.JOIN, carId, diff, name, pid }));
     };
     ws.onmessage = (ev) => {
       const msg = JSON.parse(typeof ev.data === "string" ? ev.data : ev.data.toString());
-      if (msg.type === S2C.WELCOME) {
+      if (msg.type === S2C.HELLO) {
+        // A race already running with players -> watch (offer JOIN IN); else join.
+        if (!token && seatId == null) {
+          if (msg.phase === "racing" && msg.seatCount > 0) { watching = true; setStatus("live"); }
+          else sendJoin();
+        }
+      } else if (msg.type === S2C.WELCOME) {
         seatId = msg.seatId;
+        watching = false;
         if (msg.token) { token = msg.token; writeToken(token); }
         predictor = makePredictor(msg.courseId ?? 1);
         reconnectDelay = 1000;
@@ -122,6 +130,8 @@ export function createRemoteSession(url, opts = {}) {
     get scoreboard() { return latest?.scoreboard || []; },
     get leaderboard() { return latest?.leaderboard || []; },
     get lobby() { return latest?.lobby || null; },
+    get watching() { return watching && seatId == null; }, // spectating an ongoing race
+    join() { watching = false; if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.JOIN, carId, diff, name, pid })); },
     startNow() { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.START })); },
     toggleWait() { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.WAIT })); },
     setInput(input) { held = input; },

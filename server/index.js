@@ -78,7 +78,8 @@ export async function startServer(port = 8000, roomOpts = {}) {
   // maxPayload caps frame size at the ws layer (oversized frame -> 1009 close),
   // so a giant-frame flood can't allocate unbounded memory.
   const wss = new WebSocketServer({ server, maxPayload: maxMessageBytes });
-  const clients = new Map(); // ws -> seatId
+  const clients = new Map(); // ws -> seatId (seated players)
+  const sockets = new Set(); // every open socket (seated OR watching)
 
   // Close any socket currently bound to a seat (reclaim supersede: same player,
   // new tab/device wins) — code 4000.
@@ -99,8 +100,10 @@ export async function startServer(port = 8000, roomOpts = {}) {
   }
 
   wss.on("connection", (ws) => {
+    sockets.add(ws);
     // A connected-but-not-joined client is a spectator with context (§ drop-in).
-    ws.send(JSON.stringify({ type: S2C.HELLO, courseId: room.courseId, tick: room.tick, seatCount: room.seatCount }));
+    // `phase` lets a late-comer spectate an ongoing race and JOIN IN (specs/63).
+    ws.send(JSON.stringify({ type: S2C.HELLO, courseId: room.courseId, tick: room.tick, seatCount: room.seatCount, phase: room.phase }));
 
     // Per-connection flood control. A well-behaved client sends ~20 msg/s.
     const limiter = createRateLimiter(roomOpts.rate);
@@ -148,13 +151,20 @@ export async function startServer(port = 8000, roomOpts = {}) {
       // Presence != connection: mark disconnected (grace window), don't free.
       if (seatId != null && clients.get(ws) === seatId) room.markDisconnected(seatId);
       clients.delete(ws);
+      sockets.delete(ws);
     });
   });
 
   const interval = setInterval(() => {
     room.tick();
-    for (const [ws, seatId] of clients) {
-      if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(room.viewFor(seatId)));
+    // Seated players get their own view; watchers get the spectator view.
+    let spectator = null;
+    for (const ws of sockets) {
+      if (ws.readyState !== ws.OPEN) continue;
+      const seatId = clients.get(ws);
+      if (seatId != null) { ws.send(JSON.stringify(room.viewFor(seatId))); continue; }
+      if (!spectator) spectator = JSON.stringify(room.spectatorView());
+      ws.send(spectator);
     }
   }, 1000 / TICK_HZ);
   interval.unref?.();

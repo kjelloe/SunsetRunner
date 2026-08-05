@@ -100,6 +100,17 @@ export function createRoom(ctx, opts = {}) {
   const scoreFor = (seatId) => points.get(playerId.get(seatId)) || 0;
   const leaderboard = opts.leaderboard || null; // all-time board (persistent)
 
+  // The most-progressed active seat (race leader), or null.
+  function leader() {
+    const active = state.seats.filter((s) => s.active);
+    if (!active.length) return null;
+    return active.reduce((a, b) => (b.segmentId * 1000000 + b.roadZ > a.segmentId * 1000000 + a.roadZ ? b : a));
+  }
+  function leaderSegment() {
+    const l = leader();
+    return l && l.segmentId !== -1 ? l.segmentId : startSegment;
+  }
+
   function freeSeat(seatId) {
     const seat = state.seats.find((s) => s.id === seatId);
     if (seat) seat.active = 0;
@@ -160,8 +171,12 @@ export function createRoom(ctx, opts = {}) {
         else { phase = "racing"; countdownRemaining = countdownTicksTotal; }
         if (!difficultyLocked && timeScale != null) { simCtx.timeScale = timeScale; difficultyLocked = true; }
       }
+      // Mid-race JOIN-IN: spawn at the CURRENT race stage (the leader's segment),
+      // not the start — so a late-comer only crosses (and scores) the stages they
+      // actually run from here (specs/63).
+      const spawnSegment = phase === "racing" ? leaderSegment() : startSegment;
       const id = nextSeatId++;
-      state.seats.push(makeSeat(id, carId, startSegment, startTimeTicks));
+      state.seats.push(makeSeat(id, carId, spawnSegment, startTimeTicks));
       seatsMeta.push({ id, carId });
       names.set(id, name || `P${id}`);
       playerId.set(id, pid || `seat:${id}`); // pid carries the score across re-joins
@@ -293,6 +308,28 @@ export function createRoom(ctx, opts = {}) {
           .sort((a, b) => b.points - a.points || a.seatId - b.seatId),
         leaderboard: leaderboard ? leaderboard.top(10) : [], // all-time board
         hash: hashSnapshot(state),
+      };
+    },
+
+    // A view for a NON-seated watcher: the race from the leader's POV, all seats
+    // as ghosts, plus lobby/scoreboard/leaderboard. `watching` tells the client
+    // to show a JOIN-IN prompt (specs/63).
+    spectatorView() {
+      const l = leader();
+      const ghosts = state.seats.filter((s) => s.active && (!l || s.id !== l.id)).map((s) => ghostFor(l || s, s, names.get(s.id)));
+      return {
+        type: S2C.VIEW,
+        watching: true,
+        tick: state.tick,
+        countdown: Math.ceil(countdownRemaining / TICK_HZ),
+        lobby: phase === "lobby" ? { active: true, seconds: Math.ceil(lobbyRemaining / TICK_HZ), paused: lobbyPaused, players: state.seats.filter((s) => s.active).map((s) => names.get(s.id) || `P${s.id}`) } : { active: false },
+        self: l,
+        ghosts,
+        traffic: state.traffic,
+        hazards: state.hazards,
+        standings: computeStandings(state.seats),
+        scoreboard: state.seats.filter((s) => s.active).map((s) => ({ seatId: s.id, carId: s.carId, name: names.get(s.id) || `P${s.id}`, points: scoreFor(s.id) })).sort((a, b) => b.points - a.points || a.seatId - b.seatId),
+        leaderboard: leaderboard ? leaderboard.top(10) : [],
       };
     },
 

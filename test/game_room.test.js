@@ -177,3 +177,27 @@ test("lobby auto-starts after its timer; wait pauses it", () => {
   assert.equal(waited.phase, "lobby");
   assert.equal(waited.viewFor(id).lobby.paused, true);
 });
+
+test("a late JOIN spawns at the current race stage, not the start", () => {
+  const room = createRoom(ctx, { startTimeTicks: 60000 });
+  const a = room.addSeat(1);
+  room.setInput(a, { steer: 0, accel: 1, brake: 0 });
+  for (let i = 0; i < 200; i++) room.tick(); // leader advances past seg 1
+  const leaderSeg = room.getState().seats.find((s) => s.id === a).segmentId;
+  assert.notEqual(leaderSeg, 1);
+  const b = room.addSeat(2, undefined, "Late"); // mid-race join
+  const bSeg = room.getState().seats.find((s) => s.id === b).segmentId;
+  assert.equal(bSeg, leaderSeg); // spawns at the leader's stage
+});
+
+test("spectatorView is the leader POV with all seats as ghosts", () => {
+  const room = createRoom(ctx, { startTimeTicks: 60000 });
+  room.addSeat(1, undefined, "Ada");
+  room.addSeat(2, undefined, "Bo");
+  for (let i = 0; i < 30; i++) room.tick();
+  const sv = room.spectatorView();
+  assert.equal(sv.watching, true);
+  assert.ok(sv.self);
+  assert.ok(sv.ghosts.length >= 1);
+  assert.ok(sv.scoreboard.length >= 2);
+});

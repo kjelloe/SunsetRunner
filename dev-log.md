@@ -1619,3 +1619,19 @@ lobby shown while session.lobby.active, tap/key input. session_remote lobby +
 startNow/toggleWait. tests: lobby, game_room lobby, protocol. specs/62.
 
 Gate: ./test.sh -> 283/283 + 4 Luau gates + browser smoke OK.
+
+---
+
+## marker-0086 — spectate ongoing race + join-in (2026-08-05)
+
+Server + client, no repin. Late-comer watches a running race then JOIN INs at the
+current stage (earns only stages run from there).
+- game_room: leader()/leaderSegment(); addSeat spawns at leaderSegment when
+  phase==="racing"; spectatorView() (leader POV + all ghosts + scoreboard/lb,
+  watching:true). index.js: sockets Set, HELLO.phase, spectator broadcast to
+  non-seated sockets. session_remote: onopen waits for HELLO; HELLO racing+players
+  -> watch (no auto-join), else join; watching getter; join(). main: watching
+  render (leader POV + JOIN IN prompt, tap/Enter). tests: late-join stage,
+  spectatorView. specs/63.
+
+Gate: ./test.sh -> 285/285 + 4 Luau gates + browser smoke OK.

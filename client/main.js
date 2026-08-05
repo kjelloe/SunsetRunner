@@ -207,6 +207,8 @@ export async function boot(doc = document) {
       if (z === "prev") spectateIndex--;
       else if (z === "next") spectateIndex++;
       else start(activeCarId, activeTimeScale, activeDiffLevel);
+    } else if (remote && session && session.watching) {
+      session.join(); // JOIN IN
     } else if (remote && session && session.lobby && session.lobby.active) {
       const z = lobbyTouchZone(view, x, lobbyShowQR);
       if (z === "closeqr") lobbyShowQR = false;
@@ -214,6 +216,11 @@ export async function boot(doc = document) {
       else if (z === "wait") session.toggleWait();
       else if (z === "invite") lobbyShowQR = true;
     }
+  });
+
+  // JOIN IN via keyboard while watching an ongoing race.
+  doc.addEventListener?.("keydown", (e) => {
+    if (e.key === "Enter" && remote && session && session.watching) session.join();
   });
 
   // Lobby keys: Enter = start now, W = wait/resume, I = invite QR.
@@ -260,6 +267,28 @@ export async function boot(doc = document) {
     }
     if (phase === "difficulty") {
       drawDifficultySelect(g, view, diffSel);
+      frameCount++;
+      requestAnimationFrame(frame);
+      return;
+    }
+    // Watching an ongoing race (joined late): spectate the leader + a JOIN-IN
+    // prompt; joining spawns at the current stage (specs/63).
+    if (remote && session.watching) {
+      const st = session.getState();
+      if (st.seats && st.seats.length && st.seats[0]) {
+        const sStart = getCourse(courseSet, courseId).startSegment;
+        render(g, view, st, courseSet, assets, scenery, { stage: stageNumber(courseSet, sStart, st.seats[0].segmentId), total: stageTotal(courseSet, courseId) });
+      } else {
+        g.fillStyle = "#1a1030"; g.fillRect(0, 0, view.w, view.h);
+      }
+      g.textAlign = "center";
+      g.fillStyle = "rgba(0,0,0,0.6)"; g.fillRect(view.w * 0.2, view.h * 0.82, view.w * 0.6, view.h * 0.1);
+      g.fillStyle = "#4ce05a"; g.font = `bold ${Math.round(view.h * 0.05)}px sans-serif`;
+      g.fillText("JOIN IN", view.w / 2, view.h * 0.87);
+      g.fillStyle = "#cfe"; g.font = `${Math.round(view.h * 0.028)}px sans-serif`;
+      g.fillText("watching — ENTER / tap to join (you earn from here)", view.w / 2, view.h * 0.91);
+      g.textAlign = "left";
+      drawConnectionBanner(g, view, session.status, frameCount);
       frameCount++;
       requestAnimationFrame(frame);
       return;
