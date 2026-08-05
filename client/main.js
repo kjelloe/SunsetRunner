@@ -29,6 +29,7 @@ import { drawLobby, lobbyTouchZone, inviteUrl } from "./lobby.js";
 import { getCourse, getSegment } from "../shared/road_data.js";
 import { carColor } from "./car_colors.js";
 import { createAnnouncer, stageLabel } from "./stage_announce.js";
+import { createCheckpointStandings, drawCheckpointStandings } from "./checkpoint_standings.js";
 import { nameFromParams, createNameEntry, rememberName } from "./name_entry.js";
 import { playerId } from "./player_id.js";
 import { drawTimeUpButtons, timeUpTouchZone, drawSpectateOverlay, spectateTouchZone, drawMiniScoreboard } from "./spectate.js";
@@ -135,6 +136,7 @@ export async function boot(doc = document) {
 
   const countdown = createCountdown();
   const announcer = createAnnouncer();
+  const cpStandings = createCheckpointStandings(courseSet);
   let prevSegmentId = null;
   let activeCarId = choice.carId;
   let activeTimeScale = diffChoice.timeScale;
@@ -370,6 +372,18 @@ export async function boot(doc = document) {
       announcer.announce(stageLabel(hud.stage, getSegment(courseSet, selfSeat.segmentId).nameKey), now);
       prevSegmentId = selfSeat.segmentId;
     }
+    // Checkpoint standings board: track every racer through each checkpoint, show
+    // the numbered gap-to-leader list for ~5 s when the local car crosses one.
+    if (racing && !preRace && selfSeat && selfSeat.segmentId !== -1) {
+      const ghosts = state.ghosts || [];
+      const racers = [
+        { id: selfSeat.id, name: `${playerName} (you)`, carId: activeCarId, segmentId: selfSeat.segmentId, isSelf: true },
+        ...ghosts.map((gh) => ({ id: gh.seatId, name: gh.name || `P${gh.seatId}`, carId: gh.carId, segmentId: gh.segmentId, isSelf: false })),
+      ];
+      cpStandings.update(now, racers);
+    }
+    const cpBoard = racing ? cpStandings.active(now) : null;
+    if (cpBoard) drawCheckpointStandings(g, view, cpBoard);
     // Audio: engine pitch tracks speed; SFX fire on state edges (crash entered,
     // finish crossed, timer bumped up by a checkpoint).
     const self = state.seats[0];

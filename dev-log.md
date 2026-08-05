@@ -1685,3 +1685,21 @@ first certbot). SECURITY SPLIT (per user): ops/ is fully gitignored (real host i
 sibling howto, secret deploy.env); generic templates tracked in docs/. specs/66.
 
 No repin (health/host are transport). Gate: ./test.sh -> 288/288 + 4 Luau + browser.
+
+---
+
+## marker-0090 — playtest polish: rival cars + checkpoint board + summary layout (2026-08-05)
+
+Client-only (presentation), no engine change, no repin.
+1. renderer_canvas.drawGhosts: rivals now draw the CAR SPRITE tinted to their
+   identity colour (rivalCarSprite + darken), not a flat rect; crash flashes white.
+   Flat-rect stays as the no-assets fallback.
+2. NEW client/checkpoint_standings.js: records each racer's first-observed arrival
+   in a checkpoint segment; when the local car crosses one, shows a numbered board
+   for ~5s (1s fade) with each racer's seconds-behind-leader, at 2.5x the HUD
+   standings font. Wired in main.js. Unit-tested (gap/fade/expiry/non-cp).
+3. race_summary: field panel pulled to the LEFT half (rank 0.08/name 0.14/result
+   0.55) and drawLeaderboard slimmed to a right column (0.64->edge, smaller font,
+   names clipped) so the summary + all-time board no longer overlap.
+
+specs/67. Gate: npm test -> 291/291 + browser smoke OK; 4 Luau gates untouched.

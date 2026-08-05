@@ -88,9 +88,13 @@ function timeStr(ticks) {
 // A compact ALL-TIME board (right side): finishers show time, others "St N".
 export function drawLeaderboard(g, view, entries) {
   if (!entries || !entries.length) return;
+  // Slim right-hand column: starts at 0.64 (clear of the field panel, which now
+  // ends at ~0.55) and runs to the edge. Names are clipped so they never spill
+  // left into the field panel.
   const x = view.w * 0.98;
-  const nameX = view.w * 0.66;
-  const fs = Math.round(view.h * 0.03);
+  const nameX = view.w * 0.64;
+  const fs = Math.round(view.h * 0.028);
+  const clip = (s) => (s.length > 10 ? s.slice(0, 9) + "…" : s);
   g.textBaseline = "alphabetic";
   g.fillStyle = "#ffd54a";
   g.font = `bold ${fs}px sans-serif`;
@@ -101,7 +105,7 @@ export function drawLeaderboard(g, view, entries) {
     const y = view.h * 0.29 + i * fs * 1.3;
     g.textAlign = "left";
     g.fillStyle = "#cfd0e0";
-    g.fillText(`${e.rank}. ${e.name}`, nameX, y);
+    g.fillText(`${e.rank}. ${clip(e.name)}`, nameX, y);
     g.textAlign = "right";
     g.fillStyle = e.finishTicks >= 0 ? "#4ce05a" : "#cfd0e0";
     g.fillText(e.finishTicks >= 0 ? timeStr(e.finishTicks) : `St ${e.stage}`, x, y);
@@ -119,6 +123,8 @@ export function drawRaceSummary(g, view, rows, secondsToNewRace) {
   g.font = `bold ${Math.round(view.h * 0.08)}px sans-serif`;
   g.fillText("RACE OVER", view.w / 2, view.h * 0.16);
 
+  // Keep the field panel in the LEFT half so it never overlaps the all-time
+  // board on the right (drawn by drawLeaderboard from ~0.62 out).
   const rowH = view.h * 0.075;
   const top = view.h * 0.26;
   g.font = `${Math.round(view.h * 0.04)}px sans-serif`;
@@ -128,12 +134,12 @@ export function drawRaceSummary(g, view, rows, secondsToNewRace) {
       : r.finished ? "FINISHED" : (r.stage > 0 ? `STAGE ${r.stage}` : "DNS");
     g.textAlign = "left";
     g.fillStyle = r.color;
-    g.fillText(`${r.rank}.`, view.w * 0.22, y);
+    g.fillText(`${r.rank}.`, view.w * 0.08, y);
     g.fillStyle = r.isYou ? "#ffffff" : "#cfd0e0";
-    g.fillText(r.isYou ? `${r.name} (you)` : r.name, view.w * 0.28, y);
+    g.fillText(r.isYou ? `${r.name} (you)` : r.name, view.w * 0.14, y);
     g.textAlign = "right";
     g.fillStyle = r.finished ? "#4ce05a" : "#cfd0e0";
-    g.fillText(result, view.w * 0.78, y);
+    g.fillText(result, view.w * 0.55, y);
   });
 
   if (secondsToNewRace >= 0) { // negative -> caller draws its own controls (MP)

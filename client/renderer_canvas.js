@@ -63,7 +63,7 @@ export function render(g, view, state, courseSet, assets, scenery, hud) {
   drawCheckpointBanner(g, view, camX, strips, seat, courseSet);
   drawTraffic(g, view, state, camX, assets, strips);
   drawHazards(g, view, state, camX, assets, strips);
-  drawGhosts(g, view, state, camX, strips);
+  drawGhosts(g, view, state, camX, strips, assets);
   drawPlayerCar(g, view, seat, camX, assets);
   drawHud(g, view, state, hud);
   drawForkPreview(g, view, seat, courseSet, scenery);
@@ -163,7 +163,28 @@ function drawHazards(g, view, state, camX, assets, strips) {
 const playerLabel = (r) => r.name || `P${r.seatId}`;
 const progressOf = (r) => r.segmentId * 1000000 + r.roadZ;
 
-function drawGhosts(g, view, state, camX, strips) {
+// Darken a #rrggbb hex toward black by `f` (0..1) — for the rival car's body
+// shade so the tinted sprite reads with the same top-lit gradient as the player.
+function darken(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.round(((n >> 16) & 255) * (1 - f));
+  const gg = Math.round(((n >> 8) & 255) * (1 - f));
+  const b = Math.round((n & 255) * (1 - f));
+  return `#${((r << 16) | (gg << 8) | b).toString(16).padStart(6, "0")}`;
+}
+
+// A rival car sprite tinted to its identity colour (same "car" shape as the
+// player, so rivals read as cars, not rectangles). Cached per carId.
+const RIVAL_SPRITE_CACHE = new Map();
+function rivalCarSprite(carId, base) {
+  if (RIVAL_SPRITE_CACHE.has(carId)) return RIVAL_SPRITE_CACHE.get(carId);
+  const c = carColor(carId);
+  const sprite = { w: base?.w || 64, h: base?.h || 32, kind: "car", palette: [c, darken(c, 0.45), "#141414"] };
+  RIVAL_SPRITE_CACHE.set(carId, sprite);
+  return sprite;
+}
+
+function drawGhosts(g, view, state, camX, strips, assets) {
   const ghosts = state.ghosts || [];
   if (ghosts.length === 0) return;
   const seat = state.seats[0];
@@ -178,16 +199,25 @@ function drawGhosts(g, view, state, camX, strips) {
     if (dz < ROAD_UNIT) continue;
     const s = sampleStrip(strips, dz);
     const o = onRoad(view, camX, dz, r.laneX, s.curveX, s.hillY);
-    const w = Math.max(4, o.half * 0.5);
-    const h = w * 0.6;
-    g.globalAlpha = 0.7;
-    g.fillStyle = carColor(r.carId); // rival identity: tint the ghost by its car
-    g.fillRect(o.x - w / 2, o.y - h, w, h);
-    g.globalAlpha = 1;
-    if (r.collisionActive) {
-      g.strokeStyle = "#ffffff";
-      g.lineWidth = 2;
-      g.strokeRect(o.x - w / 2, o.y - h, w, h);
+    let h;
+    if (assets) {
+      const sprite = rivalCarSprite(r.carId, assets.sprites.player_car);
+      const scale = spriteScale(o.half, sprite, 0.62);
+      h = sprite.h * scale;
+      drawSprite(g, sprite, o.x, o.y, scale); // bottom-anchored at the road point
+      if (r.collisionActive) { // crash flash
+        g.globalAlpha = 0.5;
+        g.fillStyle = "#ffffff";
+        g.fillRect(o.x - (sprite.w * scale) / 2, o.y - h, sprite.w * scale, h);
+        g.globalAlpha = 1;
+      }
+    } else {
+      const w = Math.max(4, o.half * 0.5);
+      h = w * 0.6;
+      g.globalAlpha = 0.7;
+      g.fillStyle = carColor(r.carId);
+      g.fillRect(o.x - w / 2, o.y - h, w, h);
+      g.globalAlpha = 1;
     }
     // Name tag above the car, scaled by the projected size.
     const fs = Math.max(8, o.half * 0.5);

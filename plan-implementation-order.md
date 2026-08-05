@@ -148,4 +148,5 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-087 analog mobile steering (steer magnitude STEER_UNIT + physics divide + Luau + touch drag; no repin, full-lock byte-identical) (marker-0087)
 - [x] slice-088 mobile render perf profile (headless CPU-throttle harness; tools/mobile_perf.mjs + PERFORMANCE.md) (marker-0088)
 - [x] slice-089 ssh-deploy script (allowlist + health guard + /health endpoint + host bind; docs/ssh-deploy.sh, secrets in ops/) (marker-0089)
+- [x] slice-090 playtest polish: rival cars use the car sprite (not a rect) + checkpoint standings board (2.5x font, gap-to-leader, 5s fade) + de-overlap race summary/all-time board (marker-0090)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + low-end wins (cap DPR / draw distance)
