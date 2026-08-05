@@ -52,3 +52,16 @@ test("static host serves client-imported modules with a JS MIME type", async () 
     await h.close();
   }
 });
+
+test("health endpoint answers 200 ok for the deploy guard", async () => {
+  const h = await startServer(0, { host: "127.0.0.1" });
+  try {
+    for (const path of ["/health", "/healthz"]) {
+      const res = await fetch(`http://127.0.0.1:${h.port}${path}`);
+      assert.equal(res.status, 200, `${path} should be 200`);
+      assert.equal((await res.text()).trim(), "ok");
+    }
+  } finally {
+    await h.close();
+  }
+});

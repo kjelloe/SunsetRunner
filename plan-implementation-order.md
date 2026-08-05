@@ -146,4 +146,6 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-085 pre-race lobby: 30s start timer, "start now" / "wait for players", invite link + QR (marker-0085)
 - [x] slice-086 spectate an ONGOING race + "join in" (earn only stages run, e.g. join@25 reach@28 = 3) (marker-0086)
 - [x] slice-087 analog mobile steering (steer magnitude STEER_UNIT + physics divide + Luau + touch drag; no repin, full-lock byte-identical) (marker-0087)
-- [ ] mobile render perf profile (on device)
+- [x] slice-088 mobile render perf profile (headless CPU-throttle harness; tools/mobile_perf.mjs + PERFORMANCE.md) (marker-0088)
+- [x] slice-089 ssh-deploy script (allowlist + health guard + /health endpoint + host bind; docs/ssh-deploy.sh, secrets in ops/) (marker-0089)
+- [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + low-end wins (cap DPR / draw distance)

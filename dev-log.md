@@ -1654,3 +1654,34 @@ all 4 Luau gates unchanged.
   (±256, hash unchanged), touch_controls (drag steer + multi-touch). specs/64.
 
 Gate: ./test.sh -> 287/287 + 4 Luau gates byte-identical + browser smoke OK.
+
+---
+
+## marker-0088 — mobile render perf profile (2026-08-05)
+
+Client measurement, no engine change. tools/mobile_perf.mjs (npm run perf:mobile):
+Playwright boots the real client at 390x844 DPR3 on course 4, launches Chromium
+with frame-rate limit OFF, throttles CPU via CDP (1x/4x/6x = desktop/mid/low-end
+phone), warms 5s past splash+countdown, samples 5s of rAF deltas, reports
+p50/p95/p99 ms + ~fps + over-budget fractions. Standalone (not in test.sh; it is a
+measurement, not a gate). FINDING: mid (4x) ~60fps median, low-end (6x) ~38fps but
+90% of frames clear 30fps; cost is Canvas 2D fill at DPR3, not the engine
+(~0.04ms/tick). Numbers + cheapest low-end wins (cap DPR, shorten draw distance)
+in PERFORMANCE.md. specs/65.
+
+---
+
+## marker-0089 — ssh-deploy script + /health (2026-08-05)
+
+Deploy tooling for the shared Hetzner box. server/index.js: GET /health + /healthz
+-> 200 "ok" (deploy guard + nginx/uptime); optional host bind (roomOpts.host / env
+HOST=127.0.0.1 on the box, else all interfaces for tests/dev); LEADERBOARD_FILE env
+so runtime state lives outside deployed code. docs/ssh-deploy.sh: allowlist rsync
+(client/shared/engine/server/data + package + LICENSE; --delete safe since state/
+sits beside code), one SSH mux, provenance guard (dirty tree stops unless --yes),
+health guard (local /health then PUBLIC_URL). docs/deploy.env.example template +
+docs/DEPLOYING.md playbook (systemd unit w/ MemoryMax + HOST + state paths, HTTP-
+first certbot). SECURITY SPLIT (per user): ops/ is fully gitignored (real host info,
+sibling howto, secret deploy.env); generic templates tracked in docs/. specs/66.
+
+No repin (health/host are transport). Gate: ./test.sh -> 288/288 + 4 Luau + browser.

@@ -7,4 +7,7 @@ test/headless/reports/
 dev-prompts.md
 .agent-mail/
 reports/sweeps/
-ops/*
+
+# ops/ holds anything security-relevant (real hosts, secrets, deploy.env) — never
+# committed. Generic templates live in docs/ and ARE tracked.
+ops/

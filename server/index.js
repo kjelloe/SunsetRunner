@@ -38,6 +38,12 @@ const SERVE_DIRS = new Set(["client", "shared", "engine", "data"]);
 
 async function serveStatic(req, res) {
   let urlPath = decodeURIComponent(new URL(req.url, "http://x").pathname);
+  // Health probe for the deploy guard + nginx/uptime checks (see ops/DEPLOYING.md).
+  if (urlPath === "/health" || urlPath === "/healthz") {
+    res.writeHead(200, { "content-type": "text/plain" });
+    res.end("ok");
+    return;
+  }
   if (urlPath === "/" || urlPath === "") urlPath = "/client/index.html";
   const rel = normalize(urlPath).replace(/^(\.\.[/\\])+/, "").replace(/^[/\\]+/, "");
   const top = rel.split(/[/\\]/)[0];
@@ -173,7 +179,10 @@ export async function startServer(port = 8000, roomOpts = {}) {
   const saveTimer = statePath ? setInterval(() => saveSession(statePath, room), 5000) : null;
   saveTimer?.unref?.();
 
-  await new Promise((r) => server.listen(port, r));
+  // Bind host: the shared-box entrypoint pins 127.0.0.1 (nginx is the only public
+  // face); tests/local dev omit it and listen on all interfaces.
+  const host = roomOpts.host || undefined;
+  await new Promise((r) => (host ? server.listen(port, host, r) : server.listen(port, r)));
   return {
     room,
     port: server.address().port,
@@ -190,8 +199,12 @@ export async function startServer(port = 8000, roomOpts = {}) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT) || 8000;
+  const host = process.env.HOST || undefined; // set HOST=127.0.0.1 on the shared box
+  // Runtime state paths — overridable so a shared-box deploy can keep them OUTSIDE
+  // the deployed code dir (a deploy with --delete would otherwise eat saves).
   const statePath = process.env.STATE_FILE || resolve(repoRoot, ".state/session.json");
-  startServer(port, { statePath, countdownTicks: 60, courseId: 4, lobbyTicks: 600, leaderboardPath: resolve(repoRoot, '.state/leaderboard.json') }).then((h) => { // grand_tour + 3 s countdown
+  const leaderboardPath = process.env.LEADERBOARD_FILE || resolve(repoRoot, ".state/leaderboard.json");
+  startServer(port, { host, statePath, countdownTicks: 60, courseId: 4, lobbyTicks: 600, leaderboardPath }).then((h) => { // grand_tour + 3 s countdown
     console.log(`Sunset Runner server on http://localhost:${h.port}/client/index.html`);
     // SIGTERM/SIGINT (deploy/ctrl-c) -> close() (which saves) -> exit. Wired only
     // in the standalone entrypoint so tests don't accumulate signal handlers.
