@@ -136,6 +136,10 @@ export async function startServer(port = 8000, roomOpts = {}) {
       } else if (msg.type === C2S.FORK) {
         const seatId = clients.get(ws);
         if (seatId != null) room.setForkChoice(seatId, msg.choice);
+      } else if (msg.type === C2S.START) {
+        if (clients.get(ws) != null) room.startNow();
+      } else if (msg.type === C2S.WAIT) {
+        if (clients.get(ws) != null) room.toggleWait();
       }
     });
 
@@ -177,7 +181,7 @@ export async function startServer(port = 8000, roomOpts = {}) {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT) || 8000;
   const statePath = process.env.STATE_FILE || resolve(repoRoot, ".state/session.json");
-  startServer(port, { statePath, countdownTicks: 60, courseId: 4, leaderboardPath: resolve(repoRoot, '.state/leaderboard.json') }).then((h) => { // grand_tour + 3 s countdown
+  startServer(port, { statePath, countdownTicks: 60, courseId: 4, lobbyTicks: 600, leaderboardPath: resolve(repoRoot, '.state/leaderboard.json') }).then((h) => { // grand_tour + 3 s countdown
     console.log(`Sunset Runner server on http://localhost:${h.port}/client/index.html`);
     // SIGTERM/SIGINT (deploy/ctrl-c) -> close() (which saves) -> exit. Wired only
     // in the standalone entrypoint so tests don't accumulate signal handlers.

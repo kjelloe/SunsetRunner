@@ -37,3 +37,8 @@ test("JOIN carries a sanitised persistent pid", () => {
   assert.equal(a.msg.pid, "p-abc_123");
   assert.equal(parseMessage(JSON.stringify({ type: C2S.JOIN, carId: 1 })).msg.pid, null);
 });
+
+test("START and WAIT lobby messages are accepted", () => {
+  assert.equal(parseMessage(JSON.stringify({ type: C2S.START })).ok, true);
+  assert.equal(parseMessage(JSON.stringify({ type: C2S.WAIT })).ok, true);
+});

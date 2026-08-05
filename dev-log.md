@@ -1604,3 +1604,18 @@ by stage reached (finishers on top), best run per name.
 - tests: leaderboard (rank/merge/local), game_room timeout->board. specs/61.
 
 Gate: ./test.sh -> 277/277 + 4 Luau gates + browser smoke OK.
+
+---
+
+## marker-0085 — pre-race lobby + invite/QR (2026-08-05)
+
+Server + client, no repin. First joiner opens a LOBBY (phase idle->lobby->racing);
+auto-start timer (lobbyTicks; entrypoint 600=30s, default 0 so tests/smoke race
+immediately). game_room: startNow/toggleWait, viewFor.lobby {active,seconds,paused,
+players}; protocol START/WAIT; server handlers. client/lobby.js drawLobby (START
+NOW/WAIT/INVITE + QR overlay), inviteUrl (?mode=remote), vendored
+client/vendor/qrcode.min.js (qrcode-generator, MIT; RetroMultiCiv pattern). main:
+lobby shown while session.lobby.active, tap/key input. session_remote lobby +
+startNow/toggleWait. tests: lobby, game_room lobby, protocol. specs/62.
+
+Gate: ./test.sh -> 283/283 + 4 Luau gates + browser smoke OK.

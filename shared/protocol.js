@@ -5,7 +5,7 @@
 // server/* fails to load in the browser). See specs/19.
 // Client -> server: JOIN, INPUT.  Server -> client: WELCOME, VIEW, ERROR.
 
-export const C2S = { JOIN: "join", INPUT: "input", FORK: "forkChoice", RECLAIM: "reclaim" };
+export const C2S = { JOIN: "join", INPUT: "input", FORK: "forkChoice", RECLAIM: "reclaim", START: "startNow", WAIT: "toggleWait" };
 export const S2C = { HELLO: "hello", WELCOME: "welcome", VIEW: "view", ERROR: "error", RECLAIM_FAILED: "reclaim_failed" };
 
 const TRISTATE = new Set([-1, 0, 1]);
@@ -59,5 +59,7 @@ export function parseMessage(raw) {
     if (typeof msg.token !== "string" || msg.token.length === 0) return { ok: false, reason: "token required" };
     return { ok: true, msg: { type: C2S.RECLAIM, token: msg.token } };
   }
+  if (msg.type === C2S.START) return { ok: true, msg: { type: C2S.START } };
+  if (msg.type === C2S.WAIT) return { ok: true, msg: { type: C2S.WAIT } };
   return { ok: false, reason: `unknown type: ${msg.type}` };
 }

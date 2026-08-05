@@ -121,6 +121,9 @@ export function createRemoteSession(url, opts = {}) {
     get points() { return latest?.points ?? 0; },
     get scoreboard() { return latest?.scoreboard || []; },
     get leaderboard() { return latest?.leaderboard || []; },
+    get lobby() { return latest?.lobby || null; },
+    startNow() { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.START })); },
+    toggleWait() { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.WAIT })); },
     setInput(input) { held = input; },
     setForkChoice(choice) {
       pendingFork = choice;

@@ -25,6 +25,7 @@ import { createCountdown, drawCountdownLabel } from "./countdown.js";
 import { drawSplash } from "./splash.js";
 import { buildSummary, playersFromState, drawRaceSummary, drawLeaderboard, NEW_RACE_SECONDS, stageNumber, stageTotal } from "./race_summary.js";
 import { recordScore } from "./local_scores.js";
+import { drawLobby, lobbyTouchZone, inviteUrl } from "./lobby.js";
 import { getCourse, getSegment } from "../shared/road_data.js";
 import { carColor } from "./car_colors.js";
 import { createAnnouncer, stageLabel } from "./stage_announce.js";
@@ -143,6 +144,7 @@ export async function boot(doc = document) {
   let summaryStart = 0;
   let timeUpSel = 0;      // 0 = RE-JOIN, 1 = SPECTATE (multiplayer time-up)
   let spectateIndex = 0;  // which rival is being spectated
+  let lobbyShowQR = false; // invite QR overlay in the lobby
   let prevCrashed = 0, prevFinish = -1, prevTimer = NaN; // SFX edge trackers
 
   function start(carId, timeScale, diffLevel) {
@@ -205,7 +207,23 @@ export async function boot(doc = document) {
       if (z === "prev") spectateIndex--;
       else if (z === "next") spectateIndex++;
       else start(activeCarId, activeTimeScale, activeDiffLevel);
+    } else if (remote && session && session.lobby && session.lobby.active) {
+      const z = lobbyTouchZone(view, x, lobbyShowQR);
+      if (z === "closeqr") lobbyShowQR = false;
+      else if (z === "start") session.startNow();
+      else if (z === "wait") session.toggleWait();
+      else if (z === "invite") lobbyShowQR = true;
     }
+  });
+
+  // Lobby keys: Enter = start now, W = wait/resume, I = invite QR.
+  doc.addEventListener?.("keydown", (e) => {
+    if (!(remote && session && session.lobby && session.lobby.active)) return;
+    if (lobbyShowQR) { lobbyShowQR = false; return; }
+    const k = String(e.key).toLowerCase();
+    if (e.key === "Enter") session.startNow();
+    else if (k === "w") session.toggleWait();
+    else if (k === "i") lobbyShowQR = true;
   });
 
   let acc = 0;
@@ -242,6 +260,13 @@ export async function boot(doc = document) {
     }
     if (phase === "difficulty") {
       drawDifficultySelect(g, view, diffSel);
+      frameCount++;
+      requestAnimationFrame(frame);
+      return;
+    }
+    // Remote pre-race lobby (server-driven): shown until the race actually starts.
+    if (remote && phase === "race" && session.lobby && session.lobby.active) {
+      drawLobby(g, view, session.lobby, { showQR: lobbyShowQR, url: inviteUrl() });
       frameCount++;
       requestAnimationFrame(frame);
       return;

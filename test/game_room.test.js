@@ -151,3 +151,29 @@ test("timeouts record the stage reached to the all-time leaderboard", () => {
   assert.equal(top[0].name, "Ada");
   assert.equal(room.viewFor(id).leaderboard[0].name, "Ada");
 });
+
+test("lobby holds the sim until start-now or its timer elapses", () => {
+  const room = createRoom(ctx, { startTimeTicks: 5000, lobbyTicks: 3, countdownTicks: 0 });
+  const id = room.addSeat(1, undefined, "Ada");
+  assert.equal(room.phase, "lobby");
+  assert.equal(room.viewFor(id).lobby.active, true);
+  room.tick(); room.tick();
+  assert.equal(room.phase, "lobby"); // still frozen
+  room.startNow(); room.tick();
+  assert.equal(room.phase, "racing");
+  assert.equal(room.viewFor(id).lobby.active, false);
+});
+
+test("lobby auto-starts after its timer; wait pauses it", () => {
+  const auto = createRoom(ctx, { startTimeTicks: 5000, lobbyTicks: 2, countdownTicks: 0 });
+  auto.addSeat(1);
+  auto.tick(); auto.tick(); auto.tick();
+  assert.equal(auto.phase, "racing");
+
+  const waited = createRoom(ctx, { startTimeTicks: 5000, lobbyTicks: 3 });
+  const id = waited.addSeat(1);
+  waited.toggleWait();
+  for (let i = 0; i < 20; i++) waited.tick();
+  assert.equal(waited.phase, "lobby");
+  assert.equal(waited.viewFor(id).lobby.paused, true);
+});

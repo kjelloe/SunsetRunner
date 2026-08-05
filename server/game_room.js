@@ -71,6 +71,13 @@ export function createRoom(ctx, opts = {}) {
   const countdownTicksTotal = opts.countdownTicks ?? 0;
   let countdownRemaining = 0;
   let raceStarted = false;
+  // Pre-race LOBBY (specs/62): the first joiner opens a lobby that auto-starts
+  // after lobbyTicks (players can "start now" or "wait"). Default 0 = no lobby
+  // (tests + the smoke race immediately); the entrypoint enables it (30 s).
+  const lobbyTicksTotal = opts.lobbyTicks ?? 0;
+  let lobbyRemaining = 0;
+  let lobbyPaused = false;
+  let phase = "idle"; // idle -> lobby -> racing
   const inputs = new Map(); // seatId -> latest { steer, accel, brake }
   const ackSeq = new Map(); // seatId -> latest input seq received (for client prediction)
   let nextSeatId = 1;
@@ -109,7 +116,8 @@ export function createRoom(ctx, opts = {}) {
     state = r.state;
     nextSeatId = r.nextSeatId;
     if (r.timeScale != null) { simCtx.timeScale = r.timeScale; difficultyLocked = true; }
-    raceStarted = true; // a restored race is already past its countdown
+    raceStarted = true; // a restored race is already past its lobby/countdown
+    phase = "racing";
     presence.clear();
     for (const p of r.presence) presence.set(p.id, { token: p.token, disconnectedTick: state.tick });
     inputs.clear();
@@ -138,6 +146,9 @@ export function createRoom(ctx, opts = {}) {
 
     get countdown() { return Math.ceil(countdownRemaining / TICK_HZ); }, // seconds
     get timeScale() { return simCtx.timeScale; },
+    get phase() { return phase; },
+    startNow() { if (phase === "lobby") lobbyRemaining = 0; }, // launch on the next tick
+    toggleWait() { if (phase === "lobby") lobbyPaused = !lobbyPaused; },
 
     // A seat joins with a car and (first joiner only) the race difficulty as a
     // timeScale int. The first seat in an empty room starts the shared countdown.
@@ -145,7 +156,8 @@ export function createRoom(ctx, opts = {}) {
       if (this.seatCount >= state.race.maxSeats) return -1; // room full
       if (!raceStarted) {
         raceStarted = true;
-        countdownRemaining = countdownTicksTotal;
+        if (lobbyTicksTotal > 0) { phase = "lobby"; lobbyRemaining = lobbyTicksTotal; }
+        else { phase = "racing"; countdownRemaining = countdownTicksTotal; }
         if (!difficultyLocked && timeScale != null) { simCtx.timeScale = timeScale; difficultyLocked = true; }
       }
       const id = nextSeatId++;
@@ -216,6 +228,12 @@ export function createRoom(ctx, opts = {}) {
     // One authoritative sim step: drain queued inputs, then advance a tick.
     tick() {
       // Shared pre-race countdown: freeze the whole sim (clock + cars) until GO.
+      // Pre-race lobby: frozen; count down to auto-start (unless paused).
+      if (phase === "lobby") {
+        if (!lobbyPaused && lobbyRemaining > 0) lobbyRemaining--;
+        if (lobbyRemaining <= 0) { phase = "racing"; countdownRemaining = countdownTicksTotal; }
+        return state;
+      }
       if (countdownRemaining > 0) { countdownRemaining--; return state; }
       // Grace sweep: free seats whose disconnect grace has elapsed.
       for (const [seatId, p] of presence) {
@@ -259,6 +277,9 @@ export function createRoom(ctx, opts = {}) {
         type: S2C.VIEW,
         tick: state.tick,
         countdown: Math.ceil(countdownRemaining / TICK_HZ), // seconds until GO (0 = racing)
+        lobby: phase === "lobby"
+          ? { active: true, seconds: Math.ceil(lobbyRemaining / TICK_HZ), paused: lobbyPaused, players: state.seats.filter((s) => s.active).map((s) => names.get(s.id) || `P${s.id}`) }
+          : { active: false },
         self,
         ackSeq: ackSeq.get(seatId) ?? 0, // last input seq the server has taken (prediction ack)
         ghosts,
