@@ -1635,3 +1635,22 @@ current stage (earns only stages run from there).
   spectatorView. specs/63.
 
 Gate: ./test.sh -> 285/285 + 4 Luau gates + browser smoke OK.
+
+---
+
+## marker-0087 — analog steering (STEER_UNIT) (2026-08-05)
+
+Engine + client + Luau, NO repin. steer becomes a signed magnitude in
+STEER_UNIT=256 units (±256 = full lock, intermediate = analog). Physics divides
+by STEER_UNIT so full lock is byte-identical to the old ±1 -> AI golden hash and
+all 4 Luau gates unchanged.
+- shared/constants.js: STEER_UNIT=256. commands.js + protocol.js: isSteer range
+  [-256,256] (was tri-state). car_physics.js stepLateral:
+  truncDivI32(steerHeld*steerRate, STEER_UNIT). luau/car_physics.luau mirrors it.
+- inputs: keyboard/AI emit ±STEER_UNIT (full lock); touch_controls.js left thumb
+  is now an analog drag PAD (STEER_PAD, PAD_RANGE=0.14=full lock) replacing the
+  ◄ ► buttons, with a thumb-dot indicator.
+- tests: physics (full/half/mirror), protocol (range accept/reject), ai_driver
+  (±256, hash unchanged), touch_controls (drag steer + multi-touch). specs/64.
+
+Gate: ./test.sh -> 287/287 + 4 Luau gates byte-identical + browser smoke OK.

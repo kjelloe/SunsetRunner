@@ -2,7 +2,7 @@
 
 **A deterministic, server-authoritative arcade road racer for the browser — with a byte-identical Roblox/Luau twin.**
 
-![tests](https://img.shields.io/badge/tests-277%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-287%20passing-brightgreen)
 ![luau parity](https://img.shields.io/badge/Luau%20parity-4%20gates-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A518-informational)
 ![build](https://img.shields.io/badge/build-none%20(vanilla%20ESM)-blue)
@@ -19,14 +19,14 @@ No framework. No build step. No bundler. Just Node.js and vanilla ES modules.
 - 🏎️ **Pseudo-3D road** — scrolling rumble strips, lane markers, hills, curves that physically push the car (brake before the turn, steer through it).
 - ⏱️ **Checkpoint timer** — classic arcade extend-your-time loop; finish or time out.
 - 🚗 **Traffic & collisions** — deterministic segment-seeded traffic, crash-and-recover, and optional same-segment rival bumps.
-- 🍴 **Branching forks** — steer into the branch you want (or commit with **Q/E**), with a named "FORK AHEAD" preview; four courses including a 50-stage grand tour with named fork branches.
+- 🍴 **Branching forks** — steer into the branch you want (or commit with **Q/E**), with a named "FORK AHEAD" preview; four courses including a 30-stage grand tour with named fork branches.
 - 🏁 **Race framing** — a 3-2-1-GO! countdown, big centre timer, and an end-of-race summary (stage reached per player) with a 30 s countdown to a fresh race.
 - 🎚️ **Difficulty** — EASY / MEDIUM / HARD scales checkpoint time (one course, three difficulties).
 - 🏝️ **Per-leg terrain** — ten themes (palm/beach/wheat/lake/forest/autumn/canyon/mountain/alpine/night) with per-side ground (sea, ponds), icy/wet road sheen, fir + wheat sprites, and per-terrain road width.
 - 🚙 **Car roster + picker** — four balance-swept cars, chosen in a pre-race select screen (`?car=N` to skip).
 - 🔊 **Procedural audio** — synthesised engine hum that tracks speed, event SFX, and a chiptune loop (`?mute=1`).
 - 🌐 **Drop-in & reconnect multiplayer** — Node `ws` server, up to 8 seats, ghost rivals (colour-coded by car), live standings, **client-side prediction**, and **token-reclaim reconnect** (survives mobile backgrounding).
-- 📱 **Mobile-ready** — on-screen arrow pad, correct touch mapping on CSS-scaled canvases, no page scroll/zoom while driving.
+- 📱 **Mobile-ready** — on-screen controls with an analog steer pad, correct touch mapping on CSS-scaled canvases, no page scroll/zoom while driving.
 - 🎉 **Finish celebration** — confetti + fireworks.
 - 🤖 **AI drivers + sim campaign** — headless balance tooling.
 - ⚖️ **Fairness instruments** — route-mirror, car-swap, traffic-swap, and seat-order analysis.
@@ -52,7 +52,7 @@ Open **http://localhost:8000/client/index.html** and drive with **WASD / arrows*
 
 - `?course=2` — the branching **canyon_split** (press **Q / E** at the fork)
 - `?course=3` — the mirror-fair **mirror_valley**
-- `?course=4` — the **grand_tour** (50-stage main route, ten terrains, three forks, checkpoint banners)
+- `?course=4` — the **grand_tour** (30-stage main route, ten terrains, three forks, checkpoint banners)
 - `?touch=1` — preview the mobile arrow pad on desktop
 
 ### Play (multiplayer)
@@ -65,7 +65,7 @@ Open **http://localhost:8000/client/index.html?mode=remote** in two tabs.
 ### Test
 
 ```bash
-npm test               # node --test: 277 unit/integration tests
+npm test               # node --test: 287 unit/integration tests
 ./test.sh              # the above + Luau (lune) cross-language parity gates
 ```
 
@@ -76,7 +76,7 @@ npm test               # node --test: 277 unit/integration tests
 | Action | Keyboard | Touch |
 |---|---|---|
 | Accelerate / brake | ↑↓ or W/S | ▲ ▼ |
-| Steer | ←→ or A/D | ◄ ► |
+| Steer | ←→ or A/D | analog drag pad (left thumb) |
 | Fork left / right | Q / E | ↰ ↱ |
 
 ---
@@ -107,7 +107,7 @@ specs/    the design brief + numbered decision docs
 
 ## 🧪 Testing & determinism
 
-- `npm test` — 277 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
+- `npm test` — 287 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
 - `./test.sh` — adds the Luau parity gates ([`lune`](https://lune-org.github.io/docs) required; skipped gracefully if absent) + a headless-browser smoke (`npm run test:browser`, Playwright; `SKIP_BROWSER=1` to skip).
 - `node debugging/replay.mjs` — replay a scenario as a race report.
 - `node debugging/sim_campaign.mjs` — AI "do systems fire?" gate across 5 seeds.

@@ -143,7 +143,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-082 AI opponents in single-player (named ghosts) (marker-0082)
 - [x] slice-083 shorten grand_tour to 30 stages / ~1h (marker-0083)
 - [x] slice-084 all-time leaderboard (finishers by time / others by stage) (marker-0084)
-- [ ] analog mobile steering (ENGINE: steer magnitude + physics divide + Luau + repin) + touch drag-steer
+- [x] slice-085 pre-race lobby: 30s start timer, "start now" / "wait for players", invite link + QR (marker-0085)
+- [x] slice-086 spectate an ONGOING race + "join in" (earn only stages run, e.g. join@25 reach@28 = 3) (marker-0086)
+- [x] slice-087 analog mobile steering (steer magnitude STEER_UNIT + physics divide + Luau + touch drag; no repin, full-lock byte-identical) (marker-0087)
 - [ ] mobile render perf profile (on device)
-- [ ] spectate an ONGOING race + "join in" (earn only stages run, e.g. join@25 reach@28 = 3)
-- [ ] pre-race lobby: 30s start timer, "start now" / "wait for players", invite link + QR (see RetroMultiCiv)

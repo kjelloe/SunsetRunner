@@ -42,3 +42,16 @@ test("START and WAIT lobby messages are accepted", () => {
   assert.equal(parseMessage(JSON.stringify({ type: C2S.START })).ok, true);
   assert.equal(parseMessage(JSON.stringify({ type: C2S.WAIT })).ok, true);
 });
+
+test("INPUT accepts analog steer in [-256, 256] and rejects out-of-range", () => {
+  for (const steer of [-256, -128, 0, 100, 256]) {
+    const r = parseMessage(JSON.stringify({ type: C2S.INPUT, steer, accel: 1, brake: 0 }));
+    assert.equal(r.ok, true, `steer ${steer} accepted`);
+    assert.equal(r.msg.steer, steer);
+  }
+  for (const steer of [257, -257, 1000, 1.5]) {
+    const r = parseMessage(JSON.stringify({ type: C2S.INPUT, steer, accel: 1, brake: 0 }));
+    assert.equal(r.ok, false, `steer ${steer} rejected`);
+    assert.match(r.reason, /steer/);
+  }
+});

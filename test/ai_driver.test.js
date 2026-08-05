@@ -27,9 +27,9 @@ test("AI dodges away from traffic ahead (symmetric)", () => {
   const state = createInitialState({ seed: 1, courseSet: ctx.courseSet, carSet: ctx.carSet, courseId: 1, seats: [{ id: 1, carId: 1 }] });
   state.seats[0] = Object.assign(makeSeat(1, 1, 1, 1500), { laneX: 0 });
   state.traffic = [{ id: 99, segmentId: 1, roadZ: 2000, laneX: 100, speed: 500, kind: 1 }];
-  assert.equal(chooseInput(state, 1).steer, -1); // traffic to our right -> dodge left
+  assert.equal(chooseInput(state, 1).steer, -256); // traffic to our right -> dodge left (full lock)
   state.traffic[0].laneX = -100;
-  assert.equal(chooseInput(state, 1).steer, 1); // traffic to our left -> dodge right (mirror)
+  assert.equal(chooseInput(state, 1).steer, 256); // traffic to our left -> dodge right (mirror)
 });
 
 test("a finished seat gets a neutral input", () => {

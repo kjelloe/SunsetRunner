@@ -7,12 +7,17 @@ export const CMD_INPUT = "input";
 export const CMD_ADVANCE_TICK = "advance_tick";
 export const CMD_FORK_CHOICE = "forkChoice";
 
-const TRISTATE = new Set([-1, 0, 1]);
+import { STEER_UNIT } from "../shared/constants.js";
+
 const BINARY = new Set([0, 1]);
 const FORK_DIR = new Set([-1, 1]);
 
 function isInt(v) {
   return Number.isInteger(v);
+}
+// steer is a signed magnitude in [-STEER_UNIT, STEER_UNIT] (analog; ±full = lock).
+function isSteer(v) {
+  return Number.isInteger(v) && v >= -STEER_UNIT && v <= STEER_UNIT;
 }
 
 export function validate(cmd) {
@@ -22,7 +27,7 @@ export function validate(cmd) {
       return { ok: true };
     case CMD_INPUT: {
       if (!isInt(cmd.seatId)) return { ok: false, reason: "seatId must be int" };
-      if (!TRISTATE.has(cmd.steer)) return { ok: false, reason: "steer must be -1|0|1" };
+      if (!isSteer(cmd.steer)) return { ok: false, reason: "steer out of range" };
       if (!BINARY.has(cmd.accel)) return { ok: false, reason: "accel must be 0|1" };
       if (!BINARY.has(cmd.brake)) return { ok: false, reason: "brake must be 0|1" };
       return { ok: true };

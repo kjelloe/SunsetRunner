@@ -2,6 +2,8 @@
 // Maintains a held-key set and reduces it to the integer input command the
 // reducer expects. Import-safe: listeners are only attached when installed.
 
+import { STEER_UNIT } from "../shared/constants.js";
+
 const keys = new Set();
 const forkQueue = []; // edge-triggered fork presses (-1 left / 1 right)
 const menuQueue = []; // edge-triggered menu nav ("left"/"right"/"confirm")
@@ -46,7 +48,8 @@ export function readInput() {
   const accel = keys.has("ArrowUp") || keys.has("KeyW");
   const brake = keys.has("ArrowDown") || keys.has("KeyS");
   return {
-    steer: (right ? 1 : 0) - (left ? 1 : 0),
+    steer: ((right ? 1 : 0) - (left ? 1 : 0)) * STEER_UNIT, // keyboard = full lock
+
     accel: accel ? 1 : 0,
     brake: brake ? 1 : 0,
   };

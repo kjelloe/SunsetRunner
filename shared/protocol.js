@@ -4,13 +4,14 @@
 // (the static host only serves client/shared/engine/data, so a client import of
 // server/* fails to load in the browser). See specs/19.
 // Client -> server: JOIN, INPUT.  Server -> client: WELCOME, VIEW, ERROR.
+import { STEER_UNIT } from "./constants.js";
 
 export const C2S = { JOIN: "join", INPUT: "input", FORK: "forkChoice", RECLAIM: "reclaim", START: "startNow", WAIT: "toggleWait" };
 export const S2C = { HELLO: "hello", WELCOME: "welcome", VIEW: "view", ERROR: "error", RECLAIM_FAILED: "reclaim_failed" };
 
-const TRISTATE = new Set([-1, 0, 1]);
 const BINARY = new Set([0, 1]);
 const FORK_DIR = new Set([-1, 1]);
+const isSteer = (v) => Number.isInteger(v) && v >= -STEER_UNIT && v <= STEER_UNIT;
 
 export function parseMessage(raw) {
   let msg;
@@ -45,7 +46,7 @@ export function parseMessage(raw) {
     return { ok: true, msg: { type: C2S.JOIN, carId, diff, name, pid } };
   }
   if (msg.type === C2S.INPUT) {
-    if (!TRISTATE.has(msg.steer)) return { ok: false, reason: "steer must be -1|0|1" };
+    if (!isSteer(msg.steer)) return { ok: false, reason: "steer out of range" };
     if (!BINARY.has(msg.accel)) return { ok: false, reason: "accel must be 0|1" };
     if (!BINARY.has(msg.brake)) return { ok: false, reason: "brake must be 0|1" };
     const seq = Number.isInteger(msg.seq) ? msg.seq : 0; // optional input sequence (for prediction ack)

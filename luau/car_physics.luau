@@ -8,6 +8,7 @@ local NATURAL_DRAG = 8
 local ROAD_HALF_WIDTH = 512
 local MAX_LANE_OFFSET = 1024
 local CURVE_PUSH_DEN = 320
+local STEER_UNIT = 256 -- mirror shared/constants.js: steerHeld is a signed magnitude
 
 local function stepLongitudinal(seat, car)
 	local speed = seat.speed
@@ -26,7 +27,7 @@ end
 
 local function stepLateral(seat, car)
 	local steerRate = car.steerLow - fixed.floorDivI32((car.steerLow - car.steerHigh) * seat.speed, car.maxSpeed)
-	local laneX = seat.laneX + seat.steerHeld * steerRate
+	local laneX = seat.laneX + fixed.truncDivI32(seat.steerHeld * steerRate, STEER_UNIT)
 	seat.laneX = fixed.clampI32(laneX, -MAX_LANE_OFFSET, MAX_LANE_OFFSET)
 end
 

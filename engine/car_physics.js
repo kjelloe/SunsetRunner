@@ -3,6 +3,7 @@
 // (never on shared state). Tuning constants live here; car stats come from data.
 
 import { clampI32, floorDivI32, truncDivI32 } from "../shared/fixedmath.js";
+import { STEER_UNIT } from "../shared/constants.js";
 
 export const NATURAL_DRAG = 8;       // coast deceleration when neither pedal held
 export const ROAD_HALF_WIDTH = 512;  // |laneX| beyond this is off-road
@@ -32,7 +33,8 @@ export function stepLongitudinal(seat, car) {
 // (fast) linearly in speed, so the car turns lazily near top speed.
 export function stepLateral(seat, car) {
   const steerRate = car.steerLow - floorDivI32((car.steerLow - car.steerHigh) * seat.speed, car.maxSpeed);
-  const laneX = seat.laneX + seat.steerHeld * steerRate;
+  // steerHeld is a signed magnitude (±STEER_UNIT = full lock) -> analog steering.
+  const laneX = seat.laneX + truncDivI32(seat.steerHeld * steerRate, STEER_UNIT);
   seat.laneX = clampI32(laneX, -MAX_LANE_OFFSET, MAX_LANE_OFFSET);
 }
 

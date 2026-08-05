@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { installTouch, readTouchInput, readTouchFork, eventFraction, BUTTONS } from "../client/touch_controls.js";
+import { installTouch, readTouchInput, readTouchFork, eventFraction, BUTTONS, STEER_PAD, PAD_RANGE } from "../client/touch_controls.js";
 
 // A fake canvas: captures listeners and reports a bounding rect, so we can
 // simulate a canvas that the browser has CSS-scaled to fit a phone.
@@ -21,6 +21,14 @@ function centerOf(rect, buttonId) {
   return { x: rect.left + ((b.x0 + b.x1) / 2) * rect.width, y: rect.top + ((b.y0 + b.y1) / 2) * rect.height };
 }
 
+// Centre of the analog steer pad, in client px.
+function steerPadCenter(rect) {
+  return {
+    x: rect.left + ((STEER_PAD.x0 + STEER_PAD.x1) / 2) * rect.width,
+    y: rect.top + ((STEER_PAD.y0 + STEER_PAD.y1) / 2) * rect.height,
+  };
+}
+
 function drain() { while (readTouchFork() !== 0) {} }
 
 test("eventFraction maps via the bounding rect, independent of CSS scale/offset", () => {
@@ -37,13 +45,17 @@ test("eventFraction falls back to offset/buffer when no rect is available", () =
   assert.equal(f.fy, 0.5);
 });
 
-test("holding a steer button steers, release stops (full-size canvas)", () => {
+test("analog steer pad: drag right = full lock, release stops (full-size canvas)", () => {
   const rect = { left: 0, top: 0, width: 960, height: 540 };
   const c = makeCanvas(rect);
   installTouch(c);
-  const p = centerOf(rect, "steerR");
+  const p = steerPadCenter(rect);
   c.fire("pointerdown", p.x, p.y);
-  assert.deepEqual(readTouchInput(), { steer: 1, accel: 0, brake: 0 });
+  assert.deepEqual(readTouchInput(), { steer: 0, accel: 0, brake: 0 }); // anchor = no drag yet
+  c.fire("pointermove", p.x + PAD_RANGE * rect.width, p.y); // full-lock drag right
+  assert.deepEqual(readTouchInput(), { steer: 256, accel: 0, brake: 0 });
+  c.fire("pointermove", p.x + 0.5 * PAD_RANGE * rect.width, p.y); // half drag = analog
+  assert.deepEqual(readTouchInput(), { steer: 128, accel: 0, brake: 0 });
   c.fire("pointerup", p.x, p.y);
   assert.deepEqual(readTouchInput(), { steer: 0, accel: 0, brake: 0 });
 });
@@ -61,16 +73,18 @@ test("touch hit-testing is correct on a CSS-SCALED canvas (mobile)", () => {
   assert.deepEqual(readTouchInput(), { steer: 0, accel: 0, brake: 0 });
 });
 
-test("multi-touch: steer + gas on a scaled canvas", () => {
+test("multi-touch: analog steer + gas on a scaled canvas", () => {
   const rect = { left: 0, top: 0, width: 480, height: 270 };
   const c = makeCanvas(rect);
   installTouch(c);
-  const l = centerOf(rect, "steerL");
+  const l = steerPadCenter(rect);
   const g = centerOf(rect, "accel");
   c.fire("pointerdown", l.x, l.y, 1);
+  c.fire("pointermove", l.x - PAD_RANGE * rect.width, l.y, 1); // full-lock drag left
   c.fire("pointerdown", g.x, g.y, 2);
-  assert.deepEqual(readTouchInput(), { steer: -1, accel: 1, brake: 0 });
-  c.fire("pointerup", l.x, l.y, 1);
+  assert.deepEqual(readTouchInput(), { steer: -256, accel: 1, brake: 0 });
+  c.fire("pointerup", l.x, l.y, 1); // release steer only; gas still held
+  assert.deepEqual(readTouchInput(), { steer: 0, accel: 1, brake: 0 });
   c.fire("pointerup", g.x, g.y, 2);
 });
 

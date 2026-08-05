@@ -3,7 +3,7 @@
 // seed-free (reads only state), so AI-driven runs are perfectly reproducible —
 // the core requirement for using AI as a tuning/measurement instrument.
 
-import { LANE_WIDTH } from "../shared/constants.js";
+import { LANE_WIDTH, STEER_UNIT } from "../shared/constants.js";
 import { absI32 } from "../shared/fixedmath.js";
 import { ROAD_HALF_WIDTH } from "./car_physics.js";
 
@@ -41,5 +41,5 @@ export function chooseInput(state, seatId) {
   } else {
     steer = 0; // hold lane
   }
-  return { steer, accel: 1, brake: 0 };
+  return { steer: steer * STEER_UNIT, accel: 1, brake: 0 };
 }

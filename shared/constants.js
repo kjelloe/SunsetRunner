@@ -16,6 +16,11 @@ export const RIGHT_LANE = LANE_WIDTH;   // 256
 export const FORK_LEFT = -1;
 export const FORK_RIGHT = 1;
 
+// Steering input is now a signed MAGNITUDE in these units: ±STEER_UNIT = full
+// lock (same authority as the old ±1), intermediate values = analog (mobile
+// drag). Physics divides by STEER_UNIT, so full lock is byte-identical to before.
+export const STEER_UNIT = 256;
+
 // Difficulty scales checkpoint time bonuses as an integer percent
 // (bonus * timeScale / 100). medium = 100 = identity, so the default and every
 // golden (which sets no difficulty) are unaffected. Applied in the reducer.

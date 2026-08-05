@@ -44,7 +44,7 @@ test("malformed input is rejected without killing the connection", async () => {
   const ws = new WebSocket(`ws://localhost:${h.port}`);
   try {
     await new Promise((r, j) => { ws.on("open", r); ws.on("error", j); });
-    ws.send(JSON.stringify({ type: C2S.INPUT, steer: 5, accel: 1, brake: 0 }));
+    ws.send(JSON.stringify({ type: C2S.INPUT, steer: 999, accel: 1, brake: 0 }));
     const err = await nextMessage(ws, (m) => m.type === S2C.ERROR);
     assert.match(err.reason, /steer/);
   } finally {

@@ -51,12 +51,21 @@ test("off-road position adds off-road drag", () => {
 });
 
 test("steering shifts laneX and clamps", () => {
-  const seat = seatWith({ steerHeld: 1, speed: 0, laneX: 0 });
+  const seat = seatWith({ steerHeld: 256, speed: 0, laneX: 0 }); // 256 = full lock
   stepLateral(seat, car);
   assert.equal(seat.laneX, car.steerLow); // full steer authority at speed 0
-  const pinned = seatWith({ steerHeld: 1, speed: 0, laneX: 1024 });
+  const pinned = seatWith({ steerHeld: 256, speed: 0, laneX: 1024 });
   stepLateral(pinned, car);
   assert.equal(pinned.laneX, 1024); // clamped at MAX_LANE_OFFSET
+});
+
+test("analog steer scales authority linearly (half lock = half shift)", () => {
+  const half = seatWith({ steerHeld: 128, speed: 0, laneX: 0 }); // 128 = half lock
+  stepLateral(half, car);
+  assert.equal(half.laneX, Math.trunc(car.steerLow / 2)); // truncDivI32(128*steerLow,256)
+  const mirror = seatWith({ steerHeld: -128, speed: 0, laneX: 0 });
+  stepLateral(mirror, car);
+  assert.equal(mirror.laneX, -half.laneX); // symmetric (truncDiv rounds toward zero)
 });
 
 test("reducer input sets held controls; unknown seat is a no-op", () => {
@@ -69,7 +78,7 @@ test("reducer input sets held controls; unknown seat is a no-op", () => {
 
 test("reducer rejects an invalid command", () => {
   const s0 = createInitialState({ seed: 1, courseSet, carSet, courseId: 1, seats: [{ id: 1, carId: 1 }] });
-  assert.throws(() => apply(s0, { type: "input", seatId: 1, steer: 2, accel: 1, brake: 0 }, ctx), /steer/);
+  assert.throws(() => apply(s0, { type: "input", seatId: 1, steer: 999, accel: 1, brake: 0 }, ctx), /steer/);
 });
 
 test("advance_tick is pure — source state hash is unchanged", () => {
