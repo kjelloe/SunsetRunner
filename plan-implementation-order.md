@@ -150,3 +150,19 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-089 ssh-deploy script (allowlist + health guard + /health endpoint + host bind; docs/ssh-deploy.sh, secrets in ops/) (marker-0089)
 - [x] slice-090 playtest polish: rival cars use the car sprite (not a rect) + checkpoint standings board (2.5x font, gap-to-leader, 5s fade) + de-overlap race summary/all-time board (marker-0090)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + low-end wins (cap DPR / draw distance)
+
+
+## Backlog — future features (recorded 2026-08-05, user: "record all these")
+Not scheduled; pick when ready. Ordered by rough impact.
+- [ ] **GO LIVE (deploy)** — fill ops/deploy.env + run the docs/DEPLOYING.md server
+  steps (systemd/nginx HTTP-first/certbot lineage) to publish on kjell.today.
+  Tooling ready (docs/ssh-deploy.sh + /health). Needs the user for the on-box
+  SSH/nginx/cert steps (agent can't reach the box). Port <PORT>.
+- [ ] **Cap DPR on mobile** — clamp client/viewport.js computeBufferSize to DPR<=2;
+  the single biggest low-end perf win (backing-store fill is quadratic in DPR).
+  ~10 lines, client-only, no repin. Re-run npm run perf:mobile to confirm.
+- [ ] **Roblox build** — turn the Luau twin (luau/ + roblox/ Rojo) into an actual
+  playable Roblox game: Studio rendering, input, UI. Engine parity already proven;
+  this is the presentation/host layer. Larger effort (previously deferred).
+- [ ] **More gameplay** — candidates: power-ups / boost pads, AI difficulty tiers,
+  in-race music track select, richer crash/near-miss feel. Pick one per slice.
