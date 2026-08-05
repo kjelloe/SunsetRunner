@@ -98,22 +98,31 @@ Open `...index.html?course=3`.
 
 Open `...index.html?course=4`.
 
-- [ ] **[feel]** A 50-stage tour through ten terrains (palm/beach/wheat/lake/
-  forest/autumn/canyon/mountain/alpine/night) with three visible forks. Each stage
-  OPENS with a short straight then swaps curve/straight/hill elements (marker-0067)
-  — does it stay varied (not all corners)? Mountain/alpine should DESCEND then
-  climb. Snow terrain has crossing snowmobiles/skiers you can hit (marker-0066).
+- [ ] **[feel]** A **30-stage** tour (~1 h; marker-0083) through ten terrains
+  (palm/beach/wheat/lake/forest/autumn/canyon/mountain/alpine/night) with three
+  visible forks. Each stage OPENS with a short straight then swaps curve/straight/
+  hill elements (marker-0067) — does it stay varied (not all corners)? Mountain/
+  alpine should DESCEND then climb. Snow terrain has crossing snowmobiles/skiers.
 - [ ] **[bug]** CHECKPOINT gantries appear on the **horizon** and scale up as you
   approach, staying visible until you pass under them (marker-0067).
+- [ ] **[feel]** AI opponents (default 5, `?ai=N`) drive as **named cars** (car
+  sprite tinted to identity, name tag above) — do they read as cars, not rects,
+  from the horizon in (marker-0090)?
+- [ ] **[feel]** Crossing a checkpoint shows a **big numbered standings board**
+  (2.5x font) with each racer's seconds behind the leader, that **fades after ~5 s**
+  so you can refocus on the race (marker-0090). Legible? Right duration?
 
 ## 5. Mobile touch controls
 
 On a phone (or desktop with `...index.html?touch=1`):
 
-- [ ] **[bug]** On-screen **arrow pad** appears: `◄`/`►` (steer, left thumb),
-  `▲`/`▼` (accel/brake, right thumb), `↰`/`↱` (fork, top corners).
-- [ ] **[bug]** Hold a steer button → car steers; release → stops.
-- [ ] **[bug]** Two fingers at once (steer + GAS) both register.
+- [ ] **[bug]** Controls appear: an **analog steer PAD** (left thumb, with a
+  sliding thumb-dot), `▲`/`▼` (accel/brake, right thumb), `↰`/`↱` (fork, top
+  corners) — marker-0087.
+- [ ] **[feel]** **Analog steering**: touch the steer pad and drag — a small drag
+  = gentle steer, a full drag = full lock. Is the range/sensitivity good on a
+  phone? (Keyboard is still full-lock.)
+- [ ] **[bug]** Two fingers at once (steer pad + GAS) both register.
 - [ ] **[bug]** Tapping a fork button chooses that branch (one tap = one choice).
 - [ ] **[bug]** Canvas fills the screen keeping 16:9 (no overflow / page scroll);
   buttons are hit-tested correctly at that scale (marker-0029 fixed the CSS-scale
@@ -123,6 +132,10 @@ On a phone (or desktop with `...index.html?touch=1`):
   (marker-0038) — is it acceptably sharp on a retina phone (no blur)?
 - [ ] **[bug]** The screen stays awake while driving (wake lock, marker-0038).
 - [ ] **[feel]** Are the buttons in reachable spots / big enough?
+- [ ] **[feel]** **Frame rate on the actual phone.** `npm run perf:mobile` gives a
+  headless throttled estimate (mid ≈ 60 fps, low-end ≈ 38 fps; see PERFORMANCE.md),
+  but only a real device confirms it. If low-end feels choppy, the first fix is
+  capping DPR to ≤ 2 (backing-store fill is quadratic in DPR).
 
 ## 6. Multiplayer — server room
 
