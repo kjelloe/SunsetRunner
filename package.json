@@ -11,7 +11,8 @@
     "strip": "node tools/render_asset_strip.mjs",
     "sweep": "node tools/sim_sweep.mjs",
     "campaign": "node debugging/sim_campaign.mjs",
-    "test:browser": "node test/browser_smoke.mjs"
+    "test:browser": "node test/browser_smoke.mjs",
+    "perf:mobile": "node tools/mobile_perf.mjs"
   },
   "dependencies": {
     "ws": "^8.18.0"
