@@ -1,0 +1,35 @@
+# /etc/nginx/sites-available/sunset-runner — HTTP-ONLY on purpose.
+# Fill <DOMAIN> and <PORT>, save the filled copy as ops/sunset-runner.nginx.conf
+# (gitignored), and install that. certbot writes the `listen 443 ssl` half, the
+# certificate paths and the HTTP->HTTPS redirect in place. Do NOT pre-write the
+# TLS block: a 443 listener with no certificate yet fails `nginx -t` for the
+# WHOLE box.
+#
+# The `map $http_upgrade $connection_upgrade` block is defined ONCE elsewhere in
+# the box's nginx config. Do NOT redeclare it — a duplicate map is a config error
+# and `nginx -t` refuses the entire box.
+#
+# Enable + reload as a SINGLE command (the && is the safety):
+#   sudo ln -s /etc/nginx/sites-available/sunset-runner /etc/nginx/sites-enabled/
+#   sudo nginx -t && sudo systemctl reload nginx
+
+server {
+    listen 80;
+    server_name <DOMAIN>;
+
+    # Sunset Runner's WebSocket shares the HTTP server and connects at the ROOT
+    # (client uses ws://${location.host}, no /ws prefix), so the upgrade headers
+    # go on `location /`. Without Upgrade/Connection the handshake fails and the
+    # client silently falls back or hangs.
+    location / {
+        proxy_pass http://127.0.0.1:<PORT>;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;   # reference, never redefine
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 1h;      # keep idle game sockets alive
+    }
+}

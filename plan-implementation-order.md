@@ -154,10 +154,14 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 ## Backlog — future features (recorded 2026-08-05, user: "record all these")
 Not scheduled; pick when ready. Ordered by rough impact.
-- [ ] **GO LIVE (deploy)** — fill ops/deploy.env + run the docs/DEPLOYING.md server
-  steps (systemd/nginx HTTP-first/certbot lineage) to publish on kjell.today.
-  Tooling ready (docs/ssh-deploy.sh + /health). Needs the user for the on-box
-  SSH/nginx/cert steps (agent can't reach the box). Port <PORT>.
+- [ ] **GO LIVE (deploy)** — fill the gitignored ops/ configs + run the
+  docs/DEPLOYING.md server steps to publish. Deploy tooling complete (marker-0091):
+  docs/ssh-deploy.sh (--bootstrap/--dry/--yes + allowlist + health guard) and the
+  generic templates docs/sunset-runner.service.example + .nginx.conf.example
+  (placeholders; filled copies live only in gitignored ops/). Real domain/port
+  stay out of the repo. Remaining is on-box work only (agent can't reach the box):
+  fill ops/, `--bootstrap`, install the nginx block, extend the shared certbot
+  lineage, then `./docs/ssh-deploy.sh`.
 - [ ] **Cap DPR on mobile** — clamp client/viewport.js computeBufferSize to DPR<=2;
   the single biggest low-end perf win (backing-store fill is quadratic in DPR).
   ~10 lines, client-only, no repin. Re-run npm run perf:mobile to confirm.

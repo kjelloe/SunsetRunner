@@ -1,15 +1,18 @@
 # Deploying Sunset Runner
 
-Sunset Runner runs on the shared Hetzner box **behind nginx**, one small Node
-process bound to loopback. This is the project-specific playbook; the box-wide
-safety rules (the five ways to take the whole box down, certbot discipline,
-neighbour curl loop) are in [`sibling-project-ssh-deploy-howto.md`](sibling-project-ssh-deploy-howto.md)
-— **read §1–§2 there before your first deploy.**
+Sunset Runner runs on a shared box **behind nginx**, one small Node process bound
+to loopback. This is the generic playbook; every host-specific value (the real
+domain, the claimed port, the SSH target) lives ONLY in gitignored `ops/`, never
+in this repo. The box-wide safety rules (the five ways to take the whole box down,
+certbot discipline, neighbour curl loop) are in `ops/sibling-project-ssh-deploy-howto.md`
+(gitignored) — **read §1–§2 there before your first deploy.**
 
 ## What the deploy script does — `docs/ssh-deploy.sh`
 
-`docs/ssh-deploy.sh [--yes]` pushes the local working tree and restarts the
-service. Its four guards:
+`docs/ssh-deploy.sh` pushes the local working tree and restarts the service.
+Modes: `--bootstrap` (one-time: user + dirs + install `sunset-runner.service`),
+`--dry` (rsync dry-run, change nothing), `--yes` (skip the dirty-tree prompt).
+Its four guards:
 
 - **Allowlist sync.** Only `client/ shared/ engine/ server/ data/` + `package*.json`
   + `LICENSE` ship. Everything else (`.claude`, `test/`, `tools/`, `debugging/`,
@@ -26,76 +29,42 @@ service. Its four guards:
 
 ## First-time setup
 
-### 1. `ops/deploy.env`
+### 1. `ops/deploy.env` + filled configs (all gitignored)
 
 ```bash
-cp docs/deploy.env.example ops/deploy.env   # gitignored — fill in DEPLOY/APP/PORT/PUBLIC_URL
+cp docs/deploy.env.example              ops/deploy.env               # DEPLOY/APP/PORT/PUBLIC_URL
+cp docs/sunset-runner.service.example   ops/sunset-runner.service    # fill <USER>/<PORT>
+cp docs/sunset-runner.nginx.conf.example ops/sunset-runner.nginx.conf # fill <DOMAIN>/<PORT>
 ```
 
-Claim the next free port (**<PORT>** at time of writing) and record it in
-`ops/multi-game-hosting.md` per the howto §3.
+Claim a free loopback port and record it in the shared-box port registry (the
+gitignored ops howto), then put the real value in every `ops/` file above. Only
+the `.example` templates — with `<PORT>`/`<DOMAIN>` placeholders — are tracked.
 
-### 2. Server-side: user, dir, systemd unit
+### 2. Server-side: user, dir, systemd unit — `docs/ssh-deploy.sh --bootstrap`
 
-Create a dedicated user + `/opt/sunset-runner`, then this unit
-(`/etc/systemd/system/sunset-runner.service`). Note **`HOST=127.0.0.1`** (nginx
-is the only public face) and the state paths **outside** the code dir:
-
-```ini
-[Unit]
-Description=Sunset Runner
-After=network.target
-
-[Service]
-User=sunset
-WorkingDirectory=/opt/sunset-runner
-Environment=PORT=<PORT>
-Environment=HOST=127.0.0.1
-Environment=STATE_FILE=/opt/sunset-runner/state/session.json
-Environment=LEADERBOARD_FILE=/opt/sunset-runner/state/leaderboard.json
-ExecStart=/usr/bin/node /opt/sunset-runner/server/index.js
-Restart=on-failure
-RestartSec=5
-
-MemoryMax=512M
-CPUQuota=50%
-TasksMax=256
-
-ProtectSystem=strict
-ProtectHome=true
-PrivateTmp=true
-NoNewPrivileges=true
-ReadWritePaths=/opt/sunset-runner/state
-
-[Install]
-WantedBy=multi-user.target
-```
-
-```bash
-sudo systemctl daemon-reload && sudo systemctl enable sunset-runner
-```
+`--bootstrap` creates the service user + `/opt/sunset-runner/state`, then installs
+and enables the **filled** unit `ops/sunset-runner.service` (templated from
+`docs/sunset-runner.service.example` — it pins **`HOST=127.0.0.1`**, the port,
+`MemoryMax`, and state paths **outside** the code dir so `--delete` cannot eat
+them). It does not start the service — deploy the code first. nginx + certbot
+remain manual (next step).
 
 ### 3. nginx — HTTP-only first, then certbot adds TLS
 
-Ship the server block **HTTP-only** (see howto §2.3), reverse-proxying to the
-loopback port, with the shared WebSocket upgrade map. Then:
+Fill `docs/sunset-runner.nginx.conf.example` into `ops/sunset-runner.nginx.conf`,
+shipped **HTTP-only** (see howto §2.3): certbot writes the TLS half. It proxies
+`location /` to the loopback port and forwards the WebSocket upgrade (the game's
+`ws` shares the HTTP server at the root). Install it:
 
 ```bash
+sudo cp ops/sunset-runner.nginx.conf /etc/nginx/sites-available/sunset-runner
+sudo ln -s /etc/nginx/sites-available/sunset-runner /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx      # single command — the && is the safety
+# Extend the SHARED lineage; never mint a subset (howto §4b.5):
+sudo certbot certificates                          # read the current name set first
 sudo certbot certonly --nginx --cert-name <existing-lineage> -d <every-existing> -d <your-domain>
 sudo systemctl reload nginx
-```
-
-The proxy must forward the WebSocket upgrade (the game is `ws`):
-
-```nginx
-location / {
-    proxy_pass http://127.0.0.1:<PORT>;
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection $connection_upgrade;   # reference, never redefine the map
-    proxy_set_header Host $host;
-}
 ```
 
 ### 4. Deploy
@@ -127,6 +96,6 @@ certificate operation.
 
 - [ ] `https://<your-domain>/health` → `200 ok`
 - [ ] Every neighbour still answers (howto §2 curl loop)
-- [ ] `sudo ss -ltnp | grep :<PORT>` shows **127.0.0.1** only
+- [ ] `sudo ss -ltnp 'sport = :<PORT>'` shows **127.0.0.1** only
 - [ ] `systemctl status sunset-runner` active; `/health` returns 200
-- [ ] Port recorded in `ops/multi-game-hosting.md`; game added to the games index
+- [ ] Port recorded in the shared-box registry; game added to the games index

@@ -1703,3 +1703,37 @@ Client-only (presentation), no engine change, no repin.
    names clipped) so the summary + all-time board no longer overlap.
 
 specs/67. Gate: npm test -> 291/291 + browser smoke OK; 4 Luau gates untouched.
+
+---
+
+## marker-0091 — deploy artifacts (systemd unit + nginx block) (2026-08-10)
+
+Docs/ops only, no code change, no repin. Followed the shared-box hosting pattern
+to finish the deploy tooling started in marker-0089. SECURITY SPLIT held strictly:
+every host-specific value (real domain, claimed port, SSH target, filled configs)
+lives ONLY in gitignored ops/; docs/ carries generic placeholder templates.
+
+- **Port (step 2):** the port assumed in marker-0089 collided with a neighbour on
+  the shared box. Claimed a free port and recorded it in the gitignored shared-box
+  registry + ops/deploy.env. No real port in any tracked file.
+- **systemd unit (step 3):** NEW docs/sunset-runner.service.example (placeholders
+  <USER>/<PORT>) — HOST=127.0.0.1, MemoryMax/CPUQuota/TasksMax,
+  ProtectSystem=strict + ReadWritePaths=state, state paths outside the code dir.
+  The filled copy is ops/sunset-runner.service (gitignored). docs/ssh-deploy.sh
+  gains `--bootstrap` (create user+dirs, scp+enable the FILLED ops/ unit).
+- **nginx block (step 4):** NEW docs/sunset-runner.nginx.conf.example (placeholders
+  <DOMAIN>/<PORT>) — HTTP-only (certbot writes TLS), proxies location / with the
+  WebSocket upgrade headers (the game's ws shares the HTTP server at the root, no
+  /ws prefix), references the shared connection_upgrade map without redeclaring it.
+  Filled copy is ops/sunset-runner.nginx.conf (gitignored).
+- **ssh-deploy.sh:** fixed the port-ownership check (grep -w ':PORT' can never
+  match 127.0.0.1:PORT — digit-before-colon breaks the word boundary; use ss's
+  `sport = :PORT` filter, per the sibling's own finding). Added `--dry`. Generic
+  dev port default (8000); the real port comes from ops/deploy.env.
+- DEPLOYING.md + deploy.env.example + plan backlog rewritten to the template/ops
+  split with placeholders only.
+
+Remaining GO-LIVE work is on-box only (agent can't reach the box): fill the ops/
+configs, `--bootstrap`, install the nginx block, extend the shared certbot
+lineage, `./docs/ssh-deploy.sh`.
+Gate: bash -n docs/ssh-deploy.sh OK; npm test unaffected (no code change).

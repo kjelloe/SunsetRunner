@@ -1,0 +1,32 @@
+[Unit]
+Description=Sunset Runner road racer
+After=network.target
+
+[Service]
+Type=simple
+User=<USER>
+WorkingDirectory=/opt/sunset-runner
+# Loopback only — the reverse proxy is the sole public face.
+Environment=PORT=<PORT>
+Environment=HOST=127.0.0.1
+# Runtime state OUTSIDE the code dir, so an rsync --delete deploy cannot eat it.
+Environment=STATE_FILE=/opt/sunset-runner/state/session.json
+Environment=LEADERBOARD_FILE=/opt/sunset-runner/state/leaderboard.json
+ExecStart=/usr/bin/node /opt/sunset-runner/server/index.js
+Restart=on-failure
+RestartSec=5
+
+# Resource caps — a leak here must not OOM a shared box. Size to the machine.
+MemoryMax=512M
+CPUQuota=50%
+TasksMax=256
+
+# The process needs its own state dir and nothing else.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/sunset-runner/state
+
+[Install]
+WantedBy=multi-user.target

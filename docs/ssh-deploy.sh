@@ -22,7 +22,9 @@ fi
 # shellcheck disable=SC1090
 source "$ENV_FILE"
 : "${DEPLOY:?deploy.env must set DEPLOY (user@host)}" "${APP:?deploy.env must set APP (/opt/...)}"
-: "${SERVICE:=sunset-runner}" "${SSH_OPTS:=}" "${PUBLIC_URL:=}" "${PORT:=<PORT>}"
+# Real host/port/domain come from ops/deploy.env (gitignored); this default is a
+# harmless dev fallback, never the box's actual port.
+: "${SERVICE:=sunset-runner}" "${SSH_OPTS:=}" "${PUBLIC_URL:=}" "${PORT:=8000}"
 
 SSH="ssh $SSH_OPTS"
 SSH_SHOW="$SSH"
@@ -32,9 +34,34 @@ SSH="$SSH -o ControlMaster=auto -o ControlPath=$MUX_SOCK -o ControlPersist=300 -
 cleanup_mux() { ssh -O exit -o ControlPath="$MUX_SOCK" "$DEPLOY" 2>/dev/null || true; }
 trap cleanup_mux EXIT
 
+# Modes:
+#   --bootstrap  one-time server setup: user, /opt dir + state/, install the
+#                systemd unit (docs/sunset-runner.service). nginx + certbot stay
+#                manual — see docs/DEPLOYING.md §3.
+#   --dry        rsync --dry-run: show what WOULD sync, change nothing.
+#   --yes        skip the dirty-tree confirmation (clean-tree / CI redeploys).
+MODE="${1:-}"
+
+if [ "$MODE" = "--bootstrap" ]; then
+  echo "==> Bootstrap: user '${SVC_USER:=sunset}', $APP + state/, systemd unit $SERVICE"
+  $SSH "$DEPLOY" "sudo useradd --system --home $APP --shell /usr/sbin/nologin $SVC_USER 2>/dev/null || true
+    sudo mkdir -p $APP/state && sudo chown -R $SVC_USER:$SVC_USER $APP"
+  # The FILLED unit lives in gitignored ops/ (real port/user), templated from
+  # docs/sunset-runner.service.example. It never ships to GitHub.
+  UNIT="ops/sunset-runner.service"
+  [ -f "$UNIT" ] || { echo "ERROR: $UNIT not found — fill docs/sunset-runner.service.example into ops/"; exit 1; }
+  # shellcheck disable=SC2086
+  scp $SSH_OPTS -o ControlPath="$MUX_SOCK" "$UNIT" "$DEPLOY:/tmp/$SERVICE.service"
+  $SSH "$DEPLOY" "sudo mv /tmp/$SERVICE.service /etc/systemd/system/$SERVICE.service
+    sudo systemctl daemon-reload && sudo systemctl enable $SERVICE"
+  echo "    unit installed + enabled (NOT started — deploy code first)."
+  echo "    NEXT by hand: nginx block (ops/sunset-runner.nginx.conf) + certbot — DEPLOYING.md §3."
+  exit 0
+fi
+
 # Provenance guard: this deploys the WORKING TREE. Say what becomes public and
 # stop for confirmation when it is not a clean commit.
-YES=0; [ "${1:-}" = "--yes" ] && YES=1
+YES=0; [ "$MODE" = "--yes" ] && YES=1
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 SHA=$(git rev-parse --short HEAD)
 DIRTY=$(git status --porcelain | grep -vc '^??' || true)
@@ -55,16 +82,19 @@ $SSH "$DEPLOY" "
   if command -v nginx >/dev/null 2>&1 && ! sudo nginx -t 2>/dev/null; then
     echo '    !! nginx -t FAILS — the next reload would drop EVERY site on this box'
   fi
-  owner=\$(sudo ss -ltnp 2>/dev/null | grep -w ':$PORT' | grep -oE 'users:\(\(\"[^\"]+' | head -1 | cut -d'\"' -f2)
+  # ss's own sport filter, not grep -w: a colon preceded by a digit
+  # (127.0.0.1:$PORT) breaks grep's word boundary, so -w silently never matches.
+  owner=\$(sudo ss -ltnpH \"sport = :$PORT\" 2>/dev/null | grep -oE 'users:\(\(\"[^\"]+' | head -1 | cut -d'\"' -f2)
   if [ -n \"\$owner\" ] && [ \"\$owner\" != 'node' ]; then
-    echo \"    !! port $PORT is held by '\$owner', not node\"
+    echo \"    !! port $PORT is held by '\$owner', not node — a neighbour may have taken it\"
   fi
   df -h / | awk 'NR==2 && \$5+0 > 90 { print \"    !! disk \" \$5 \" full — state writes will fail\" }'
   free -m | awk '/^Mem:/ { if (\$7 < 200) print \"    !! only \" \$7 \"MB available — OOM risk\" }'
 "
 
+DRY=""; [ "$MODE" = "--dry" ] && DRY="--dry-run" && echo "==> DRY RUN — nothing will change"
 echo "==> Syncing runtime code to $DEPLOY:$APP (allowlist)"
-rsync -av --delete --no-owner --no-group \
+rsync -av $DRY --delete --no-owner --no-group \
     --include '/client/***' \
     --include '/shared/***' \
     --include '/engine/***' \
@@ -78,6 +108,7 @@ rsync -av --delete --no-owner --no-group \
     ./ "$DEPLOY:$APP/"
 # --delete keeps the box tree === the allowlist, but state/ is not in the include
 # set so --delete never sees it (it lives beside the code, not under it).
+[ -n "$DRY" ] && { echo "==> DRY RUN complete — no restart."; exit 0; }
 
 echo "==> Installing deps + restarting $SERVICE"
 $SSH "$DEPLOY" \

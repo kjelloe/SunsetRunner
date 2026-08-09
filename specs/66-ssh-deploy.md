@@ -38,6 +38,10 @@ generic templates live in `docs/` and are committed. `docs/ssh-deploy.sh` source
 
 ## Not verified / deferred
 
-Not run against the live box from here (no host identity in this repo). Port <PORT>
-is the intended claim (record in `ops/multi-game-hosting.md` on first deploy). The
-neighbour curl loop + certbot lineage discipline are the howto's, not re-derived.
+Not run against the live box from here (no host identity in this repo). The
+claimed port + real domain are recorded only in the gitignored shared-box registry
+and `ops/deploy.env` (never in this repo). The neighbour curl loop + certbot
+lineage discipline are the howto's, not re-derived.
+
+See marker-0091 for the file-based unit/nginx templates (docs/*.example) and the
+filled copies under gitignored `ops/`.
