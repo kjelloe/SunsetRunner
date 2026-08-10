@@ -49,7 +49,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] traffic/scenery visible + car drift readable (marker-0033)
 - [x] scenery/traffic follow the road curve (marker-0035)
 - [x] hills (visible crests/dips) + a fork on the default course (marker-0036)
-- [ ] native visual/perf tuning (camera magnitudes, CURVE_PUSH_DEN, HILL_SCALE, high-DPR); music
+- [ ] native visual/perf tuning (camera magnitudes, CURVE_PUSH_DEN, HILL_SCALE) — needs real-device screenshots (music DONE marker-0095; high-DPR DONE marker-0092)
 
 ## Milestone 4 — Collision, traffic, AI
 
@@ -71,11 +71,11 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] seat/lane-skew: same-tick-tie fix + symmetric AI dodge (marker-0024)
 - [x] traffic-swap fairness (§16.3) — trafficSwapFairness (marker-0027)
 - [x] client prediction/reconciliation (§21.2) — predict local car + replay (marker-0028)
-- [ ] residual traffic/course lean pass; music; native visual/perf tuning
-- [ ] slice-016 client-smoke
+- [ ] residual traffic/course lean pass; native visual/perf tuning (music DONE marker-0095)
+- [x] slice-016 client-smoke  *(superseded by slice-081 Playwright headless smoke, marker-0081)*
 - [x] slice-017 mobile-touch-controls  *(on-screen touch + fork buttons, synthetic-pointer tested)*
 - [x] slice-018 asset-strip-pipeline  *(procedural sprite manifest + width-pin + sprite renderer)*
-- [ ] music select; native visual/perf tuning (§17)
+- [x] music select (marker-0095); native visual/perf tuning still open (§17)
 
 ## Luau twin (batched — after Milestone 1 lands)
 
@@ -88,7 +88,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 - [x] node --test unit gates + golden fixtures + `test.sh` self-test
 - [x] scenario replay (`engine/scenario.js`) + `checkpoint_1a` + repin tool + `debugging/replay.mjs`
-- [ ] sim campaign (`debugging/sim_campaign_outrun.sh`) — with AI drivers
+- [x] sim campaign with AI drivers  *(delivered as `debugging/sim_campaign.mjs`, marker-0015)*
 - [x] race-seeded traffic (marker-0017) — seeds now vary the race
 - [x] sweep battery (`tools/sim_sweep.mjs`) + fairness (seat-order, car-swap) (marker-0018)
 - [x] route-mirror fairness (needs forks), analyze_sweep.py, seat/lane-skew fix (marker-0040)
