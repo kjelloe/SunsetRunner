@@ -161,7 +161,7 @@ export async function boot(doc = document) {
   function start(carId, timeScale, diffLevel) {
     session = remote
       ? createRemoteSession(`ws://${location.host}`, { courseSet, carSet, startTimeTicks, carId, diff: diffLevel, name: playerName, pid })
-      : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig, carId, timeScale, aiCount });
+      : createLocalSession(courseSet, carSet, { seed: 12345, courseId, startTimeTicks, trafficConfig, carId, timeScale, aiCount, aiSkill: diffLevel });
     if (remote) session.connect();
     activeCarId = carId;
     activeTimeScale = timeScale;

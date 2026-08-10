@@ -153,6 +153,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-093 crash impact feel: decaying screen shake + red flash on local crash (client-only, no repin) (marker-0093)
 - [x] slice-094 near-miss feel: client-detected close-pass whoosh + side streak (wires the dead nearmiss SFX; client-only, no repin) (marker-0094)
 - [x] slice-095 in-race music track select: 4 procedural tracks, M to cycle, persisted (client-only, no repin) (marker-0095)
+- [x] slice-096 AI difficulty tiers: ai_driver AI_SKILL (lookahead + throttle duty), tied to EASY/MED/HARD; default=medium so AI golden unchanged (no repin) (marker-0096)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 

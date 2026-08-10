@@ -1828,3 +1828,30 @@ timbre follows the track, construct from opts.track). README controls table gain
 the M key. specs/71.
 
 Gate: npm test -> 305/305; ./test.sh browser smoke clean; 4 Luau gates untouched.
+
+---
+
+## marker-0096 — AI difficulty tiers (2026-08-10)
+
+Engine (ai_driver.js) + client wiring. NO golden repin, NO Luau change.
+
+engine/ai_driver.js: AI_SKILL {easy/medium/hard} + skillFor()/DEFAULT_SKILL.
+chooseInput(state, seatId, skill=DEFAULT_SKILL) uses skill.lookahead for the
+traffic scan and a deterministic throttle duty cycle keyed on state.tick
+((tick % throttlePeriod) < throttleOn) — no wall-clock, integer-only. easy:
+lookahead 3000, gas 3/4 (late dodges + coasts = slower); medium: 6000, gas every
+tick = THE ORIGINAL behaviour; hard: 9000, gas every tick (sees furthest).
+
+WHY NO REPIN: medium reproduces prior behaviour exactly (throttlePeriod 1 =>
+tick%1<1 always true; lookahead 6000). The AI golden path runAiRace ->
+chooseInput(state,id) defaults to medium, so its inputs are byte-identical: the
+pinned AI golden 3ce72c5877d79295 (tick 307, 1 cp) is unchanged, and the AI is a
+command SOURCE not part of the reducer contract so the 4 Luau gates are untouched.
+
+Wiring: session_local opts.aiSkill -> skillFor() -> every AI seat's chooseInput;
+main.js passes diffLevel (EASY/MED/HARD keys already match AI_SKILL keys). MP AI
+unaffected (server has no AI seats). test/ai_driver.test.js +3 (default=medium,
+easy duty cycle, hard lookahead reacts where easy doesn't). specs/72. README
+difficulty feature line updated.
+
+Gate: npm test -> 308/308; ./test.sh 4 Luau gates + browser smoke green.

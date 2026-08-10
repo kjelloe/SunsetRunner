@@ -7,7 +7,7 @@
 import { createInitialState } from "../engine/state.js";
 import { apply } from "../engine/reducer.js";
 import { CMD_INPUT, CMD_ADVANCE_TICK, CMD_FORK_CHOICE } from "../engine/commands.js";
-import { chooseInput } from "../engine/ai_driver.js";
+import { chooseInput, skillFor } from "../engine/ai_driver.js";
 
 // Rival name pool (feels like real players above their cars).
 const AI_NAMES = ["Max", "Zoe", "Kai", "Ava", "Leo", "Mia", "Ivy", "Rex", "Nia", "Ace", "Jax", "Uma"];
@@ -18,6 +18,7 @@ export function createLocalSession(courseSet, carSet, opts = {}) {
   const carId = opts.carId ?? 1;
   const aiCount = Math.max(0, Math.min(opts.aiCount ?? 0, AI_NAMES.length));
   const ctx = { courseSet, carSet, trafficConfig: opts.trafficConfig, timeScale: opts.timeScale ?? 100 };
+  const aiSkill = skillFor(opts.aiSkill); // AI opponents match the chosen difficulty
 
   // Seat 1 is the player; AI seats are staggered across start lanes with cars
   // cycled through the roster. `aiMeta` keeps their (non-engine) name/car.
@@ -59,7 +60,7 @@ export function createLocalSession(courseSet, carSet, opts = {}) {
       for (let i = 1; i < state.seats.length; i++) {
         const s = state.seats[i];
         if (s.finishTicks >= 0 || s.timedOut) continue;
-        state = apply(state, { type: CMD_INPUT, seatId: s.id, ...chooseInput(state, s.id) }, ctx);
+        state = apply(state, { type: CMD_INPUT, seatId: s.id, ...chooseInput(state, s.id, aiSkill) }, ctx);
       }
       state = apply(state, { type: CMD_ADVANCE_TICK }, ctx);
       return state;

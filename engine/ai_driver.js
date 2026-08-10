@@ -7,12 +7,28 @@ import { LANE_WIDTH, STEER_UNIT } from "../shared/constants.js";
 import { absI32 } from "../shared/fixedmath.js";
 import { ROAD_HALF_WIDTH } from "./car_physics.js";
 
-const LOOKAHEAD = 6000; // roadZ ahead to watch for traffic
+// AI difficulty tiers. `lookahead` is how far ahead (roadZ) the AI watches for
+// traffic — see sooner, dodge cleaner, crash less. Throttle is a deterministic
+// duty cycle keyed on state.tick (NO wall-clock): the car holds the gas for
+// `throttleOn` of every `throttlePeriod` ticks, so a weaker tier coasts and runs
+// slower. `medium` is the ORIGINAL behaviour (lookahead 6000, gas every tick), so
+// the default keeps the AI golden byte-identical — no repin.
+export const AI_SKILL = {
+  easy:   { lookahead: 3000, throttleOn: 3, throttlePeriod: 4 }, // late dodges, coasts 1/4
+  medium: { lookahead: 6000, throttleOn: 1, throttlePeriod: 1 }, // original: always flat out
+  hard:   { lookahead: 9000, throttleOn: 1, throttlePeriod: 1 }, // sees furthest, always flat out
+};
+export const DEFAULT_SKILL = AI_SKILL.medium;
+
+export function skillFor(level) {
+  return (level && AI_SKILL[level]) || DEFAULT_SKILL;
+}
 
 // Hold your lane; only steer to dodge traffic ahead or to recover from off-road.
 // Lane-holding (not centre-seeking) is what lets a staggered field race instead
-// of converging on the centre line and piling up.
-export function chooseInput(state, seatId) {
+// of converging on the centre line and piling up. `skill` defaults to the
+// original medium tier, so callers that pass nothing (the golden) are unchanged.
+export function chooseInput(state, seatId, skill = DEFAULT_SKILL) {
   const seat = state.seats.find((s) => s.id === seatId);
   if (!seat || seat.finishTicks >= 0 || seat.timedOut) return { steer: 0, accel: 0, brake: 0 };
 
@@ -21,7 +37,7 @@ export function chooseInput(state, seatId) {
   for (const t of state.traffic) {
     if (t.segmentId !== seat.segmentId) continue;
     const dz = t.roadZ - seat.roadZ;
-    if (dz <= 0 || dz > LOOKAHEAD) continue;
+    if (dz <= 0 || dz > skill.lookahead) continue;
     if (absI32(t.laneX - seat.laneX) >= LANE_WIDTH) continue;
     if (!threat || dz < threat.dz) threat = { dz, laneX: t.laneX };
   }
@@ -41,5 +57,7 @@ export function chooseInput(state, seatId) {
   } else {
     steer = 0; // hold lane
   }
-  return { steer: steer * STEER_UNIT, accel: 1, brake: 0 };
+  // Deterministic throttle duty cycle (weaker tiers coast); keyed on state.tick.
+  const accel = (state.tick % skill.throttlePeriod) < skill.throttleOn ? 1 : 0;
+  return { steer: steer * STEER_UNIT, accel, brake: 0 };
 }
