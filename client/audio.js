@@ -3,11 +3,21 @@
 // created until resume() runs under a user gesture (browsers block autoplay).
 // The AudioContext is injectable so the graph is testable without a real device.
 
-const NOTE = { // Hz for a small pentatonic loop (procedural music, no assets).
-  a3: 220, c4: 261.63, d4: 293.66, e4: 329.63, g4: 392, a4: 440,
+const NOTE = { // Hz for the procedural loops (no asset files).
+  a2: 110, c3: 130.81, e3: 164.81, g3: 196,
+  a3: 220, c4: 261.63, d4: 293.66, e4: 329.63, f4: 349.23, g4: 392, a4: 440, c5: 523.25, d5: 587.33, e5: 659.25,
 };
-const MUSIC_LOOP = ["a3", "c4", "e4", "g4", "e4", "c4", "d4", "a4"];
 const STEP_SECONDS = 0.18;
+
+// Selectable procedural tracks (same tempo — only melody + timbre change, so the
+// scheduler needs no per-track rework). Track 0 is the original loop, so the
+// default sound is unchanged. Pick with the M key / ?track=N (see main.js).
+export const TRACKS = [
+  { name: "SUNSET", wave: "triangle", loop: ["a3", "c4", "e4", "g4", "e4", "c4", "d4", "a4"] },
+  { name: "NEON", wave: "square", loop: ["a2", "e3", "a3", "c4", "e4", "c4", "a3", "e3"] },
+  { name: "COAST", wave: "sine", loop: ["c4", "e4", "g4", "c5", "a4", "g4", "e4", "d4"] },
+  { name: "CHROME", wave: "sawtooth", loop: ["d4", "f4", "a4", "d5", "e5", "d5", "a4", "f4"] },
+];
 
 // SFX: [type, startHz, endHz, seconds, peakGain].
 const SFX = {
@@ -30,6 +40,8 @@ export function createAudio(opts = {}) {
   let musicOn = false;
   let musicStep = 0;
   let musicTimer = null;
+  const wrapTrack = (i) => ((i % TRACKS.length) + TRACKS.length) % TRACKS.length;
+  let trackIndex = wrapTrack(opts.track | 0);
 
   function ensure() {
     if (ctx || !Ctx || !enabled) return ctx;
@@ -73,7 +85,9 @@ export function createAudio(opts = {}) {
 
   function scheduleMusic() {
     if (!ctx || !musicOn || !enabled) return;
-    blip("triangle", NOTE[MUSIC_LOOP[musicStep % MUSIC_LOOP.length]], NOTE[MUSIC_LOOP[musicStep % MUSIC_LOOP.length]], STEP_SECONDS, 0.12);
+    const trk = TRACKS[trackIndex];
+    const hz = NOTE[trk.loop[musicStep % trk.loop.length]];
+    blip(trk.wave, hz, hz, STEP_SECONDS, 0.12);
     musicStep++;
     if (opts.setInterval || typeof setInterval !== "undefined") {
       const si = opts.setInterval || setInterval;
@@ -112,5 +126,10 @@ export function createAudio(opts = {}) {
       musicOn = false;
       if (musicTimer !== null) { (opts.clearInterval || clearInterval)(musicTimer); musicTimer = null; }
     },
+    // Music track selection. Same tempo, different melody/timbre; the next
+    // scheduled note uses the new track (no restart needed).
+    get track() { return { index: trackIndex, name: TRACKS[trackIndex].name, count: TRACKS.length }; },
+    setTrack(i) { trackIndex = wrapTrack(i | 0); return this.track; },
+    cycleTrack() { trackIndex = wrapTrack(trackIndex + 1); return this.track; },
   };
 }

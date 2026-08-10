@@ -152,6 +152,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-092 cap effective DPR at 2 on mobile (client/viewport.js; 4x 62->100fps, 6x 38->64fps; no repin) (marker-0092)
 - [x] slice-093 crash impact feel: decaying screen shake + red flash on local crash (client-only, no repin) (marker-0093)
 - [x] slice-094 near-miss feel: client-detected close-pass whoosh + side streak (wires the dead nearmiss SFX; client-only, no repin) (marker-0094)
+- [x] slice-095 in-race music track select: 4 procedural tracks, M to cycle, persisted (client-only, no repin) (marker-0095)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 
@@ -171,6 +172,7 @@ Not scheduled; pick when ready. Ordered by rough impact.
   playable Roblox game: Studio rendering, input, UI. Engine parity already proven;
   this is the presentation/host layer. Larger effort (previously deferred).
 - [ ] **More gameplay** — remaining candidates: power-ups / boost pads, AI
-  difficulty tiers, in-race music track select. (crash feel done marker-0093,
-  near-miss feel done marker-0094.) Pick one per slice. power-ups/AI-tiers are
-  engine changes → repin + Luau twin; music-select is client-only.
+  difficulty tiers. (crash feel marker-0093, near-miss feel marker-0094,
+  music-select marker-0095 all done — the client-only feel items are exhausted.)
+  Both remaining are ENGINE changes → conscious golden repin + Luau twin mirror;
+  best done with the user available to confirm the repin, not unattended.

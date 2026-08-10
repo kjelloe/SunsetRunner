@@ -85,3 +85,36 @@ test("setEnabled(false) mutes the engine and blocks new SFX", () => {
   a.event("crash");
   assert.equal(f.oscillators.length, n); // no new node while muted
 });
+
+test("music tracks: default is track 0 (SUNSET/triangle); select + cycle + wrap", () => {
+  const f = fakeAudio();
+  const a = createAudio(opts(f));
+  a.resume();
+  // oscillators[0] is the engine; [1] is the first scheduled music note.
+  assert.equal(f.oscillators[1].type, "triangle");
+  assert.deepEqual(a.track, { index: 0, name: "SUNSET", count: 4 });
+  assert.equal(a.setTrack(2).name, "COAST");
+  assert.equal(a.setTrack(9).index, 1);   // 9 % 4 wraps
+  assert.equal(a.cycleTrack().index, 2);
+  a.setTrack(3);
+  assert.equal(a.cycleTrack().index, 0);  // cycles past the end back to 0
+});
+
+test("music track select changes the next scheduled note's timbre", () => {
+  let scheduled = null;
+  const f = fakeAudio();
+  const a = createAudio({ AudioContext: f.Ctx, setInterval: (cb) => { scheduled = cb; return 1; }, clearInterval: () => {} });
+  a.resume();
+  assert.equal(f.oscillators[1].type, "triangle"); // track 0
+  a.setTrack(3);                                    // CHROME / sawtooth
+  scheduled();                                      // schedule the next note
+  assert.equal(f.oscillators.at(-1).type, "sawtooth");
+});
+
+test("music track can be constructed from opts.track (persisted / ?track=N)", () => {
+  const f = fakeAudio();
+  const a = createAudio({ ...opts(f), track: 1 });
+  a.resume();
+  assert.equal(f.oscillators[1].type, "square"); // NEON
+  assert.equal(a.track.name, "NEON");
+});

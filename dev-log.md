@@ -1806,3 +1806,25 @@ off-track/other-segment suppression, cooldown collapse, reset re-arm, streak sid
 + window). specs/70.
 
 Gate: npm test -> 302/302; ./test.sh browser smoke clean; 4 Luau gates untouched.
+
+---
+
+## marker-0095 — in-race music track select (2026-08-10)
+
+Client-only (audio/presentation), no engine change, no repin, no Luau change.
+Backlog "in-race music track select".
+
+client/audio.js: single MUSIC_LOOP -> TRACKS table of 4 procedural loops (SUNSET
+triangle [the original, track 0 = unchanged default], NEON square, COAST sine,
+CHROME sawtooth) sharing tempo, differing in melody + oscillator wave, so the
+scheduler just reads the active track. New API: get track {index,name,count},
+setTrack(i) (wraps), cycleTrack(); createAudio({track}) sets the initial one.
+input.js: M is an edge event (readMusicCycle(), Q/E-style queue). main.js: on the
+M edge (any phase) cycleTrack() + toast "♪ NAME" via the stage announcer + persist
+to localStorage["sunset.music.track"]; startup reads that key or ?track=N.
+
+test/audio.test.js +3 (default track0/triangle, select+cycle+wrap, next note
+timbre follows the track, construct from opts.track). README controls table gains
+the M key. specs/71.
+
+Gate: npm test -> 305/305; ./test.sh browser smoke clean; 4 Luau gates untouched.

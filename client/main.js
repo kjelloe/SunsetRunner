@@ -9,7 +9,7 @@ import { loadTrafficConfig } from "../shared/traffic_data.js";
 import { TICK_HZ } from "../shared/constants.js";
 import { createLocalSession } from "./session_local.js";
 import { createRemoteSession } from "./session_remote.js";
-import { installKeyboard, readInput, readForkChoice, readMenuNav } from "./input.js";
+import { installKeyboard, readInput, readForkChoice, readMenuNav, readMusicCycle } from "./input.js";
 import { installTouch, readTouchInput, readTouchFork, drawTouchControls, touchDetected } from "./touch_controls.js";
 import { render } from "./renderer_canvas.js";
 import { createCelebration } from "./celebration.js";
@@ -112,8 +112,13 @@ export async function boot(doc = document) {
   const nearMiss = createNearMiss();
 
   // Procedural audio: engine hum + SFX + chiptune. Browsers block autoplay, so
-  // it only spins up on the first user gesture. ?mute=1 disables it.
-  const audio = createAudio({ enabled: params.get("mute") !== "1" });
+  // it only spins up on the first user gesture. ?mute=1 disables it. The music
+  // track (M to cycle) persists in localStorage; ?track=N overrides.
+  const MUSIC_KEY = "sunset.music.track";
+  const initTrack = Number(
+    params.get("track") ?? (typeof localStorage !== "undefined" ? localStorage.getItem(MUSIC_KEY) : null) ?? 0,
+  ) || 0;
+  const audio = createAudio({ enabled: params.get("mute") !== "1", track: initTrack });
   let audioArmed = false;
   const armAudio = () => { if (!audioArmed) { audioArmed = true; audio.resume(); } };
   doc.addEventListener?.("keydown", armAudio);
@@ -245,6 +250,12 @@ export async function boot(doc = document) {
   let last = performance.now();
   let frameCount = 0;
   function frame(now) {
+    // Music track cycle (M) — works in any phase; toast the new track + persist.
+    if (readMusicCycle()) {
+      const t = audio.cycleTrack();
+      announcer.announce(`♪ ${t.name}`, now);
+      if (storage) { try { storage.setItem(MUSIC_KEY, String(t.index)); } catch {} }
+    }
     // Drain menu-nav events every frame so the queue never leaks; only the
     // select phase acts on them (arrow keys also steer during the race).
     let ev;
