@@ -111,6 +111,18 @@ Open `...index.html?course=4`.
 - [ ] **[feel]** Crossing a checkpoint shows a **big numbered standings board**
   (2.5x font) with each racer's seconds behind the leader, that **fades after ~5 s**
   so you can refocus on the race (marker-0090). Legible? Right duration?
+- [ ] **[feel]** **Boost pads** (marker-0097): glowing cyan chevron pads appear on
+  the road (grand tour only). Driving over one gives a burst — top speed lifts and
+  cyan speed-streaks radiate. Is the boost noticeable but not overpowered? Are the
+  pads readable/placed well?
+- [ ] **[feel]** **AI difficulty** (marker-0096): race EASY vs HARD (pre-race
+  picker, or `?diff=easy|hard`). HARD rivals should be a **faster, cleaner** field
+  (dodge earlier, never lift); EASY should fall back (coast + late dodges). Do the
+  tiers feel distinct? Is HARD beatable?
+- [ ] **[feel]** **Crash feel** (marker-0093): hitting traffic gives a short
+  **screen shake + red impact flash**. Near-miss (marker-0094): squeezing past a
+  car without hitting it fires a **whoosh + side streak**. Right punch? Too
+  frequent?
 
 ## 5. Mobile touch controls
 
@@ -133,9 +145,10 @@ On a phone (or desktop with `...index.html?touch=1`):
 - [ ] **[bug]** The screen stays awake while driving (wake lock, marker-0038).
 - [ ] **[feel]** Are the buttons in reachable spots / big enough?
 - [ ] **[feel]** **Frame rate on the actual phone.** `npm run perf:mobile` gives a
-  headless throttled estimate (mid ≈ 60 fps, low-end ≈ 38 fps; see PERFORMANCE.md),
-  but only a real device confirms it. If low-end feels choppy, the first fix is
-  capping DPR to ≤ 2 (backing-store fill is quadratic in DPR).
+  headless throttled estimate. Since **marker-0092 caps effective DPR at ≤2** the
+  harness now measures mid ≈ 100 fps / low-end ≈ 64 fps (was 62/38; see
+  PERFORMANCE.md) — confirm the real device feels smooth AND that DPR-2 is not
+  visibly softer than before on a retina screen.
 
 ## 6. Multiplayer — server room
 
@@ -197,6 +210,10 @@ interact, so press a key / tap first. `?mute=1` disables it.
   **checkpoint** blip when TIME jumps up, a **finish** flourish at the line. Do
   they land at the right moment?
 - [ ] **[feel]** A background **chiptune loop** plays. Pleasant or annoying?
+- [ ] **[feel]** **Music track select** (marker-0095): press **M** to cycle
+  SUNSET / NEON / COAST / CHROME — a `♪ NAME` toast shows and the melody/timbre
+  change; the choice persists on reload (`?track=N` to force). Are the four tracks
+  distinct and worth having?
 - [ ] **[bug]** `?mute=1` → total silence, no console errors.
 
 ## 9. Car select (marker-0041)
@@ -208,6 +225,25 @@ interact, so press a key / tap first. `?mute=1` disables it.
 - [ ] **[bug]** After the car, a **SELECT DIFFICULTY** screen shows EASY / MEDIUM /
   HARD (marker-0053); tap/enter one to start. EASY should give noticeably more
   time at checkpoints than HARD. `?diff=hard` skips it. (Local only for now.)
+
+## 10. Roblox host — Studio (marker-0098)
+
+`rojo serve roblox/default.project.json`, connect the Rojo plugin, press **Play**.
+See `roblox/README.md`. This is the minimum playable host; feel/scale are unproven.
+
+- [ ] **[bug]** It boots: no Output errors; a road of Parts recedes ahead, a car
+  Part sits near the camera, HUD shows speed/TIME. No avatar spawns.
+- [ ] **[feel]** **Driving**: W/S throttle, A/D steer, Q/E fork. Does the car move
+  and steer, and does the road **scroll toward you** with speed?
+- [ ] **[feel]** **Scale/camera**: is the road width / depth / hill height and the
+  chase-camera distance reasonable, or does it look too tight/flat/far? (The
+  studs-per-unit constants in `Render.luau` are first-guesses.)
+- [ ] **[bug]** **Curves & hills** bend/rise the Part ribbon (course 4 data);
+  **traffic** and **boost pads** appear as Parts at the right spots; boosting turns
+  the car cyan and shows BOOST!.
+- [ ] **[bug]** Finish/timeout **loops into a fresh race** (no framing yet).
+- [ ] **[unverified]** The sim matches the browser (it runs the same reducer) — a
+  desync would be a twin bug, not a host bug; report anything that looks off.
 
 ## What to report back
 
