@@ -1855,3 +1855,42 @@ easy duty cycle, hard lookahead reacts where easy doesn't). specs/72. README
 difficulty feature line updated.
 
 Gate: npm test -> 308/308; ./test.sh 4 Luau gates + browser smoke green.
+
+---
+
+## marker-0097 — boost pads (power-ups) (2026-08-10)
+
+Engine + Luau twin + client render. FULL golden repin (STATE_VERSION 2->3) + a NEW
+boost_1a parity gate (the 5th). The biggest cross-language slice since hazards
+(0066).
+
+DESIGN — pads are DATA, boost is one field. Only new hashed state: seat.boostTicks.
+Pads are course data (segment.boostPads: [{roadZ,laneX}]) read from ctx like
+checkpoints/curves, never stored in state. engine/boost.js resolveBoostPickups
+(tick step 9c): a seat within PAD_LENGTH(512) along / PAD_WIDTH(256) lateral of a
+pad on its segment gets boostTicks=BOOST_TICKS(40); pads are fixed markers, not
+consumed. car_physics.stepLongitudinal: while boostTicks>0, +BOOST_ACCEL(90) shove
+and cap +BOOST_SPEED(512). reducer decrements boostTicks (step 3b, next to crash
+stun). boostTicks=0 on courses without pads => those runs behaviour-identical.
+
+GATING: pads only on course 4 (grand_tour segs 100/102/106). Courses 1-3 have
+none, so the 4 milestone goldens keep their exact sim and repin only for the
+version+field bytes. boostPads added to the content-drift pin.
+
+LUAU TWIN: mirrored constants/state/car_physics/reducer/snapshot + NEW luau/
+boost.luau; copy_state/road_data unchanged (copy/carry all fields). NEW
+luau/boost-1a-check.luau (course 4, seed 777, accel-only; pad at ~tick 20 lifts
+speed to 2912 = 2400+512). 5th lune gate wired into test.sh + luau_engine.test.js.
+
+REPIN (conscious): spine hashState_spine0 1f5ad3cc9944ec92 + luau spine version 3;
+checkpoint_1a 2fc22acd892b310d, collision_1a ffbad0df89bb497e, fork_1a
+52f3496b79b37d16, physics_1a t500 df45ddf3f1511fb7, AI 43762b8616301876; content
+1338dbe83fe3de41 (+boostPads). All census/finish ticks UNCHANGED.
+
+CLIENT: renderer_canvas drawBoostPads (glowing cyan double-chevron on the road) +
+drawBoostEffect (cyan speed streaks while boosting). Presentation only.
+test/boost.test.js (physics branch, data pickup on/off, boost_1a golden, speed
+exceeds base cap). specs/73. Tick order in CLAUDE.md updated (3b countdown, 9c
+pickup). README features + Luau badge (4->5 gates).
+
+Gate: npm test -> 313/313; ./test.sh 5 Luau gates + browser smoke green.

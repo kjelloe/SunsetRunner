@@ -9,6 +9,7 @@ import { stepLongitudinal, stepLateral, applyCurvePush } from "./car_physics.js"
 import { advanceRoad, curveAt } from "./road_progress.js";
 import { spawnSegmentTraffic, advanceTraffic, advanceHazards } from "./traffic.js";
 import { resolveTrafficCollisions, resolveHazardCollisions, resolveRivalCollisions } from "./collision.js";
+import { resolveBoostPickups } from "./boost.js";
 import { getCar } from "../shared/car_data.js";
 import { getSegment } from "../shared/road_data.js";
 import { truncDivI32 } from "../shared/fixedmath.js";
@@ -42,6 +43,7 @@ export function apply(state, command, ctx = {}) {
     for (const seat of next.seats) {  // deterministic array order
       if (!seat.active || seat.finishTicks >= 0 || seat.timedOut) continue;
       if (seat.crashedTicks > 0) seat.crashedTicks -= 1; // recover from a crash stun
+      if (seat.boostTicks > 0) seat.boostTicks -= 1;      // boost-pad boost counts down
       const car = getCar(ctx.carSet, seat.carId);
       stepLongitudinal(seat, car);    // 4. accel / brake / drag
       stepLateral(seat, car);         // 5. steer / lane
@@ -80,6 +82,7 @@ export function apply(state, command, ctx = {}) {
     if (ctx.rivalCollision) {
       for (const e of resolveRivalCollisions(next, next.tick)) next.events.push(e);
     }
+    resolveBoostPickups(next, ctx.courseSet); // 9c. boost-pad pickup (data-driven)
     advanceTraffic(next, ctx.courseSet); // 8b. move/despawn traffic
     advanceHazards(next);                // 8c. slide/despawn hazards
     return next;

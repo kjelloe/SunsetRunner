@@ -4,10 +4,10 @@
   "courseId": 1,
   "carId": 1,
   "accelRun": {
-    "hashAtTick10": "4f9dcb958f10a27a",
-    "hashAtTick100": "cc4ac8f2181e3d73",
+    "hashAtTick10": "43cacc76c5df0021",
+    "hashAtTick100": "a71f21531491f33c",
     "finishTick": 450,
-    "hashAtTick500": "886bab679be47c30",
+    "hashAtTick500": "df45ddf3f1511fb7",
     "checkpointTick": 108,
     "checkpointBonus": 600,
     "finalTimerTicks": 1822,

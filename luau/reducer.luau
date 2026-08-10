@@ -8,6 +8,7 @@ local physics = require("./car_physics")
 local roadProgress = require("./road_progress")
 local trafficMod = require("./traffic")
 local collision = require("./collision")
+local boost = require("./boost")
 local car = require("./car_data")
 local road = require("./road_data")
 local fixed = require("./fixedmath")
@@ -51,6 +52,9 @@ local function apply(state, command, ctx)
 			if seat.crashedTicks > 0 then
 				seat.crashedTicks -= 1
 			end
+			if seat.boostTicks > 0 then
+				seat.boostTicks -= 1
+			end
 			local c = car.getCar(ctx.carSet, seat.carId)
 			physics.stepLongitudinal(seat, c)
 			physics.stepLateral(seat, c)
@@ -93,6 +97,7 @@ local function apply(state, command, ctx)
 				table.insert(next.events, e)
 			end
 		end
+		boost.resolveBoostPickups(next, ctx.courseSet)
 		trafficMod.advanceTraffic(next, ctx.courseSet)
 		trafficMod.advanceHazards(next)
 		return next

@@ -2,8 +2,8 @@
 
 **A deterministic, server-authoritative arcade road racer for the browser — with a byte-identical Roblox/Luau twin.**
 
-![tests](https://img.shields.io/badge/tests-308%20passing-brightgreen)
-![luau parity](https://img.shields.io/badge/Luau%20parity-4%20gates-brightgreen)
+![tests](https://img.shields.io/badge/tests-313%20passing-brightgreen)
+![luau parity](https://img.shields.io/badge/Luau%20parity-5%20gates-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A518-informational)
 ![build](https://img.shields.io/badge/build-none%20(vanilla%20ESM)-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
@@ -20,6 +20,7 @@ No framework. No build step. No bundler. Just Node.js and vanilla ES modules.
 - ⏱️ **Checkpoint timer** — classic arcade extend-your-time loop; finish or time out.
 - 🚗 **Traffic & collisions** — deterministic segment-seeded traffic, crash-and-recover, and optional same-segment rival bumps.
 - 🍴 **Branching forks** — steer into the branch you want (or commit with **Q/E**), with a named "FORK AHEAD" preview; four courses including a 30-stage grand tour with named fork branches.
+- ⚡ **Boost pads** — glowing power-up pads on the grand tour; drive over one for a burst that lifts your top speed. Data-driven and fully deterministic (twinned in Luau).
 - 🏁 **Race framing** — a 3-2-1-GO! countdown, big centre timer, and an end-of-race summary (stage reached per player) with a 30 s countdown to a fresh race.
 - 🎚️ **Difficulty** — EASY / MEDIUM / HARD scales both checkpoint time and the AI opponents' skill (lookahead + throttle), so a harder tier is a faster, cleaner field.
 - 🏝️ **Per-leg terrain** — ten themes (palm/beach/wheat/lake/forest/autumn/canyon/mountain/alpine/night) with per-side ground (sea, ponds), icy/wet road sheen, fir + wheat sprites, and per-terrain road width.
@@ -65,7 +66,7 @@ Open **http://localhost:8000/client/index.html?mode=remote** in two tabs.
 ### Test
 
 ```bash
-npm test               # node --test: 308 unit/integration tests
+npm test               # node --test: 313 unit/integration tests
 ./test.sh              # the above + Luau (lune) cross-language parity gates
 ```
 
@@ -100,7 +101,7 @@ specs/    the design brief + numbered decision docs
 
 **Determinism is the contract.** No floats in `shared/` or `engine/`, integer fixed-point (256-unit), a pinned reducer tick order, and no wall-clock in engine state. State is hashed (FNV-1a 64 over canonical bytes) and pinned in golden fixtures. See [`specs/01-determinism-contract.md`](specs/01-determinism-contract.md).
 
-**The Luau twin** mirrors the engine module-for-module. Four `lune` gates re-run the golden scenarios (`spine`, `checkpoint_1a`, `collision_1a`, `fork_1a`) and assert the Luau output matches the JS **byte-for-byte** — so the Roblox build can never silently drift.
+**The Luau twin** mirrors the engine module-for-module. Five `lune` gates re-run the golden scenarios (`spine`, `checkpoint_1a`, `collision_1a`, `fork_1a`, `boost_1a`) and assert the Luau output matches the JS **byte-for-byte** — so the Roblox build can never silently drift.
 
 **Multiplayer** is server-authoritative: the client sends input intents, the server ticks at 20 Hz and broadcasts per-seat views (self + filtered ghosts + traffic + standings). The client **predicts its own car** and reconciles against each view (§21.2).
 
@@ -108,7 +109,7 @@ specs/    the design brief + numbered decision docs
 
 ## 🧪 Testing & determinism
 
-- `npm test` — 308 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
+- `npm test` — 313 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
 - `./test.sh` — adds the Luau parity gates ([`lune`](https://lune-org.github.io/docs) required; skipped gracefully if absent) + a headless-browser smoke (`npm run test:browser`, Playwright; `SKIP_BROWSER=1` to skip).
 - `node debugging/replay.mjs` — replay a scenario as a race report.
 - `node debugging/sim_campaign.mjs` — AI "do systems fire?" gate across 5 seeds.

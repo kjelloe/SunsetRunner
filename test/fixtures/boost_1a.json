@@ -1,0 +1,45 @@
+{
+  "note": "boost_1a fixture — proves the boost-pad power-up (marker-0097). Course 4 grand_tour, accel-only, hits the seg-100 center pad ~tick 20; boost raises the cap to 2912 (2400+512) before decaying. Seed 777.",
+  "scenario": {
+    "name": "boost_1a",
+    "seed": 777,
+    "courseId": 4,
+    "startTimeTicks": 3000,
+    "maxTicks": 80,
+    "runToMaxTicks": true,
+    "hashTicks": [
+      10,
+      20,
+      40,
+      60,
+      80
+    ],
+    "seats": [
+      {
+        "id": 1,
+        "carId": 1
+      }
+    ],
+    "inputs": [
+      {
+        "tick": 1,
+        "seatId": 1,
+        "steer": 0,
+        "accel": 1,
+        "brake": 0
+      }
+    ]
+  },
+  "expected": {
+    "hashes": {
+      "10": "1c1471b8571929c7",
+      "20": "d26aa29207113481",
+      "40": "3b7d4e035bab40f5",
+      "60": "c12d2a87d6995166",
+      "80": "56319cd1ecb599d6"
+    },
+    "finalHash": "56319cd1ecb599d6",
+    "lastTick": 80,
+    "census": []
+  }
+}

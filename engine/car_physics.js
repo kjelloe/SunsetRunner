@@ -3,7 +3,7 @@
 // (never on shared state). Tuning constants live here; car stats come from data.
 
 import { clampI32, floorDivI32, truncDivI32 } from "../shared/fixedmath.js";
-import { STEER_UNIT } from "../shared/constants.js";
+import { STEER_UNIT, BOOST_ACCEL, BOOST_SPEED } from "../shared/constants.js";
 
 export const NATURAL_DRAG = 8;       // coast deceleration when neither pedal held
 export const ROAD_HALF_WIDTH = 512;  // |laneX| beyond this is off-road
@@ -14,7 +14,10 @@ export const CURVE_PUSH_DEN = 320;   // divides curve*speed into a per-tick shov
                                      // while braking or counter-steering holds the line)
 
 // Step 4 of the tick order: accel / brake / drag, then off-road drag, clamped.
+// A boost pad (seat.boostTicks > 0) adds a shove and lifts the cap; boostTicks
+// is 0 on every course without pads, so those runs are byte-identical.
 export function stepLongitudinal(seat, car) {
+  const boosting = seat.boostTicks > 0;
   let speed = seat.speed;
   if (seat.brakeHeld) {
     speed -= car.brake;
@@ -23,10 +26,12 @@ export function stepLongitudinal(seat, car) {
   } else {
     speed -= NATURAL_DRAG;
   }
+  if (boosting) speed += BOOST_ACCEL;
   if (seat.laneX < -ROAD_HALF_WIDTH || seat.laneX > ROAD_HALF_WIDTH) {
     speed -= car.offroadDrag;
   }
-  seat.speed = clampI32(speed, 0, car.maxSpeed);
+  const cap = boosting ? car.maxSpeed + BOOST_SPEED : car.maxSpeed;
+  seat.speed = clampI32(speed, 0, cap);
 }
 
 // Step 5: steering. Steer authority tapers from steerLow (slow) to steerHigh

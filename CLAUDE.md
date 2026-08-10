@@ -12,10 +12,11 @@ names/assets — it is a Sega trademark).
   `LANE_WIDTH`, `SPEED_SCALE` = 256; `TICK_HZ` = 20. Never drift these.
 - **Reducer is `apply(state, command) -> state`**, pure, never mutates input.
 - **Pinned tick order** (do not casually reorder — it changes feel and hashes):
-  1 clear per-tick events · 2 player input · 3 AI input · 4 accel/brake/drag ·
-  5 steer/lane/drift · 6 advance road · 7 forks/checkpoints/finish · 8 traffic ·
-  8c hazards (advance/despawn) · 9 traffic collision · 9b hazard collision ·
-  10 rival collision · 11 timer · 12 near-miss/bonus ·
+  1 clear per-tick events · 2 player input · 3 AI input · 3b stun/boost countdown ·
+  4 accel/brake/drag (boost lifts the cap) · 5 steer/lane/drift · 6 advance road ·
+  7 forks/checkpoints/finish · 8 traffic · 8c hazards (advance/despawn) ·
+  9 traffic collision · 9b hazard collision · 10 rival collision ·
+  9c boost-pad pickup · 11 timer · 12 near-miss/bonus ·
   13 invariants (debug) · 14 hash when requested.
 - **Signed division is explicit** — use `truncDivI32` for symmetric (mirrored)
   quantities so JS and Luau never disagree.

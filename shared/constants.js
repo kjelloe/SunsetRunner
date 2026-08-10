@@ -27,6 +27,19 @@ export const STEER_UNIT = 256;
 export const DIFFICULTY = { easy: 130, medium: 100, hard: 75 };
 export const DEFAULT_TIME_SCALE = 100;
 
+// Boost pads (power-ups). Pads are COURSE DATA (segment.boostPads: [{roadZ,laneX}]),
+// not engine state — like checkpoints/curves, they are read from ctx, so the only
+// new hashed field is the seat's boostTicks countdown. Driving over a pad (within
+// PAD_LENGTH along the road and PAD_WIDTH laterally) sets boostTicks = BOOST_TICKS;
+// while it counts down the car gets BOOST_ACCEL extra shove and a BOOST_SPEED
+// higher cap. Integer fixed-point, so JS and Luau agree exactly.
+export const BOOST_TICKS = 40;    // 2 s of boost at 20 Hz
+export const BOOST_ACCEL = 90;    // extra per-tick acceleration while boosting
+export const BOOST_SPEED = 512;   // extra top-speed (2 speed units) while boosting
+export const PAD_LENGTH = 512;    // roadZ pickup window (2 road units)
+export const PAD_WIDTH = 256;     // lateral pickup half-width (one lane)
+
 // State schema version — bump on any hashed-state shape change, then repin.
 // v2: added cross-hazards (state.hazards + nextHazardId) — marker-0066.
-export const STATE_VERSION = 2;
+// v3: added seat.boostTicks (boost-pad power-up) — marker-0097.
+export const STATE_VERSION = 3;

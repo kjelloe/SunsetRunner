@@ -34,3 +34,7 @@ test("luau engine twin reproduces collision_1a (via lune)", () => {
 test("luau engine twin reproduces fork_1a (via lune)", () => {
   runLuauGate("luau/fork-1a-check.luau", /LUAU FORK PARITY OK/);
 });
+
+test("luau engine twin reproduces boost_1a (via lune)", () => {
+  runLuauGate("luau/boost-1a-check.luau", /LUAU BOOST PARITY OK/);
+});

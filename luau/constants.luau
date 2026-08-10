@@ -14,5 +14,11 @@ return {
 	RIGHT_LANE = LANE_WIDTH,
 	FORK_LEFT = -1,
 	FORK_RIGHT = 1,
-	STATE_VERSION = 2,
+	-- Boost pads (marker-0097): pads are course data; only seat.boostTicks is state.
+	BOOST_TICKS = 40,
+	BOOST_ACCEL = 90,
+	BOOST_SPEED = 512,
+	PAD_LENGTH = 512,
+	PAD_WIDTH = 256,
+	STATE_VERSION = 3,
 }

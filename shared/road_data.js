@@ -57,6 +57,16 @@ export function loadCourseSet(json) {
     if (seg.seconds !== undefined && (!Number.isFinite(seg.seconds) || seg.seconds <= 0)) {
       throw new RangeError(`segment ${seg.id} seconds must be positive`);
     }
+    // Optional boost pads (marker-0097): fixed road markers read from data, not
+    // hashed state. Each is { roadZ, laneX } in the same integer units as a seat.
+    if (seg.boostPads !== undefined) {
+      if (!Array.isArray(seg.boostPads)) throw new TypeError(`segment ${seg.id} boostPads must be an array`);
+      for (let i = 0; i < seg.boostPads.length; i++) {
+        const p = seg.boostPads[i];
+        assertInt(p.roadZ, `segment ${seg.id} boostPads[${i}].roadZ`);
+        assertInt(p.laneX, `segment ${seg.id} boostPads[${i}].laneX`);
+      }
+    }
     segmentsById.set(seg.id, seg);
   }
 

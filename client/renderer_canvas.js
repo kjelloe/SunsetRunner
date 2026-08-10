@@ -61,10 +61,12 @@ export function render(g, view, state, courseSet, assets, scenery, hud) {
   drawHaze(g, view);
   if (assets) drawScenery(g, view, camX, assets, strips, theme);
   drawCheckpointBanner(g, view, camX, strips, seat, courseSet);
+  drawBoostPads(g, view, camX, strips, seat, courseSet);
   drawTraffic(g, view, state, camX, assets, strips);
   drawHazards(g, view, state, camX, assets, strips);
   drawGhosts(g, view, state, camX, strips, assets);
   drawPlayerCar(g, view, seat, camX, assets);
+  drawBoostEffect(g, view, seat);
   drawHud(g, view, state, hud);
   drawForkPreview(g, view, seat, courseSet, scenery);
   TUNING.roadWidth = baseRoadWidth; // restore the base width for the next frame
@@ -115,6 +117,58 @@ function drawCheckpointBanner(g, view, camX, strips, seat, courseSet) {
   g.fillText("CHECKPOINT", (left.x + right.x) / 2, topY + bh / 2);
   g.textAlign = "left";
   g.textBaseline = "alphabetic";
+}
+
+// Boost pads (marker-0097): fixed course-data markers drawn as a glowing cyan
+// double-chevron on the road at their lane. Purely presentation — the engine
+// reads the same data authoritatively.
+function drawBoostPads(g, view, camX, strips, seat, courseSet) {
+  if (seat.segmentId === -1) return;
+  const seg = getSegment(courseSet, seat.segmentId);
+  const pads = seg && seg.boostPads;
+  if (!pads || pads.length === 0) return;
+  for (const pad of pads) {
+    const dz = pad.roadZ - seat.roadZ;
+    if (dz < ROAD_UNIT || dz > 220 * ROAD_UNIT) continue;
+    const s = sampleStrip(strips, dz);
+    const o = onRoad(view, camX, dz, pad.laneX, s.curveX, s.hillY);
+    const w = Math.max(6, o.half * 0.7);
+    g.save();
+    g.globalAlpha = 0.85;
+    g.fillStyle = "#28e0ff";
+    g.shadowColor = "#28e0ff";
+    g.shadowBlur = w * 0.6;
+    for (let k = 0; k < 2; k++) {           // a forward-pointing double chevron
+      const y = o.y - k * w * 0.5;
+      g.beginPath();
+      g.moveTo(o.x, y - w * 0.35);
+      g.lineTo(o.x + w * 0.5, y);
+      g.lineTo(o.x, y - w * 0.1);
+      g.lineTo(o.x - w * 0.5, y);
+      g.closePath();
+      g.fill();
+    }
+    g.restore();
+  }
+}
+
+// While the local car is boosting, radiate cyan speed streaks from the centre.
+function drawBoostEffect(g, view, seat) {
+  if (!seat || !(seat.boostTicks > 0)) return;
+  const cx = view.w / 2, cy = view.h * 0.62;
+  g.save();
+  g.globalAlpha = 0.5;
+  g.strokeStyle = "#7ff0ff";
+  g.lineWidth = Math.max(1, view.h * 0.004);
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2 + (seat.boostTicks % 4) * 0.2;
+    const r0 = view.h * 0.18, r1 = view.h * 0.42;
+    g.beginPath();
+    g.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0);
+    g.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+    g.stroke();
+  }
+  g.restore();
 }
 
 function drawTraffic(g, view, state, camX, assets, strips) {

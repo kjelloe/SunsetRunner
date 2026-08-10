@@ -25,6 +25,7 @@ local function makeSeat(id: number, carId: number, startSegment: number, startTi
 		timedOut = 0,
 		forkChoice = 0,
 		crashedTicks = 0,
+		boostTicks = 0, -- boost-pad boost countdown (marker-0097)
 	}
 end
 
@@ -36,7 +37,7 @@ local function createInitialState(opts)
 		table.insert(seats, makeSeat(s.id, s.carId, course.startSegment, startTimeTicks))
 	end
 	local state = {
-		version = 2, -- STATE_VERSION (cross-hazards, marker-0066)
+		version = 3, -- STATE_VERSION (boost pads, marker-0097)
 		tick = 0,
 		seed = opts.seed % 4294967296,
 		rng = prng.seedSfc32(opts.seed % 4294967296),

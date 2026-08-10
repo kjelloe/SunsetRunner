@@ -9,8 +9,11 @@ local ROAD_HALF_WIDTH = 512
 local MAX_LANE_OFFSET = 1024
 local CURVE_PUSH_DEN = 320
 local STEER_UNIT = 256 -- mirror shared/constants.js: steerHeld is a signed magnitude
+local BOOST_ACCEL = 90 -- mirror shared/constants.js boost pad (marker-0097)
+local BOOST_SPEED = 512
 
 local function stepLongitudinal(seat, car)
+	local boosting = seat.boostTicks > 0
 	local speed = seat.speed
 	if seat.brakeHeld ~= 0 then
 		speed -= car.brake
@@ -19,10 +22,14 @@ local function stepLongitudinal(seat, car)
 	else
 		speed -= NATURAL_DRAG
 	end
+	if boosting then
+		speed += BOOST_ACCEL
+	end
 	if seat.laneX < -ROAD_HALF_WIDTH or seat.laneX > ROAD_HALF_WIDTH then
 		speed -= car.offroadDrag
 	end
-	seat.speed = fixed.clampI32(speed, 0, car.maxSpeed)
+	local cap = if boosting then car.maxSpeed + BOOST_SPEED else car.maxSpeed
+	seat.speed = fixed.clampI32(speed, 0, cap)
 end
 
 local function stepLateral(seat, car)

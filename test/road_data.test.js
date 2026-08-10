@@ -117,6 +117,10 @@ test("sunset_coast course content hash is pinned", () => {
     for (const v of s.curveProfile) w.writeI32LE(v);
     w.writeU16LE(s.hillProfile.length);
     for (const v of s.hillProfile) w.writeI32LE(v);
+    // boost pads (marker-0097): gameplay data, so pinned against silent drift.
+    const pads = s.boostPads || [];
+    w.writeU16LE(pads.length);
+    for (const p of pads) { w.writeI32LE(p.roadZ); w.writeI32LE(p.laneX); }
   }
   for (const c of cs.courses) {
     w.writeI32LE(c.id);
@@ -124,5 +128,5 @@ test("sunset_coast course content hash is pinned", () => {
     w.writeUtf8U16(c.nameKey);
   }
   const h = computeFnv1a64(w.toBytes());
-  assert.equal(hashToHex64(h.hashHi, h.hashLo), "6430e6d2f164f9cd");
+  assert.equal(hashToHex64(h.hashHi, h.hashLo), "1338dbe83fe3de41"); // repinned: +boostPads (marker-0097)
 });

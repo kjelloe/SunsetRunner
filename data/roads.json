@@ -408,7 +408,13 @@
         0
       ],
       "trafficSeed": 500,
-      "scenerySet": 1
+      "scenerySet": 1,
+      "boostPads": [
+        {
+          "roadZ": 5120,
+          "laneX": 0
+        }
+      ]
     },
     {
       "id": 101,
@@ -478,7 +484,17 @@
         0
       ],
       "trafficSeed": 502,
-      "scenerySet": 1
+      "scenerySet": 1,
+      "boostPads": [
+        {
+          "roadZ": 150000,
+          "laneX": -256
+        },
+        {
+          "roadZ": 600000,
+          "laneX": 256
+        }
+      ]
     },
     {
       "id": 103,
@@ -604,7 +620,13 @@
         0
       ],
       "trafficSeed": 506,
-      "scenerySet": 8
+      "scenerySet": 8,
+      "boostPads": [
+        {
+          "roadZ": 250000,
+          "laneX": 0
+        }
+      ]
     },
     {
       "id": 107,

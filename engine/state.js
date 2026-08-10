@@ -32,6 +32,7 @@ export function makeSeat(id, carId, startSegment, startTimeTicks, laneX = CENTER
     timedOut: 0,
     forkChoice: 0, // pending fork direction (-1 left / 1 right / 0 none), applied at the next fork
     crashedTicks: 0, // post-traffic-crash stun/immunity countdown
+    boostTicks: 0, // remaining boost-pad boost (>0 = accel/cap bonus, marker-0097)
   };
 }
 

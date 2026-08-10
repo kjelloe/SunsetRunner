@@ -154,6 +154,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-094 near-miss feel: client-detected close-pass whoosh + side streak (wires the dead nearmiss SFX; client-only, no repin) (marker-0094)
 - [x] slice-095 in-race music track select: 4 procedural tracks, M to cycle, persisted (client-only, no repin) (marker-0095)
 - [x] slice-096 AI difficulty tiers: ai_driver AI_SKILL (lookahead + throttle duty), tied to EASY/MED/HARD; default=medium so AI golden unchanged (no repin) (marker-0096)
+- [x] slice-097 boost pads (power-ups): data-driven pads + seat.boostTicks; car_physics boost; Luau-twinned + new boost_1a gate; STATE_VERSION 2->3 FULL repin (marker-0097)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 
@@ -172,8 +173,7 @@ Not scheduled; pick when ready. Ordered by rough impact.
 - [ ] **Roblox build** — turn the Luau twin (luau/ + roblox/ Rojo) into an actual
   playable Roblox game: Studio rendering, input, UI. Engine parity already proven;
   this is the presentation/host layer. Larger effort (previously deferred).
-- [ ] **More gameplay** — remaining candidates: power-ups / boost pads, AI
-  difficulty tiers. (crash feel marker-0093, near-miss feel marker-0094,
-  music-select marker-0095 all done — the client-only feel items are exhausted.)
-  Both remaining are ENGINE changes → conscious golden repin + Luau twin mirror;
-  best done with the user available to confirm the repin, not unattended.
+- [x] **More gameplay** — DONE: crash feel (0093), near-miss feel (0094),
+  music-select (0095), AI difficulty tiers (0096), boost pads / power-ups (0097).
+  Future variety (consumable pickups, shields, slow traps, pads on courses 1-3)
+  is a fresh backlog item when wanted.
