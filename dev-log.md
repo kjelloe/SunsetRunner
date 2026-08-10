@@ -1782,3 +1782,27 @@ active()/reset()). specs/69.
 
 Gate: npm test -> 296/296; ./test.sh browser smoke boots clean (render-wrap
 renders without console errors); 4 Luau gates untouched.
+
+---
+
+## marker-0094 — near-miss feel: client-detected whoosh + streak (2026-08-10)
+
+Client-only (presentation), no engine change, no repin, no Luau change. Wires the
+nearmiss SFX that lived in client/audio.js but was never fired.
+
+NEW client/near_miss.js (createNearMiss): the engine has no near-miss event (crash
+is authoritative + hashed; a near miss is cosmetic), so it's detected on the client
+from rendered traffic, mirroring shared/collision.js geometry so the band sits just
+outside a crash. Per frame, for traffic on the local car's segment: |dRoadZ| <
+CAR_LENGTH(512) AND CAR_WIDTH(200) <= |dLaneX| < NEAR_WIDTH(460). Suppressed while
+crashed/off-track/different-segment; each traffic id fires once (Set pruned on
+despawn); a 250ms cooldown collapses dense-traffic bursts to one whoosh. update()
+returns 1 on a new fire -> main.js plays audio.event("nearmiss"); a ~220ms white
+side speed-streak fades in from the pass side. reset() on race start.
+
+Reads engine state read-only, writes nothing; hashes/fixtures/Luau untouched.
+test/near_miss.test.js (6 cases: fire+dedup, crash/far/behind rejects, crashed/
+off-track/other-segment suppression, cooldown collapse, reset re-arm, streak side
++ window). specs/70.
+
+Gate: npm test -> 302/302; ./test.sh browser smoke clean; 4 Luau gates untouched.

@@ -14,6 +14,7 @@ import { installTouch, readTouchInput, readTouchFork, drawTouchControls, touchDe
 import { render } from "./renderer_canvas.js";
 import { createCelebration } from "./celebration.js";
 import { createCrashFeel } from "./crash_feel.js";
+import { createNearMiss } from "./near_miss.js";
 import { computeBufferSize } from "./viewport.js";
 import { installWakeLock } from "./wakelock.js";
 import { drawConnectionBanner } from "./connection_banner.js";
@@ -108,6 +109,7 @@ export async function boot(doc = document) {
   const showTouch = touchDetected() || params.get("touch") === "1";
   const celebration = createCelebration();
   const crashFeel = createCrashFeel();
+  const nearMiss = createNearMiss();
 
   // Procedural audio: engine hum + SFX + chiptune. Browsers block autoplay, so
   // it only spins up on the first user gesture. ?mute=1 disables it.
@@ -165,6 +167,7 @@ export async function boot(doc = document) {
     raceSummary = null;
     celebration.reset(); // clear finish confetti/splash from the previous race
     crashFeel.reset();
+    nearMiss.reset();
     countdown.start(performance.now());
     phase = "race";
   }
@@ -373,6 +376,7 @@ export async function boot(doc = document) {
       render(g, view, state, courseSet, assets, scenery, hud);
       if (shaking) g.restore();
       crashFeel.draw(g, view, now);
+      nearMiss.draw(g, view, now);
     }
     // Stage-entry announcement: fire when the car enters a new segment — but hold
     // the FIRST one until the 3-2-1-GO countdown has finished (local or server),
@@ -401,6 +405,7 @@ export async function boot(doc = document) {
     if (self) {
       audio.setSpeed(self.speed, sel.car.maxSpeed);
       if (self.crashedTicks > 0 && prevCrashed === 0) { audio.event("crash"); crashFeel.trigger(now); }
+      if (racing && nearMiss.update(now, self, state.traffic)) audio.event("nearmiss");
       if (self.finishTicks >= 0 && prevFinish < 0) audio.event("finish");
       if (Number.isFinite(prevTimer) && self.timerTicks > prevTimer) audio.event("checkpoint");
       prevCrashed = self.crashedTicks || 0;
