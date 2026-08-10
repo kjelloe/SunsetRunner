@@ -150,6 +150,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-089 ssh-deploy script (allowlist + health guard + /health endpoint + host bind; docs/ssh-deploy.sh, secrets in ops/) (marker-0089)
 - [x] slice-090 playtest polish: rival cars use the car sprite (not a rect) + checkpoint standings board (2.5x font, gap-to-leader, 5s fade) + de-overlap race summary/all-time board (marker-0090)
 - [x] slice-092 cap effective DPR at 2 on mobile (client/viewport.js; 4x 62->100fps, 6x 38->64fps; no repin) (marker-0092)
+- [x] slice-093 crash impact feel: decaying screen shake + red flash on local crash (client-only, no repin) (marker-0093)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 
@@ -169,4 +170,6 @@ Not scheduled; pick when ready. Ordered by rough impact.
   playable Roblox game: Studio rendering, input, UI. Engine parity already proven;
   this is the presentation/host layer. Larger effort (previously deferred).
 - [ ] **More gameplay** — candidates: power-ups / boost pads, AI difficulty tiers,
-  in-race music track select, richer crash/near-miss feel. Pick one per slice.
+  in-race music track select, near-miss feel (crash feel done, marker-0093).
+  Pick one per slice. (power-ups/AI-tiers are engine changes → repin + Luau twin;
+  music-select + near-miss-feel are client-only.)

@@ -13,6 +13,7 @@ import { installKeyboard, readInput, readForkChoice, readMenuNav } from "./input
 import { installTouch, readTouchInput, readTouchFork, drawTouchControls, touchDetected } from "./touch_controls.js";
 import { render } from "./renderer_canvas.js";
 import { createCelebration } from "./celebration.js";
+import { createCrashFeel } from "./crash_feel.js";
 import { computeBufferSize } from "./viewport.js";
 import { installWakeLock } from "./wakelock.js";
 import { drawConnectionBanner } from "./connection_banner.js";
@@ -106,6 +107,7 @@ export async function boot(doc = document) {
   installTouch(canvas);
   const showTouch = touchDetected() || params.get("touch") === "1";
   const celebration = createCelebration();
+  const crashFeel = createCrashFeel();
 
   // Procedural audio: engine hum + SFX + chiptune. Browsers block autoplay, so
   // it only spins up on the first user gesture. ?mute=1 disables it.
@@ -162,6 +164,7 @@ export async function boot(doc = document) {
     timeUpSel = 0; spectateIndex = 0;
     raceSummary = null;
     celebration.reset(); // clear finish confetti/splash from the previous race
+    crashFeel.reset();
     countdown.start(performance.now());
     phase = "race";
   }
@@ -362,7 +365,15 @@ export async function boot(doc = document) {
     const hud = state.seats[0]
       ? { stage: stageNumber(courseSet, stageStart, state.seats[0].segmentId), total: stageTotal(courseSet, courseId), points: remote ? session.points : undefined }
       : {};
-    if (state.seats.length) render(g, view, state, courseSet, assets, scenery, hud);
+    if (state.seats.length) {
+      // Local crash shakes the whole scene (decaying); the flash sits on top.
+      const sh = racing && crashFeel.active(now) ? crashFeel.shake(now, view) : { dx: 0, dy: 0 };
+      const shaking = sh.dx !== 0 || sh.dy !== 0;
+      if (shaking) { g.save(); g.translate(sh.dx, sh.dy); }
+      render(g, view, state, courseSet, assets, scenery, hud);
+      if (shaking) g.restore();
+      crashFeel.draw(g, view, now);
+    }
     // Stage-entry announcement: fire when the car enters a new segment — but hold
     // the FIRST one until the 3-2-1-GO countdown has finished (local or server),
     // so it doesn't collide with the GO text.
@@ -389,7 +400,7 @@ export async function boot(doc = document) {
     const self = state.seats[0];
     if (self) {
       audio.setSpeed(self.speed, sel.car.maxSpeed);
-      if (self.crashedTicks > 0 && prevCrashed === 0) audio.event("crash");
+      if (self.crashedTicks > 0 && prevCrashed === 0) { audio.event("crash"); crashFeel.trigger(now); }
       if (self.finishTicks >= 0 && prevFinish < 0) audio.event("finish");
       if (Number.isFinite(prevTimer) && self.timerTicks > prevTimer) audio.event("checkpoint");
       prevCrashed = self.crashedTicks || 0;

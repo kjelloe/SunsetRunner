@@ -1759,3 +1759,26 @@ overridable). specs/68. PERFORMANCE.md table refreshed + item 1 marked done.
 
 Gate: npm test -> 292/292; perf:mobile reproduces the table; 4 Luau gates untouched
 (no engine change).
+
+---
+
+## marker-0093 — crash impact feel: screen shake + red flash (2026-08-10)
+
+Client-only (presentation), no engine change, no repin, no Luau change. Backlog
+"richer crash/near-miss feel".
+
+NEW client/crash_feel.js (createCrashFeel): on the local car's crash edge, two
+short decaying wall-clock effects over the float Canvas — a ~420ms two-frequency
+screen shake (amplitude scales with view height; applied by translating the scene
+around the render() call in main.js) and a ~260ms red radial impact vignette
+(strong at edges, clear centre so the road stays readable). Triggered in the same
+crash-edge branch as audio.event("crash") (crashedTicks>0 && prevCrashed===0),
+reset on race start next to celebration.reset().
+
+Reads no engine state beyond the crash edge; the engine crash + stun and their
+hashes are untouched. test/crash_feel.test.js locks the timing contract (shake
+zero before/after, non-zero + decaying during; flash only inside its window;
+active()/reset()). specs/69.
+
+Gate: npm test -> 296/296; ./test.sh browser smoke boots clean (render-wrap
+renders without console errors); 4 Luau gates untouched.
