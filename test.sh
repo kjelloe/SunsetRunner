@@ -16,7 +16,8 @@ if command -v lune >/dev/null 2>&1; then
     && lune run luau/checkpoint-1a-check.luau \
     && lune run luau/collision-1a-check.luau \
     && lune run luau/fork-1a-check.luau \
-    && lune run luau/boost-1a-check.luau
+    && lune run luau/boost-1a-check.luau \
+    && lune run luau/ai-1a-check.luau
   luau_rc=$?
 else
   echo "lune not installed — skipping Luau parity gates"

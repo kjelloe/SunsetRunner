@@ -1960,3 +1960,31 @@ strand: live->drop->reconnecting->restart-same-port->live). specs/75. README sta
 refreshed; PLAYTEST §6 items added.
 
 Gate: npm test -> 315/315; ./test.sh browser smoke (incl. strand) + 5 Luau gates green.
+
+---
+
+## marker-0100 — Roblox AI opponents + ai_driver Luau twin + ai_1a gate (2026-08-11)
+
+Ports the AI to Luau and adds named AI rivals to the Roblox host. Engine reducer/
+hashes UNTOUCHED (AI is a command source), but the AI is now proven byte-identical
+across languages.
+
+NEW luau/ai_driver.luau mirrors engine/ai_driver.js exactly (lane-hold + symmetric
+dodge, AI_SKILL tiers, tick-keyed throttle duty). NEW luau/ai-1a-check.luau runs the
+JS AI golden race (seed 12345, course 1, 1 AI seat, medium) through the Luau reducer
++ chooseInput and asserts tick 307 + hash 43762b8616301876 — the 6th lune gate
+(test.sh + luau_engine.test.js). First cross-language proof of the AI.
+
+ROBLOX server GameServer.server.luau: each solo race now seats the player + AI_COUNT
+(4) named rivals, lane-spread after createInitialState (Luau makeSeat centres all
+seats; set laneX server-side). Each tick, after player input, every rival drives via
+ai.chooseInput(...,AI_SKILL.medium) before advance. View gains a ghosts array
+(same-segment rivals: seatId/name/carId/roadZ/laneX). CLIENT Render.luau: pooled
+rival Parts (colour-cycled) + BillboardGui name tags, placed by depth from the view
+ghosts.
+
+specs/76. README (test 316, badge 6 gates, twin desc, roblox line). roblox/README
+backlog + PLAYTEST §10 updated.
+
+Gate: lune ai-1a matches JS; npm test -> 316/316; ./test.sh 6 Luau gates + browser
+smoke green; rojo build valid.

@@ -157,6 +157,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-097 boost pads (power-ups): data-driven pads + seat.boostTicks; car_physics boost; Luau-twinned + new boost_1a gate; STATE_VERSION 2->3 FULL repin (marker-0097)
 - [x] slice-098 Roblox host layer: authoritative 20Hz server (per-player solo race) + client 3D-Parts renderer + input + chase camera + HUD (roblox/src; engine untouched, 5 Luau gates intact) (marker-0098)
 - [x] slice-099 multiplayer polish: server-authoritative MP countdown (input freeze + GO!) + spectate rank-cycle & points + dedicated rejoin button + browser-level strand test (client-only, no repin) (marker-0099)
+- [x] slice-100 Roblox AI opponents: ai_driver Luau twin + ai_1a parity gate (6th) + named AI rivals in the Roblox host (server seats/drives, client rival Parts + name tags) (marker-0100)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 
@@ -172,11 +173,11 @@ Not scheduled; pick when ready. Ordered by rough impact.
   lineage, then `./docs/ssh-deploy.sh`.
 - [x] **Cap DPR on mobile** — DONE (marker-0092). computeBufferSize clamps
   effective DPR<=2; perf:mobile confirmed 4x 62->100fps, 6x 38->64fps. specs/68.
-- [~] **Roblox build** — minimum playable host DONE (marker-0098): 20Hz
-  authoritative server + client 3D-Parts renderer + input + chase camera + HUD
-  (roblox/src). Remaining: AI opponents (needs an ai_driver Luau port), multiplayer/
-  ghosts, race framing (countdown/lobby/summary), art pass (car model, textures,
-  skybox, boost VFX), mobile controls.
+- [~] **Roblox build** — playable host + AI opponents DONE (marker-0098/0100): 20Hz
+  authoritative server + 3D-Parts renderer + input + chase camera + HUD + 4 named
+  AI rivals (ai_driver Luau-twinned, ai_1a gate). Remaining: multiplayer/ghosts of
+  REAL players, race framing (countdown/lobby/summary), art pass (car model,
+  textures, skybox, boost VFX), mobile controls, AI difficulty select, interpolation.
 - [x] **More gameplay** — DONE: crash feel (0093), near-miss feel (0094),
   music-select (0095), AI difficulty tiers (0096), boost pads / power-ups (0097).
   Future variety (consumable pickups, shields, slow traps, pads on courses 1-3)

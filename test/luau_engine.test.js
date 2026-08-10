@@ -38,3 +38,7 @@ test("luau engine twin reproduces fork_1a (via lune)", () => {
 test("luau engine twin reproduces boost_1a (via lune)", () => {
   runLuauGate("luau/boost-1a-check.luau", /LUAU BOOST PARITY OK/);
 });
+
+test("luau AI twin reproduces the AI golden race (via lune)", () => {
+  runLuauGate("luau/ai-1a-check.luau", /LUAU AI PARITY OK/);
+});

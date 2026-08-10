@@ -20,6 +20,7 @@ local carData = require(Shared.car_data)
 local trafficData = require(Shared.traffic_data)
 local stateMod = require(Shared.state)
 local reducer = require(Shared.reducer)
+local ai = require(Shared.ai_driver)
 
 local courseSet = road.loadCourseSet(require(GameData.roads))
 local carSet = carData.loadCarSet(require(GameData.cars))
@@ -31,6 +32,8 @@ print("[SunsetRunner] server booting — engine + course data loaded")
 local COURSE_ID = 4
 local START_TIME_TICKS = 3000
 local TICK_DT = 1 / 20
+local AI_COUNT = 4 -- named rivals per solo race (marker-0100)
+local AI_NAMES = { "Max", "Zoe", "Kai", "Ava", "Leo", "Mia", "Ivy", "Rex" }
 
 -- Two channels: intents in, per-seat views out.
 local inputEvent = Instance.new("RemoteEvent")
@@ -44,15 +47,25 @@ type Session = { state: any, input: { steer: number, accel: number, brake: numbe
 local sessions: { [Player]: Session } = {}
 
 local function freshState(seed: number)
-	return stateMod.createInitialState({
+	local seats = { { id = 1, carId = 1 } } -- seat 1 = the player
+	for i = 1, AI_COUNT do
+		table.insert(seats, { id = i + 1, carId = (i % 4) + 1 })
+	end
+	local state = stateMod.createInitialState({
 		seed = seed,
 		courseSet = courseSet,
 		carSet = carSet,
 		courseId = COURSE_ID,
-		seats = { { id = 1, carId = 1 } },
+		seats = seats,
 		startTimeTicks = START_TIME_TICKS,
 		trafficConfig = trafficConfig,
 	})
+	-- The Luau createInitialState starts every seat at lane centre; spread the AI
+	-- across lanes so the field races instead of stacking (server-side, presentation).
+	for i = 2, #state.seats do
+		state.seats[i].laneX = math.floor((i - 1 - (AI_COUNT + 1) / 2) * 200)
+	end
+	return state
 end
 
 local function startSession(player: Player)
@@ -61,7 +74,8 @@ local function startSession(player: Player)
 	print("[SunsetRunner] session started for " .. player.Name .. " (seed " .. seed .. ")")
 end
 
--- The slice of state a client needs to render: self seat + same-segment traffic.
+-- The slice of state a client needs to render: self seat + same-segment traffic
+-- + rival ghosts (AI opponents) on the self segment.
 local function buildView(state)
 	local s = state.seats[1]
 	local traffic = {}
@@ -70,8 +84,16 @@ local function buildView(state)
 			table.insert(traffic, { roadZ = t.roadZ, laneX = t.laneX, kind = t.kind })
 		end
 	end
+	local ghosts = {}
+	for i = 2, #state.seats do
+		local g = state.seats[i]
+		if g.segmentId == s.segmentId then
+			table.insert(ghosts, { seatId = g.id, name = AI_NAMES[i - 1] or ("P" .. g.id), carId = g.carId, roadZ = g.roadZ, laneX = g.laneX })
+		end
+	end
 	return {
 		tick = state.tick,
+		ghosts = ghosts,
 		seat = {
 			segmentId = s.segmentId,
 			roadZ = s.roadZ,
@@ -126,6 +148,14 @@ RunService.Heartbeat:Connect(function(dt)
 				if sess.fork ~= 0 then
 					st = reducer.apply(st, { type = "forkChoice", seatId = 1, choice = sess.fork }, ctx)
 					sess.fork = 0
+				end
+				-- AI rivals drive with the deterministic ai_driver twin (medium skill).
+				for i = 2, #st.seats do
+					local seat = st.seats[i]
+					if seat.finishTicks < 0 and seat.timedOut == 0 then
+						local inp = ai.chooseInput(st, seat.id, ai.AI_SKILL.medium)
+						st = reducer.apply(st, { type = "input", seatId = seat.id, steer = inp.steer, accel = inp.accel, brake = inp.brake }, ctx)
+					end
 				end
 				st = reducer.apply(st, { type = "advance_tick" }, ctx)
 				sess.state = st

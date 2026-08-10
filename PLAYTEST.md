@@ -256,6 +256,9 @@ See `roblox/README.md`. This is the minimum playable host; feel/scale are unprov
 - [ ] **[bug]** **Curves & hills** bend/rise the Part ribbon (course 4 data);
   **traffic** and **boost pads** appear as Parts at the right spots; boosting turns
   the car cyan and shows BOOST!.
+- [ ] **[feel]** **AI rivals** (marker-0100): four named, colour-coded rival cars
+  (name tag above each) race alongside — do they drive the road (dodge traffic, take
+  the corners) and read as opponents, not scenery? Lane spread OK?
 - [ ] **[bug]** Finish/timeout **loops into a fresh race** (no framing yet).
 - [ ] **[unverified]** The sim matches the browser (it runs the same reducer) — a
   desync would be a twin bug, not a host bug; report anything that looks off.

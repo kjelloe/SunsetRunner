@@ -58,7 +58,7 @@ byte-for-byte, so the Roblox sim can never silently drift from the browser.
 
 ## Not done yet (backlog)
 
-AI opponents (needs an `ai_driver` Luau port — it is JS-only today),
-multiplayer/ghosts, race framing (countdown/lobby/summary), art pass (real car
-model, road textures, skybox), mobile controls. This slice (marker-0098) is the
-minimum playable host.
+Multiplayer/ghosts of REAL players (AI rivals are in — marker-0100), race framing
+(countdown/lobby/summary), art pass (real car model, road textures, skybox, boost
+VFX), mobile controls, AI difficulty selection, and state interpolation for smoother
+motion. marker-0098 was the minimum playable host; marker-0100 added AI opponents.
