@@ -32,8 +32,9 @@ export function timeUpTouchZone(view, x) {
   return x < view.w / 2 ? 0 : 1;
 }
 
-// Name of the spectated player, centre-bottom, with cycle arrows + a re-join hint.
-export function drawSpectateOverlay(g, view, name, index, total) {
+// Name of the spectated player, centre-bottom, with cycle arrows, their current
+// points, and a re-join hint. `points` is optional (undefined -> omitted).
+export function drawSpectateOverlay(g, view, name, index, total, points) {
   g.textAlign = "center";
   g.textBaseline = "alphabetic";
   g.fillStyle = "rgba(0,0,0,0.55)";
@@ -43,7 +44,8 @@ export function drawSpectateOverlay(g, view, name, index, total) {
   g.fillText(`◄  SPECTATING: ${name}  ►`, view.w / 2, view.h * 0.88);
   g.fillStyle = "#cfe";
   g.font = `${Math.round(view.h * 0.03)}px sans-serif`;
-  g.fillText(`${index + 1}/${total}   —   ENTER / tap centre to re-join`, view.w / 2, view.h * 0.92);
+  const pts = points != null ? `${points} pts   ·   ` : "";
+  g.fillText(`${index + 1}/${total}   ·   ${pts}ENTER / tap centre to re-join`, view.w / 2, view.h * 0.92);
   g.textAlign = "left";
 }
 

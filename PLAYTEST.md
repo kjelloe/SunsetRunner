@@ -162,6 +162,9 @@ Open TWO browser tabs at `http://localhost:8000/client/index.html?mode=remote`.
 - [ ] **[bug]** Drive both — positions update live in each tab.
 - [ ] **[bug]** Both tabs see a shared **3-2-1** countdown and start together on
   GO; the FIRST tab's difficulty pick applies to the room (marker-0059).
+- [ ] **[feel]** During the countdown the car is **frozen** — steering/throttle do
+  nothing until **GO!** flashes (with a blip), then input releases (marker-0099).
+  No lurch-then-snap at the start?
 - [ ] **[unverified]** **Prediction feel** (marker-0028): your own car responds
   to input INSTANTLY, not after a round-trip delay. Watch for rubber-banding /
   snapping when the car crashes into traffic (the server correction).
@@ -189,6 +192,18 @@ Open TWO browser tabs at `http://localhost:8000/client/index.html?mode=remote`.
   seconds (server-restart persistence, marker-0037; state in `.state/session.json`).
 - [ ] **[bug]** During any drop/restart a **RECONNECTING…** banner shows and clears
   once you're back live (marker-0039).
+- [ ] **[bug]** While disconnected a **TAP TO REJOIN NOW** button (or **R** key)
+  appears under the banner and forces an immediate reconnect (marker-0099) — no
+  waiting out the backoff.
+
+### Time-up: Re-join / Spectate (marker-0077 / marker-0099)
+
+- [ ] **[bug]** When your time runs out (or you finish) a **RE-JOIN / SPECTATE**
+  choice shows (◄/► or tap). RE-JOIN starts a fresh run (points carry via your id);
+  SPECTATE enters the spectator view.
+- [ ] **[feel]** In spectate, ◄/► cycles rivals **in standings order** and the
+  centre-bottom overlay shows their **name + current points**; a mini scoreboard
+  sits top-right. ENTER / tap-centre re-joins (marker-0099).
 
 ## 7. Determinism / regression sanity
 

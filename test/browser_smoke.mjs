@@ -60,6 +60,47 @@ async function checkPage(browser, url, label) {
   return true;
 }
 
+// Strand test (Pitfall #7): boot remote, DROP the server, bring it back on the
+// same port, and prove the real browser reconnects (a new ws opens and receives
+// server frames again) — i.e. the player is never stranded by a disconnect.
+async function checkStrand(browser) {
+  const srv = await startServer(0);
+  const port = srv.port;
+  const url = `http://localhost:${port}/client/index.html?mode=remote&name=Strand&car=1&diff=medium&mute=1`;
+  // A refused/failed ws is EXPECTED here (the server is deliberately down for a
+  // moment); only NON-connection errors count as failures.
+  const STRAND_BENIGN = /websocket connection to|ERR_CONNECTION_REFUSED|ws error|failed to connect/i;
+  const benign = (t) => BENIGN.test(t) || STRAND_BENIGN.test(t);
+  const errors = [];
+  const page = await browser.newPage();
+  page.on("console", (m) => { if (m.type() === "error" && !benign(m.text())) errors.push(m.text()); });
+  page.on("pageerror", (e) => { if (!benign(e.message)) errors.push(e.message); });
+  let wsCount = 0, lateFrames = 0;
+  page.on("websocket", (ws) => { const n = ++wsCount; ws.on("framereceived", () => { if (n >= 2) lateFrames++; }); });
+
+  await page.goto(url, { waitUntil: "load" });
+  await waitForCanvas(page);           // connected + rendering
+  await srv.close();                    // the server vanishes
+  await page.waitForTimeout(1500);      // client notices -> RECONNECTING + backoff
+
+  let srv2 = null;                      // bring it back on the SAME port
+  for (let i = 0; i < 20 && !srv2; i++) {
+    try { srv2 = await startServer(port); } catch (e) { if (e.code !== "EADDRINUSE") throw e; await page.waitForTimeout(200); }
+  }
+  const deadline = Date.now() + 15000;  // wait for a reconnected socket to get frames
+  while (Date.now() < deadline && lateFrames < 3) await page.waitForTimeout(250);
+  await page.close();
+  if (srv2) await srv2.close();
+
+  const fails = [];
+  if (wsCount < 2) fails.push("strand: no reconnect socket opened after the drop");
+  if (lateFrames < 3) fails.push("strand: reconnected socket received no frames (player stranded)");
+  if (errors.length) fails.push(`strand: console errors -> ${errors.slice(0, 3).join(" | ")}`);
+  if (fails.length) { for (const f of fails) console.log("  FAIL", f); return false; }
+  console.log(`  ok  strand: dropped + reconnected (${wsCount} sockets, frames resumed)`);
+  return true;
+}
+
 const h = await startServer(0);
 const base = `http://localhost:${h.port}/client/index.html`;
 const browser = await chromium.launch({ headless: true });
@@ -67,6 +108,7 @@ let ok = true;
 try {
   ok = await checkPage(browser, `${base}?car=1&diff=medium&mute=1`, "local boot") && ok;
   ok = await checkPage(browser, `${base}?mode=remote&name=Smoke&car=1&diff=medium&mute=1`, "remote connect") && ok;
+  ok = await checkStrand(browser) && ok;
 } finally {
   await browser.close();
   await h.close();

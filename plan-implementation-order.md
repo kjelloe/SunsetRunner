@@ -39,7 +39,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] server-restart persistence — serialize + restore, deploy handoff (marker-0037)
 - [x] screen wake lock + high-DPR canvas buffer (marker-0038)
 - [x] reconnect UI: connection status + banner (marker-0039)
-- [ ] browser-level strand test (#7); dedicated rejoin button
+- [x] browser-level strand test (#7); dedicated rejoin button (marker-0099)
 
 ### Playtest polish (from real playtests)
 
@@ -135,8 +135,8 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-078 points / scoreboard (server-authoritative) (marker-0078)
 - [x] slice-080 token-keyed points (carry across re-join) (marker-0080)
 - [x] slice-079 spectate feed confirmed global + own car + mini scoreboard (marker-0079)
-- [ ] time-up UI: Re-join / Spectate (cycle players, name centre-bottom) + points
-- [ ] server-authoritative countdown for multiplayer
+- [x] time-up UI: Re-join / Spectate (rank-cycled, name + points centre-bottom) (marker-0099)
+- [x] server-authoritative countdown for multiplayer (input freeze + GO!, marker-0099)
 
 
 ## Milestone 7 — game feel + multiplayer sessions (playtest 2026-08-05)
@@ -156,6 +156,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-096 AI difficulty tiers: ai_driver AI_SKILL (lookahead + throttle duty), tied to EASY/MED/HARD; default=medium so AI golden unchanged (no repin) (marker-0096)
 - [x] slice-097 boost pads (power-ups): data-driven pads + seat.boostTicks; car_physics boost; Luau-twinned + new boost_1a gate; STATE_VERSION 2->3 FULL repin (marker-0097)
 - [x] slice-098 Roblox host layer: authoritative 20Hz server (per-player solo race) + client 3D-Parts renderer + input + chase camera + HUD (roblox/src; engine untouched, 5 Luau gates intact) (marker-0098)
+- [x] slice-099 multiplayer polish: server-authoritative MP countdown (input freeze + GO!) + spectate rank-cycle & points + dedicated rejoin button + browser-level strand test (client-only, no repin) (marker-0099)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 

@@ -12,6 +12,26 @@ export function bannerText(status) {
   }
 }
 
+// Auto-reconnect always runs; this button lets an impatient player force it now
+// (a stuck radio / long backoff). Shown only while disconnected.
+export function showRejoinButton(status) {
+  return status === "reconnecting" || status === "run_ended";
+}
+
+// Button rect just below the banner. Kept in one place so draw + hit-test agree.
+export function rejoinButtonRect(view) {
+  const w = view.w * 0.4;
+  const h = view.h * 0.09;
+  return { x: view.w / 2 - w / 2, y: view.h / 2 + view.h * 0.09, w, h };
+}
+
+// True if (x,y) hit the rejoin button (only when it is shown).
+export function rejoinButtonHit(view, status, x, y) {
+  if (!showRejoinButton(status)) return false;
+  const r = rejoinButtonRect(view);
+  return x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
+}
+
 export function drawConnectionBanner(g, view, status, frame = 0) {
   const text = bannerText(status);
   if (!text) return;
@@ -28,6 +48,19 @@ export function drawConnectionBanner(g, view, status, frame = 0) {
   g.textBaseline = "middle";
   g.fillText(text, view.w / 2, view.h / 2);
   g.restore();
+
+  if (showRejoinButton(status)) {
+    const r = rejoinButtonRect(view);
+    g.save();
+    g.fillStyle = "#ffd54a";
+    g.fillRect(r.x, r.y, r.w, r.h);
+    g.fillStyle = "#101010";
+    g.font = `bold ${Math.floor(r.h * 0.42)}px sans-serif`;
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.fillText("TAP TO REJOIN NOW", r.x + r.w / 2, r.y + r.h / 2);
+    g.restore();
+  }
   g.textAlign = "left";
   g.textBaseline = "top";
 }

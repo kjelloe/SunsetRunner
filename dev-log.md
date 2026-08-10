@@ -1926,3 +1926,37 @@ race framing, art pass, mobile.
 
 Gate: rojo build produces a valid place (GameServer/Main/Render synced, checks
 excluded); npm test -> 313/313 + 5 Luau gates unaffected. In-Studio play = manual.
+
+(Follow-up, unnumbered fix pushed same day: harden the Roblox host for the
+empty-world case — WaitForChild the replicated modules, lift the world to y=50,
+lay a straight default road + boot prints so Output localises a non-syncing
+session; README troubleshooting. User confirmed Studio play works after
+reconnecting Rojo.)
+
+---
+
+## marker-0099 — multiplayer polish (countdown/spectate/rejoin/strand) (2026-08-11)
+
+Client-only (presentation + reconnect control), no engine/shared change, no repin,
+no Luau change. Closes the three open MP items.
+
+1. SERVER-AUTHORITATIVE COUNTDOWN: server already freezes the sim + sends countdown
+   secs (0059). main.js now FREEZES input while session.countdown>0 in remote (sends
+   neutral input so prediction doesn't lurch/snap), and shows the number then a brief
+   "GO!" + blip on the >0->0 edge (prevRemoteCd/goAt).
+2. TIME-UP SPECTATE: spectate.js drawSpectateOverlay gains an optional points arg
+   (shows the spectated player's points); main.js cycles rivals in RANK order (server
+   scoreboard) not arbitrary ghost order, passing that player's points.
+3. REJOIN BUTTON + STRAND TEST: session_remote.reconnectNow() (skip backoff, reopen
+   if dead). connection_banner showRejoinButton/rejoinButtonRect/rejoinButtonHit + a
+   "TAP TO REJOIN NOW" button under the banner while reconnecting/run_ended; main.js
+   wires the tap (any phase) + the R key. NEW browser-level strand test (Pitfall #7):
+   browser_smoke checkStrand boots remote, drops the server, restarts it on the same
+   port, and asserts via Playwright ws observation that a 2nd socket opens + receives
+   frames (never stranded); ws-refused console noise filtered during the outage.
+
+test/connection_banner.test.js +2 (rejoin button logic; node-level reconnectNow
+strand: live->drop->reconnecting->restart-same-port->live). specs/75. README status
+refreshed; PLAYTEST §6 items added.
+
+Gate: npm test -> 315/315; ./test.sh browser smoke (incl. strand) + 5 Luau gates green.

@@ -132,6 +132,14 @@ export function createRemoteSession(url, opts = {}) {
     get lobby() { return latest?.lobby || null; },
     get watching() { return watching && seatId == null; }, // spectating an ongoing race
     join() { watching = false; if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.JOIN, carId, diff, name, pid })); },
+    // Force an immediate reconnect (a manual "rejoin now" button): skip the backoff
+    // wait and reopen if the socket is dead. No-op while a live socket exists.
+    reconnectNow() {
+      if (closed) return;
+      clearTimeout(reconnectTimer);
+      reconnectDelay = 1000;
+      if (!ws || ws.readyState > 1) connect();
+    },
     startNow() { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.START })); },
     toggleWait() { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: C2S.WAIT })); },
     setInput(input) { held = input; },

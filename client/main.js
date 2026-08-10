@@ -17,7 +17,7 @@ import { createCrashFeel } from "./crash_feel.js";
 import { createNearMiss } from "./near_miss.js";
 import { computeBufferSize } from "./viewport.js";
 import { installWakeLock } from "./wakelock.js";
-import { drawConnectionBanner } from "./connection_banner.js";
+import { drawConnectionBanner, rejoinButtonHit } from "./connection_banner.js";
 import { carChoiceFromParams, createCarSelect, drawCarSelect, carSelectTouchZone } from "./car_select.js";
 import { difficultyFromParams, createDifficultySelect, drawDifficultySelect, difficultyTouchZone } from "./difficulty_select.js";
 import { createAudio } from "./audio.js";
@@ -157,6 +157,7 @@ export async function boot(doc = document) {
   let spectateIndex = 0;  // which rival is being spectated
   let lobbyShowQR = false; // invite QR overlay in the lobby
   let prevCrashed = 0, prevFinish = -1, prevTimer = NaN; // SFX edge trackers
+  let prevRemoteCd = 0, goAt = -1; // remote countdown -> GO! edge
 
   function start(carId, timeScale, diffLevel) {
     session = remote
@@ -167,6 +168,7 @@ export async function boot(doc = document) {
     activeTimeScale = timeScale;
     activeDiffLevel = diffLevel;
     prevCrashed = 0; prevFinish = -1; prevTimer = NaN;
+    prevRemoteCd = 0; goAt = -1;
     prevSegmentId = null;
     timeUpSel = 0; spectateIndex = 0;
     raceSummary = null;
@@ -206,6 +208,8 @@ export async function boot(doc = document) {
     const rect = canvas.getBoundingClientRect?.() || { left: 0, top: 0, width: view.w, height: view.h };
     const x = ((e.clientX - rect.left) / (rect.width || 1)) * view.w;
     const y = ((e.clientY - rect.top) / (rect.height || 1)) * view.h;
+    // The rejoin button overrides any phase — it only shows while disconnected.
+    if (remote && session && rejoinButtonHit(view, session.status, x, y)) { session.reconnectNow(); return; }
     if (phase === "select") {
       if (sel.handle(carSelectTouchZone(view, x, y)) === "confirm") afterCar();
     } else if (phase === "difficulty") {
@@ -234,6 +238,9 @@ export async function boot(doc = document) {
   // JOIN IN via keyboard while watching an ongoing race.
   doc.addEventListener?.("keydown", (e) => {
     if (e.key === "Enter" && remote && session && session.watching) session.join();
+    // R forces an immediate reconnect while disconnected (matches the on-screen button).
+    if ((e.key === "r" || e.key === "R") && remote && session &&
+        (session.status === "reconnecting" || session.status === "run_ended")) session.reconnectNow();
   });
 
   // Lobby keys: Enter = start now, W = wait/resume, I = invite QR.
@@ -321,7 +328,11 @@ export async function boot(doc = document) {
     }
     if (phase === "spectate") {
       const st = session.getState();
-      const ghosts = st.ghosts || [];
+      // Cycle through rivals in RANK order (server scoreboard by points), not the
+      // arbitrary ghost-view order, so ◄/► walks the standings.
+      const sb = session.scoreboard || [];
+      const rankOf = (seatId) => { const i = sb.findIndex((e) => e.seatId === seatId); return i < 0 ? 1e9 : i; };
+      const ghosts = [...(st.ghosts || [])].sort((a, b) => rankOf(a.seatId) - rankOf(b.seatId));
       if (ghosts.length) {
         const idx = ((spectateIndex % ghosts.length) + ghosts.length) % ghosts.length;
         const t = ghosts[idx];
@@ -335,7 +346,8 @@ export async function boot(doc = document) {
         const sStart = getCourse(courseSet, courseId).startSegment;
         render(g, view, synthState, courseSet, assets, scenery, { stage: stageNumber(courseSet, sStart, t.segmentId), total: stageTotal(courseSet, courseId) });
         drawMiniScoreboard(g, view, session.scoreboard, session.seatId);
-        drawSpectateOverlay(g, view, t.name || `P${t.seatId}`, idx, ghosts.length);
+        const tPts = (sb.find((e) => e.seatId === t.seatId) || {}).points;
+        drawSpectateOverlay(g, view, t.name || `P${t.seatId}`, idx, ghosts.length, tPts);
       } else {
         g.fillStyle = "#1a1030";
         g.fillRect(0, 0, view.w, view.h);
@@ -351,16 +363,24 @@ export async function boot(doc = document) {
       return;
     }
     const racing = phase === "race";
+    const remoteCountdown = remote && racing ? session.countdown : 0;
     if (racing) {
-      const kb = readInput();
-      const tc = readTouchInput();
-      session.setInput({
-        steer: kb.steer || tc.steer,
-        accel: kb.accel || tc.accel,
-        brake: kb.brake || tc.brake,
-      });
-      const fc = readForkChoice() || readTouchFork();
-      if (fc !== 0) session.setForkChoice(fc);
+      if (remoteCountdown > 0) {
+        // Server owns the pre-race countdown and freezes the sim; hold the car at
+        // the line (send neutral input) so client prediction doesn't lurch ahead
+        // of the server and snap back on GO.
+        session.setInput({ steer: 0, accel: 0, brake: 0 });
+      } else {
+        const kb = readInput();
+        const tc = readTouchInput();
+        session.setInput({
+          steer: kb.steer || tc.steer,
+          accel: kb.accel || tc.accel,
+          brake: kb.brake || tc.brake,
+        });
+        const fc = readForkChoice() || readTouchFork();
+        if (fc !== 0) session.setForkChoice(fc);
+      }
     }
     // Local race freezes during the countdown (clock + car held at the line).
     const counting = racing && !remote && !countdown.isDone(now);
@@ -430,8 +450,14 @@ export async function boot(doc = document) {
     if (showTouch) drawTouchControls(g, view);
     if (showTune) drawTuningHud(g, view);
     if (counting) countdown.draw(g, view, now);
-    // Remote: the server owns the shared pre-race countdown (specs/53).
-    if (remote && racing && session.countdown > 0) drawCountdownLabel(g, view, String(session.countdown));
+    // Remote: the server owns the shared pre-race countdown (specs/53). Show the
+    // number while it ticks, then a brief "GO!" (with a blip) as it releases.
+    if (remote && racing) {
+      if (prevRemoteCd > 0 && remoteCountdown === 0) { goAt = now; audio.event("checkpoint"); }
+      prevRemoteCd = remoteCountdown;
+      if (remoteCountdown > 0) drawCountdownLabel(g, view, String(remoteCountdown));
+      else if (goAt >= 0 && now - goAt < 700) drawCountdownLabel(g, view, "GO!");
+    }
     announcer.draw(g, view, now);
     if (remote) drawConnectionBanner(g, view, session.status, frameCount);
 
