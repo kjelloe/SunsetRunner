@@ -7,11 +7,11 @@ local RS = game:GetService("ReplicatedStorage")
 local Shared = RS:WaitForChild("Shared")
 local GameData = RS:WaitForChild("GameData")
 
-local road = require(Shared.road_data)
-local constants = require(Shared.constants)
+local road = require(Shared:WaitForChild("road_data"))
+local constants = require(Shared:WaitForChild("constants"))
 local ROAD_UNIT = constants.ROAD_UNIT
 
-local courseSet = road.loadCourseSet(require(GameData.roads))
+local courseSet = road.loadCourseSet(require(GameData:WaitForChild("roads")))
 
 -- Engine-units -> studs.
 local SX = 14 / 256 -- lateral (one lane = 14 studs)
@@ -20,6 +20,7 @@ local SY = 0.7 -- hill height
 local ROAD_HALF = 512 -- engine off-road edge
 local N = 80 -- strips drawn ahead
 local STRIP_LEN = ROAD_UNIT * SZ
+local BASE_Y = 50 -- lift the whole world above any baseplate so it's clearly visible
 
 local Render = {}
 local strips: { Part } = {}
@@ -120,7 +121,17 @@ function Render.init()
 		banner = label(UDim2.new(0.25, 0, 0.4, 0), UDim2.new(0.5, 0, 0.12, 0), Enum.TextXAlignment.Center),
 	}
 
-	workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+	-- Lay a straight flat road immediately so SOMETHING is visible before the first
+	-- server view arrives (a straight road that never moves = server not sending;
+	-- an empty world = this script never ran).
+	for k = 1, N do
+		strips[k].CFrame = CFrame.new(0, BASE_Y, -(k - 1) * STRIP_LEN)
+	end
+	car.CFrame = CFrame.new(0, BASE_Y + 2.2, 4)
+	local cam = workspace.CurrentCamera
+	cam.CameraType = Enum.CameraType.Scriptable
+	cam.CFrame = CFrame.lookAt(Vector3.new(0, BASE_Y + 7, 17), Vector3.new(0, BASE_Y + 2, -40))
+	print("[SunsetRunner] client render initialised — road built at y=" .. BASE_Y)
 end
 
 -- Reposition everything from a fresh view. Returns the car's world position so the
@@ -133,7 +144,7 @@ function Render.update(view)
 		local p = strips[k]
 		if s then
 			p.Transparency = 0
-			p.CFrame = CFrame.new(s.curveX * SX, s.hill * SY, -s.dz * SZ)
+			p.CFrame = CFrame.new(s.curveX * SX, BASE_Y + s.hill * SY, -s.dz * SZ)
 		else
 			p.Transparency = 1
 		end
@@ -145,7 +156,7 @@ function Render.update(view)
 	local boosting = seat.boostTicks > 0
 	car.Color = boosting and Color3.fromRGB(120, 240, 255)
 		or (seat.crashedTicks > 0 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(224, 72, 48))
-	car.CFrame = CFrame.new(carX, baseHill + 2.2, 4)
+	car.CFrame = CFrame.new(carX, BASE_Y + baseHill + 2.2, 4)
 
 	-- Same-segment traffic ahead.
 	local ti = 0
@@ -159,7 +170,7 @@ function Render.update(view)
 				local part = traffic[ti]
 				part.Transparency = 0
 				part.Color = (t.kind == 2 or t.kind == 3) and Color3.fromRGB(58, 110, 165) or Color3.fromRGB(224, 192, 64)
-				part.CFrame = CFrame.new((s.curveX + t.laneX) * SX, s.hill * SY + 1.5, -dz * SZ)
+				part.CFrame = CFrame.new((s.curveX + t.laneX) * SX, BASE_Y + s.hill * SY + 1.5, -dz * SZ)
 			end
 		end
 	end
@@ -181,7 +192,7 @@ function Render.update(view)
 					pi += 1
 					local part = pads[pi]
 					part.Transparency = 0.15
-					part.CFrame = CFrame.new((s.curveX + pad.laneX) * SX, s.hill * SY + 0.3, -dz * SZ)
+					part.CFrame = CFrame.new((s.curveX + pad.laneX) * SX, BASE_Y + s.hill * SY + 0.3, -dz * SZ)
 				end
 			end
 		end

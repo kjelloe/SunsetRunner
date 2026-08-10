@@ -10,10 +10,19 @@ local RunService = game:GetService("RunService")
 
 local Render = require(script.Parent:WaitForChild("Render"))
 
+print("[SunsetRunner] client script running — waiting for RemoteEvents…")
 local inputEvent = RS:WaitForChild("SunsetInput")
 local viewEvent = RS:WaitForChild("SunsetView")
 
 Render.init()
+
+local gotFirstView = false
+viewEvent.OnClientEvent:Connect(function()
+	if not gotFirstView then
+		gotFirstView = true
+		print("[SunsetRunner] first server view received — race is live")
+	end
+end)
 
 -- Held-key input, reduced to the intent the reducer expects. Steer is a signed
 -- magnitude (±256 = full lock), matching shared/constants.js STEER_UNIT.

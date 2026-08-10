@@ -28,6 +28,27 @@ In Studio: install the Rojo plugin → open a place → **Connect** → press **
 
 Controls: **W/S or ↑/↓** accelerate/brake · **A/D or ←/→** steer · **Q/E** fork.
 
+## Troubleshooting — empty world (only baseplate + spawn)
+
+Means the host scripts didn't sync/run. In order:
+
+1. **Reconnect Rojo.** `src/server` + `src/client` are `optional` paths; a session
+   connected *before* they existed won't pick them up. Stop `rojo serve`, restart
+   it, and click **Connect** again (or Disconnect→Connect in the plugin).
+2. **Check the tree.** With Play stopped you should see
+   `ServerScriptService.SunsetRunner.GameServer`,
+   `StarterPlayer.StarterPlayerScripts.SunsetRunnerClient.{Main,Render}`,
+   `ReplicatedStorage.Shared.*`, `ReplicatedStorage.GameData.*`. If they're absent,
+   Rojo isn't syncing this project (wrong `rojo serve` path or not connected).
+3. **Press Play (F5), read Output.** You should see, in order:
+   `[SunsetRunner] server booting…`, `session started for …`,
+   `client script running…`, `client render initialised…`,
+   `first server view received…`. Whichever line is missing localises the fault;
+   paste any red error.
+4. The road now builds at **y = 50** (above the baseplate) and lays a straight
+   default road even before the first server view — so "empty" now unambiguously
+   means the client script never ran (step 1/2), not a camera/scale issue.
+
 ## Determinism
 
 The engine is untouched — `src/` is host + presentation only. The five `lune`

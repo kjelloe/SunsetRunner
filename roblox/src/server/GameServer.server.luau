@@ -26,6 +26,8 @@ local carSet = carData.loadCarSet(require(GameData.cars))
 local trafficConfig = trafficData.loadTrafficConfig(require(GameData.traffic))
 local ctx = { courseSet = courseSet, carSet = carSet, trafficConfig = trafficConfig }
 
+print("[SunsetRunner] server booting — engine + course data loaded")
+
 local COURSE_ID = 4
 local START_TIME_TICKS = 3000
 local TICK_DT = 1 / 20
@@ -56,6 +58,7 @@ end
 local function startSession(player: Player)
 	local seed = 12345 + (player.UserId % 100000)
 	sessions[player] = { state = freshState(seed), input = { steer = 0, accel = 0, brake = 0 }, fork = 0, seed = seed }
+	print("[SunsetRunner] session started for " .. player.Name .. " (seed " .. seed .. ")")
 end
 
 -- The slice of state a client needs to render: self seat + same-segment traffic.
