@@ -1894,3 +1894,35 @@ exceeds base cap). specs/73. Tick order in CLAUDE.md updated (3b countdown, 9c
 pickup). README features + Luau badge (4->5 gates).
 
 Gate: npm test -> 313/313; ./test.sh 5 Luau gates + browser smoke green.
+
+---
+
+## marker-0098 — Roblox host layer (playable 3D-Parts build) (2026-08-10)
+
+Adds roblox/src (host + presentation) on top of the Luau engine twin. NO engine/
+shared/luau-module change -> the 5 lune parity gates + JS suite are untouched, so
+the Roblox sim stays byte-identical to the browser. User had Studio + Rojo connected;
+chose 3D Parts over a ported-2D canvas.
+
+SERVER roblox/src/server/GameServer.server.luau: requires ReplicatedStorage.Shared
+engine modules + GameData (Rojo JSON tables), ctx={courseSet,carSet,trafficConfig},
+runs ONE solo race per player on course 4 at 20Hz via a Heartbeat accumulator
+(apply INPUT -> optional FORK -> ADVANCE), streams per-seat view over a SunsetView
+RemoteEvent, reads intents from SunsetInput. Finish/timeout loops a fresh race.
+CharacterAutoLoads=false (car is a Part, not an avatar). Mirrors server/index.js +
+game_room.js.
+
+CLIENT Main.client.luau + Render.luau: UserInputService -> intents (steer ±256 =
+STEER_UNIT; WASD/arrows/QE). Render = 3D-Parts treadmill: pooled ~80 road Parts
+positioned each view from a client buildStrips (walks the course, accumulates curve
+double-integral like road_renderer.js, reads hill); pooled traffic + boost-pad
+Parts placed by depth; chase camera follows the car Part each RenderStepped; ScreenGui
+HUD (speed/timer/BOOST!/FINISH!/TIME UP). Presentation only.
+
+roblox/default.project.json: globIgnorePaths excludes the lune-only *-check.luau from
+the sync. roblox/*.rbxl/*.lock gitignored (Rojo is source of truth). roblox/README.md
++ specs/74. Backlog: AI opponents (needs ai_driver Luau port), multiplayer/ghosts,
+race framing, art pass, mobile.
+
+Gate: rojo build produces a valid place (GameServer/Main/Render synced, checks
+excluded); npm test -> 313/313 + 5 Luau gates unaffected. In-Studio play = manual.

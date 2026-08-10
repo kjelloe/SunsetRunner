@@ -1,5 +1,6 @@
 {
   "name": "SunsetRunner",
+  "globIgnorePaths": ["**/*-check.luau", "**/spine-check.luau"],
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {

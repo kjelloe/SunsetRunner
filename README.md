@@ -92,7 +92,7 @@ engine/   apply(state, command) reducer + physics/traffic/collision/AI/scenario/
 client/   canvas renderer, projection, sprites, input, touch, prediction, sessions
 server/   node http static host + ws race room
 luau/     Luau twin of shared/ + engine/ (verified byte-identical via lune)
-roblox/   Rojo project mounting luau/ into ReplicatedStorage
+roblox/   Rojo host: 20Hz authoritative server + 3D-Parts client (playable in Studio)
 tools/    asset build, balance sweeps, golden repin
 debugging/ replay, sim campaign, fairness reports
 test/     node --test suites + pinned golden fixtures
