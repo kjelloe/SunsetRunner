@@ -1737,3 +1737,25 @@ Remaining GO-LIVE work is on-box only (agent can't reach the box): fill the ops/
 configs, `--bootstrap`, install the nginx block, extend the shared certbot
 lineage, `./docs/ssh-deploy.sh`.
 Gate: bash -n docs/ssh-deploy.sh OK; npm test unaffected (no code change).
+
+---
+
+## marker-0092 — cap effective DPR at 2 on mobile (2026-08-10)
+
+Client-only (presentation), no engine change, no repin. The cheapest low-end perf
+win from the marker-0088 profile.
+
+client/viewport.js: computeBufferSize now clamps the EFFECTIVE devicePixelRatio to
+maxDpr (default 2, exposed as a param) before scaling — a DPR-3 phone renders a
+780-wide backing store instead of 1170. DPR 1/2 unchanged; the maxW=1920 cap
+unchanged. No call-site change (the clamp is inside the pure function). Canvas-2D
+fill is quadratic in backing-store pixels, so 3->2 is a ~2.25x fill cut for detail
+the eye can't resolve at arm's length.
+
+Measured (npm run perf:mobile, 390x844 @ device DPR 3): 4x CPU 16.0->10.0ms p50,
+62->100 fps, 39%->3% over 16.7ms; 6x 26.2->15.6ms p50, 38->64 fps, 100%->30% over.
+test/viewport.test.js gains a clamp case (780 not 1170, DPR1/2 untouched,
+overridable). specs/68. PERFORMANCE.md table refreshed + item 1 marked done.
+
+Gate: npm test -> 292/292; perf:mobile reproduces the table; 4 Luau gates untouched
+(no engine change).

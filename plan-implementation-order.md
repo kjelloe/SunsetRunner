@@ -149,7 +149,8 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-088 mobile render perf profile (headless CPU-throttle harness; tools/mobile_perf.mjs + PERFORMANCE.md) (marker-0088)
 - [x] slice-089 ssh-deploy script (allowlist + health guard + /health endpoint + host bind; docs/ssh-deploy.sh, secrets in ops/) (marker-0089)
 - [x] slice-090 playtest polish: rival cars use the car sprite (not a rect) + checkpoint standings board (2.5x font, gap-to-leader, 5s fade) + de-overlap race summary/all-time board (marker-0090)
-- [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + low-end wins (cap DPR / draw distance)
+- [x] slice-092 cap effective DPR at 2 on mobile (client/viewport.js; 4x 62->100fps, 6x 38->64fps; no repin) (marker-0092)
+- [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 
 ## Backlog — future features (recorded 2026-08-05, user: "record all these")
@@ -162,9 +163,8 @@ Not scheduled; pick when ready. Ordered by rough impact.
   stay out of the repo. Remaining is on-box work only (agent can't reach the box):
   fill ops/, `--bootstrap`, install the nginx block, extend the shared certbot
   lineage, then `./docs/ssh-deploy.sh`.
-- [ ] **Cap DPR on mobile** — clamp client/viewport.js computeBufferSize to DPR<=2;
-  the single biggest low-end perf win (backing-store fill is quadratic in DPR).
-  ~10 lines, client-only, no repin. Re-run npm run perf:mobile to confirm.
+- [x] **Cap DPR on mobile** — DONE (marker-0092). computeBufferSize clamps
+  effective DPR<=2; perf:mobile confirmed 4x 62->100fps, 6x 38->64fps. specs/68.
 - [ ] **Roblox build** — turn the Luau twin (luau/ + roblox/ Rojo) into an actual
   playable Roblox game: Studio rendering, input, UI. Engine parity already proven;
   this is the presentation/host layer. Larger effort (previously deferred).

@@ -19,6 +19,19 @@ test("computeBufferSize caps the buffer (no giant 4K frames) and has a floor", (
   assert.equal(tiny.w, 320); // MIN_W floor
 });
 
+test("computeBufferSize caps EFFECTIVE DPR at 2 (mobile fill-cost win)", () => {
+  // A 390-CSS-px phone at DPR 3: without the cap this is 1170px (quadratic
+  // fill); clamped to DPR 2 it is 780px — ~2.25x fewer pixels to fill.
+  const phone = computeBufferSize(390, 219, 3);
+  assert.equal(phone.w, 780);
+  assert.equal(phone.h, Math.round((780 * 9) / 16));
+  // DPR 1 and 2 are untouched by the cap.
+  assert.equal(computeBufferSize(390, 219, 2).w, 780);
+  assert.equal(computeBufferSize(390, 219, 1).w, 390);
+  // The cap is overridable (kept as a param) for callers that want full DPR.
+  assert.equal(computeBufferSize(390, 219, 3, 1920, 3).w, 1170);
+});
+
 // --- wake lock (injected fakes) ---
 function fakeDoc() {
   const handlers = {};
