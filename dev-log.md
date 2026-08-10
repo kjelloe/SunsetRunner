@@ -1988,3 +1988,12 @@ backlog + PLAYTEST §10 updated.
 
 Gate: lune ai-1a matches JS; npm test -> 316/316; ./test.sh 6 Luau gates + browser
 smoke green; rojo build valid.
+
+---
+
+## marker-0101 — Roblox varied AI field (2026-08-11)
+
+Server-only (roblox/src/server), no engine/JS/Luau change. The 4 Roblox rivals now
+draw from a hard/medium/medium/easy skill spread (AI_SKILLS indexed per rival) via
+the proven ai_driver AI_SKILL tiers, so they separate into a race instead of a
+uniform pack. Gate: rojo build valid; npm test 316/316 unaffected.

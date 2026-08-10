@@ -158,6 +158,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-098 Roblox host layer: authoritative 20Hz server (per-player solo race) + client 3D-Parts renderer + input + chase camera + HUD (roblox/src; engine untouched, 5 Luau gates intact) (marker-0098)
 - [x] slice-099 multiplayer polish: server-authoritative MP countdown (input freeze + GO!) + spectate rank-cycle & points + dedicated rejoin button + browser-level strand test (client-only, no repin) (marker-0099)
 - [x] slice-100 Roblox AI opponents: ai_driver Luau twin + ai_1a parity gate (6th) + named AI rivals in the Roblox host (server seats/drives, client rival Parts + name tags) (marker-0100)
+- [x] slice-101 Roblox varied AI field: rivals spread across hard/medium/easy skills so they race apart (server-only, proven ai_driver tiers) (marker-0101)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 

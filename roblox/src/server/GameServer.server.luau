@@ -34,6 +34,10 @@ local START_TIME_TICKS = 3000
 local TICK_DT = 1 / 20
 local AI_COUNT = 4 -- named rivals per solo race (marker-0100)
 local AI_NAMES = { "Max", "Zoe", "Kai", "Ava", "Leo", "Mia", "Ivy", "Rex" }
+-- A varied field (marker-0101): a couple of quick rivals, a mid, and a slower one,
+-- so they spread out into a race instead of a uniform pack. Uses the proven
+-- ai_driver AI_SKILL tiers (indexed per rival).
+local AI_SKILLS = { "hard", "medium", "medium", "easy" }
 
 -- Two channels: intents in, per-seat views out.
 local inputEvent = Instance.new("RemoteEvent")
@@ -153,7 +157,7 @@ RunService.Heartbeat:Connect(function(dt)
 				for i = 2, #st.seats do
 					local seat = st.seats[i]
 					if seat.finishTicks < 0 and seat.timedOut == 0 then
-						local inp = ai.chooseInput(st, seat.id, ai.AI_SKILL.medium)
+						local inp = ai.chooseInput(st, seat.id, ai.skillFor(AI_SKILLS[i - 1]))
 						st = reducer.apply(st, { type = "input", seatId = seat.id, steer = inp.steer, accel = inp.accel, brake = inp.brake }, ctx)
 					end
 				end
