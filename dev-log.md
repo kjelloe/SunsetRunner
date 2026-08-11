@@ -2147,3 +2147,16 @@ seat 1. inputBySeat/forkBySeat keyed by seat; PlayerAdded assignSeat, PlayerRemo
 frees it.
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0111 — Roblox mobile touch controls (2026-08-11)
+
+Roblox client (Main.client.luau), no engine/JS/Luau change. computeIntent now MERGES
+keyboard + touch (either works). On touch devices (UIS.TouchEnabled) a ScreenGui of
+hold-buttons is built: ◄ ► steer (bottom-left, ±256), ▲ gas / ▼ brake (bottom-right),
+Q/E fork (top corners). MouseButton1Down/Up set the touch.{steer,accel,brake} state
+and fire on change; fork buttons FireServer on press. Desktop keyboard path
+unchanged.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
