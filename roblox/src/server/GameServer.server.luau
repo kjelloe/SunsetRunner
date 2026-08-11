@@ -245,6 +245,7 @@ local function buildViewFor(player: Player)
 		car = s.carId,
 		points = pointsByPlayer[player] or 0,
 		allTime = ((room.phase == "lobby" or room.phase == "summary") and allTimeBoard) or nil,
+		traffic = traffic,
 		ghosts = ghosts,
 		seat = {
 			segmentId = s.segmentId,

@@ -650,7 +650,7 @@ local function renderWorld(rz, laneX, view)
 	-- draw distance — otherwise the pool can render an arbitrary far subset and the
 	-- car you're about to hit is invisible (you "just stop").
 	local nearTraffic = {}
-	for _, t in ipairs(view.traffic) do
+	for _, t in ipairs(view.traffic or {}) do
 		local dz = t.roadZ - rz
 		if dz >= 0 and dz <= drawDz then
 			table.insert(nearTraffic, { dz = dz, t = t })
