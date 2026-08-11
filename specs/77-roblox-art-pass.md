@@ -21,14 +21,20 @@ browser uses).
   Grass/sand/snow/etc. match the browser's biome colours; snaps at segment
   boundaries.
 
-## Phase 2 — roadside props + road-surface speed (marker-0103) — planned
+## Phase 2 — roadside props + road-surface speed (marker-0103) — DONE
 
-- Pooled low-poly props (tree = trunk cylinder + cone/sphere canopy, rock, sign)
-  placed along the roadside at the theme's interval, biome-tinted, treadmill-
-  repositioned; seeded from roadZ so they don't jitter.
-- Scrolling centre dashes + coloured rumble edges keyed to `roadZ`, so the road
-  surface itself conveys speed (today only approaching objects do).
-- Optional per-biome side ground (water/sand strips alongside the road).
+- **Scrolling asphalt bands**: strip colour alternates by `floor(roadZ/ROAD_UNIT)+k`
+  parity, so the road surface flows toward the camera with speed.
+- **Centre-line dashes**: a pool of white dashes placed at `DASH_SPACING` (3 road
+  units), offset by `roadZ % DASH_SPACING` so they scroll and recycle — the
+  clearest speed cue.
+- **Roadside props**: a pool of biome-tinted foliage balls + grey rocks, placed at
+  `PROP_SPACING` (6 road units) just off each shoulder (`ROAD_HALF·SX + 6`),
+  side/type keyed to the absolute world slot so a prop is stable as it approaches
+  (no jitter). Foliage colour derives from the biome ground.
+
+Deferred: per-biome side ground (water/sand strips that follow the curve) and
+richer multi-part trees — folded into the phase-3 / refinement backlog.
 
 ## Phase 3 — procedural car model (marker-0104) — planned
 

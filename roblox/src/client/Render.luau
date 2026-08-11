@@ -46,8 +46,13 @@ local traffic: { Part } = {}
 local pads: { Part } = {}
 local ghosts: { Part } = {}
 local ghostTags: { TextLabel } = {}
+local dashes: { Part } = {} -- scrolling centre-line dashes (speed cue)
+local props: { Part } = {} -- pooled roadside scenery
 local ground: Part
 local car: Part
+
+local DASH_SPACING = ROAD_UNIT * 3 -- one centre dash every 3 road units
+local PROP_SPACING = ROAD_UNIT * 6 -- a roadside prop slot every 6 road units
 local hud: { speed: TextLabel, timer: TextLabel, banner: TextLabel }
 
 -- Accumulate curve (double integral, like the browser road renderer) + read hill,
@@ -149,6 +154,17 @@ function Render.init()
 		p.Transparency = 1
 		pads[i] = p
 	end
+	for i = 1, 28 do
+		local d = mkPart("dash", Vector3.new(2, 0.3, 8), Color3.fromRGB(240, 240, 220), world)
+		d.Transparency = 1
+		dashes[i] = d
+	end
+	for i = 1, 24 do
+		local pr = mkPart("prop", Vector3.new(8, 12, 8), Color3.fromRGB(60, 120, 60), world)
+		pr.Shape = Enum.PartType.Ball -- foliage/rock blob, recoloured + scaled per slot
+		pr.Transparency = 1
+		props[i] = pr
+	end
 	local RIVAL_COLORS = { Color3.fromRGB(224, 72, 48), Color3.fromRGB(72, 132, 224), Color3.fromRGB(72, 200, 96), Color3.fromRGB(224, 192, 64) }
 	for i = 1, 8 do
 		local gp = mkPart("rival", Vector3.new(7, 3.5, 12), RIVAL_COLORS[(i % 4) + 1], world)
@@ -222,14 +238,67 @@ function Render.update(view)
 		local theme = themeFor(road.getSegment(courseSet, seat.segmentId).scenerySet)
 		ground.Color = hexToColor3(theme.grassA) or Color3.fromRGB(47, 120, 60)
 	end
+	local gc = ground.Color
+	local foliage = Color3.new(gc.R * 0.5, gc.G * 0.7, gc.B * 0.5) -- roadside greenery from the biome
+	local drawDz = (N - 1) * ROAD_UNIT
+
+	-- Road strips, with a scrolling asphalt band pattern so the surface reads speed.
+	local bandPhase = math.floor(seat.roadZ / ROAD_UNIT)
 	for k = 1, N do
 		local s = built[k]
 		local p = strips[k]
 		if s then
 			p.Transparency = 0
+			p.Color = ((bandPhase + k) % 2 == 0) and Color3.fromRGB(54, 54, 62) or Color3.fromRGB(44, 44, 52)
 			p.CFrame = CFrame.new(s.curveX * SX, BASE_Y + s.hill * SY, -s.dz * SZ)
 		else
 			p.Transparency = 1
+		end
+	end
+
+	-- Scrolling centre-line dashes (the clearest speed cue).
+	local dashOff = seat.roadZ % DASH_SPACING
+	for i = 1, #dashes do
+		local d = (i - 1) * DASH_SPACING - dashOff
+		if d >= 0 and d <= drawDz then
+			local s = built[math.min(math.floor(d / ROAD_UNIT) + 1, N)]
+			if s then
+				dashes[i].Transparency = 0
+				dashes[i].CFrame = CFrame.new(s.curveX * SX, BASE_Y + s.hill * SY + 0.6, -d * SZ)
+			else
+				dashes[i].Transparency = 1
+			end
+		else
+			dashes[i].Transparency = 1
+		end
+	end
+
+	-- Pooled roadside props (foliage / rocks), stable per world slot so they don't jitter.
+	local roadEdge = ROAD_HALF * SX + 6
+	local propOff = seat.roadZ % PROP_SPACING
+	local baseSlot = math.floor(seat.roadZ / PROP_SPACING)
+	for i = 1, #props do
+		local pr = props[i]
+		local d = (i - 1) * PROP_SPACING - propOff
+		if d >= 0 and d <= drawDz then
+			local s = built[math.min(math.floor(d / ROAD_UNIT) + 1, N)]
+			if s then
+				local worldSlot = baseSlot + (i - 1)
+				local side = if worldSlot % 2 == 0 then -1 else 1
+				pr.Transparency = 0
+				if worldSlot % 3 == 0 then
+					pr.Color = Color3.fromRGB(120, 116, 110) -- rock
+					pr.Size = Vector3.new(7, 4, 7)
+				else
+					pr.Color = foliage
+					pr.Size = Vector3.new(8, 12, 8)
+				end
+				pr.CFrame = CFrame.new(s.curveX * SX + side * roadEdge, BASE_Y + s.hill * SY + pr.Size.Y / 2, -d * SZ)
+			else
+				pr.Transparency = 1
+			end
+		else
+			pr.Transparency = 1
 		end
 	end
 

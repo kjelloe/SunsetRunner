@@ -2015,3 +2015,19 @@ segment boundaries. specs/77 (documents all 3 phases; phase 1 done).
 
 Gate: rojo build valid (scenery mounts, ground+lighting apply); npm test 316/316;
 6 Luau gates untouched.
+
+---
+
+## marker-0103 — Roblox art pass phase 2: props + road-surface speed (2026-08-11)
+
+Roblox-only presentation (Render.luau), no engine/JS/Luau change. Phase 2 of 3.
+(1) Scrolling asphalt BANDS: strip colour alternates by floor(roadZ/ROAD_UNIT)+k
+parity so the surface flows with speed. (2) Centre-line DASHES: pool of 28 white
+dashes at DASH_SPACING (3 units), offset by roadZ%spacing so they scroll+recycle
+(clearest speed cue). (3) Roadside PROPS: pool of 24 biome-tinted foliage balls +
+grey rocks at PROP_SPACING (6 units) just off each shoulder; side/type keyed to the
+absolute world slot so a prop is stable as it approaches (no jitter); foliage colour
+derived from the biome ground. Deferred: curve-following per-biome side ground +
+richer multi-part trees. specs/77 (phase 2 done).
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
