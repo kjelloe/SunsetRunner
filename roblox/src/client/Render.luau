@@ -61,7 +61,10 @@ local Render = {}
 local strips: { Part } = {}
 local rumbleL: { Part } = {} -- red/white kerb, left edge
 local rumbleR: { Part } = {} -- red/white kerb, right edge
-local traffic: { Part } = {}
+local sideL: { Part } = {} -- per-biome side ground (water/sand), left
+local sideR: { Part } = {} -- per-biome side ground, right
+local traffic = {} -- traffic car rigs (marker-0107)
+local signs = {} -- roadside billboards { post, panel }
 local pads: { Part } = {}
 local ghostRigs = {} -- rival car rigs (marker-0104)
 local ghostTags: { TextLabel } = {}
@@ -238,11 +241,22 @@ function Render.init()
 		strips[k] = mkPart("strip", Vector3.new(roadW, 1, STRIP_LEN + 0.4), shade, world)
 		rumbleL[k] = mkPart("rumbleL", Vector3.new(3.5, 1.2, STRIP_LEN + 0.4), Color3.fromRGB(220, 60, 60), world)
 		rumbleR[k] = mkPart("rumbleR", Vector3.new(3.5, 1.2, STRIP_LEN + 0.4), Color3.fromRGB(220, 60, 60), world)
+		sideL[k] = mkPart("sideL", Vector3.new(60, 0.5, STRIP_LEN + 0.6), Color3.fromRGB(40, 110, 180), world)
+		sideR[k] = mkPart("sideR", Vector3.new(60, 0.5, STRIP_LEN + 0.6), Color3.fromRGB(40, 110, 180), world)
+		sideL[k].Transparency = 1
+		sideR[k].Transparency = 1
 	end
 	for i = 1, 14 do
-		local t = mkPart("traffic", Vector3.new(6, 3, 10), Color3.fromRGB(224, 192, 64), world)
-		t.Transparency = 1
-		traffic[i] = t
+		local rig = makeCarRig(Color3.fromRGB(224, 192, 64), world)
+		setCarShown(rig, false)
+		traffic[i] = rig
+	end
+	for i = 1, 4 do
+		local post = mkPart("post", Vector3.new(1.6, 26, 1.6), Color3.fromRGB(120, 96, 70), world, Enum.Material.Wood)
+		local panel = mkPart("panel", Vector3.new(28, 16, 1), Color3.fromRGB(210, 210, 220), world)
+		post.Transparency = 1
+		panel.Transparency = 1
+		signs[i] = { post = post, panel = panel }
 	end
 	for i = 1, 8 do
 		local p = mkPart("pad", Vector3.new(roadW * 0.5, 0.4, 6), Color3.fromRGB(40, 224, 255), world, Enum.Material.Neon)
@@ -260,7 +274,10 @@ function Render.init()
 		local canopy = mkPart("canopy", Vector3.new(10, 10, 10), Color3.fromRGB(60, 140, 66), world)
 		canopy.Shape = Enum.PartType.Ball
 		canopy.Transparency = 1
-		props[i] = { trunk = trunk, canopy = canopy }
+		local frond = mkPart("frond", Vector3.new(18, 8, 18), Color3.fromRGB(46, 132, 60), world) -- palm crown layer
+		frond.Shape = Enum.PartType.Ball
+		frond.Transparency = 1
+		props[i] = { trunk = trunk, canopy = canopy, frond = frond }
 	end
 	local RIVAL_COLORS = { Color3.fromRGB(224, 72, 48), Color3.fromRGB(72, 132, 224), Color3.fromRGB(72, 200, 96), Color3.fromRGB(224, 192, 64) }
 	for i = 1, 8 do
@@ -342,9 +359,11 @@ function Render.update(view)
 	local drawDz = (N - 1) * ROAD_UNIT
 	local roadHalfStuds = ROAD_HALF * SX
 	local fadeFrom = N - 12
+	local sideLcol = hexToColor3(theme.sideLeft) -- water/sand strip beside the road (per biome)
+	local sideRcol = hexToColor3(theme.sideRight)
 
-	-- Road strips + red/white kerbs, with a scrolling band pattern (speed) and a
-	-- far-fade so the treadmill's end dissolves into the sky instead of a hard edge.
+	-- Road strips + red/white kerbs + per-biome side ground, with a scrolling band
+	-- pattern (speed) and a far-fade so the treadmill dissolves into the sky.
 	local bandPhase = math.floor(seat.roadZ / ROAD_UNIT)
 	for k = 1, N do
 		local s = built[k]
@@ -361,8 +380,21 @@ function Render.update(view)
 			rl.Color, rr.Color = kerb, kerb
 			rl.CFrame = CFrame.new(x - roadHalfStuds - 1.6, y + 0.1, z)
 			rr.CFrame = CFrame.new(x + roadHalfStuds + 1.6, y + 0.1, z)
+			if sideLcol then
+				sideL[k].Transparency, sideL[k].Color = fade, sideLcol
+				sideL[k].CFrame = CFrame.new(x - roadHalfStuds - 34, y - 0.25, z)
+			else
+				sideL[k].Transparency = 1
+			end
+			if sideRcol then
+				sideR[k].Transparency, sideR[k].Color = fade, sideRcol
+				sideR[k].CFrame = CFrame.new(x + roadHalfStuds + 34, y - 0.25, z)
+			else
+				sideR[k].Transparency = 1
+			end
 		else
 			p.Transparency, rl.Transparency, rr.Transparency = 1, 1, 1
+			sideL[k].Transparency, sideR[k].Transparency = 1, 1
 		end
 	end
 
@@ -400,13 +432,14 @@ function Render.update(view)
 				local side = if worldSlot % 2 == 0 then -1 else 1
 				local x = s.curveX * SX + side * roadEdge
 				local baseY = BASE_Y + s.hill * SY
+				local z = ZSHIFT - d * SZ
 				if worldSlot % 4 == 0 then
-					-- rock: grey blob, no trunk
-					rig.trunk.Transparency = 1
+					-- rock: grey blob, no trunk / no frond
+					rig.trunk.Transparency, rig.frond.Transparency = 1, 1
 					rig.canopy.Transparency = 0
 					rig.canopy.Color = Color3.fromRGB(122, 118, 112)
 					rig.canopy.Size = Vector3.new(11, 7, 11)
-					rig.canopy.CFrame = CFrame.new(x, baseY + 3, ZSHIFT - d * SZ)
+					rig.canopy.CFrame = CFrame.new(x, baseY + 3, z)
 				else
 					local trunkH, canopySize, canopyY
 					if isPalm then
@@ -418,17 +451,55 @@ function Render.update(view)
 					end
 					rig.trunk.Transparency = 0
 					rig.trunk.Size = Vector3.new(2, trunkH, 2)
-					rig.trunk.CFrame = CFrame.new(x, baseY + trunkH / 2, ZSHIFT - d * SZ)
+					rig.trunk.CFrame = CFrame.new(x, baseY + trunkH / 2, z)
 					rig.canopy.Transparency = 0
 					rig.canopy.Color = isFir and Color3.fromRGB(40, 96, 54) or foliage
 					rig.canopy.Size = canopySize
-					rig.canopy.CFrame = CFrame.new(x, baseY + canopyY, ZSHIFT - d * SZ)
+					rig.canopy.CFrame = CFrame.new(x, baseY + canopyY, z)
+					-- palms get a second, offset crown layer for fuller fronds
+					if isPalm then
+						rig.frond.Transparency = 0
+						rig.frond.Color = Color3.fromRGB(52, 146, 66)
+						rig.frond.Size = Vector3.new(22, 7, 22)
+						rig.frond.CFrame = CFrame.new(x, baseY + canopyY + 4, z)
+					else
+						rig.frond.Transparency = 1
+					end
 				end
 			else
-				rig.trunk.Transparency, rig.canopy.Transparency = 1, 1
+				rig.trunk.Transparency, rig.canopy.Transparency, rig.frond.Transparency = 1, 1, 1
 			end
 		else
-			rig.trunk.Transparency, rig.canopy.Transparency = 1, 1
+			rig.trunk.Transparency, rig.canopy.Transparency, rig.frond.Transparency = 1, 1, 1
+		end
+	end
+
+	-- Roadside billboards (sparse), further out than the trees. The panel faces the
+	-- camera (its wide face is on ±Z).
+	local SIGN_SPACING = ROAD_UNIT * 24
+	local signOff = seat.roadZ % SIGN_SPACING
+	local signBase = math.floor(seat.roadZ / SIGN_SPACING)
+	for i = 1, #signs do
+		local sg = signs[i]
+		local d = (i - 1) * SIGN_SPACING - signOff
+		if d >= 0 and d <= drawDz then
+			local s = built[math.min(math.floor(d / ROAD_UNIT) + 1, N)]
+			if s then
+				local slot = signBase + (i - 1)
+				local side = if slot % 2 == 0 then -1 else 1
+				local x = s.curveX * SX + side * (roadHalfStuds + 60)
+				local y = BASE_Y + s.hill * SY
+				local z = ZSHIFT - d * SZ
+				sg.post.Transparency = 0
+				sg.post.CFrame = CFrame.new(x, y + 13, z)
+				sg.panel.Transparency = 0
+				sg.panel.Color = (slot % 3 == 0) and Color3.fromRGB(214, 84, 92) or Color3.fromRGB(198, 204, 220)
+				sg.panel.CFrame = CFrame.new(x, y + 24, z)
+			else
+				sg.post.Transparency, sg.panel.Transparency = 1, 1
+			end
+		else
+			sg.post.Transparency, sg.panel.Transparency = 1, 1
 		end
 	end
 
@@ -462,15 +533,16 @@ function Render.update(view)
 		local s = built[math.min(math.floor(e.dz / ROAD_UNIT) + 1, N)]
 		if s then
 			ti += 1
-			local part = traffic[ti]
+			local rig = traffic[ti]
 			local t = e.t
-			part.Transparency = 0
-			part.Color = (t.kind == 2 or t.kind == 3) and Color3.fromRGB(58, 110, 165) or Color3.fromRGB(224, 192, 64)
-			part.CFrame = CFrame.new((s.curveX + t.laneX) * SX, BASE_Y + s.hill * SY + 1.5, ZSHIFT - e.dz * SZ)
+			setCarShown(rig, true)
+			rig.body.Color = (t.kind == 2 or t.kind == 3) and Color3.fromRGB(70, 120, 210)
+				or (t.kind == 4 and Color3.fromRGB(230, 150, 60) or Color3.fromRGB(90, 200, 120))
+			placeCar(rig, CFrame.new((s.curveX + t.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - e.dz * SZ))
 		end
 	end
 	for i = ti + 1, #traffic do
-		traffic[i].Transparency = 1
+		setCarShown(traffic[i], false)
 	end
 
 	-- Rival AI ghosts (same-segment) as car rigs with a name tag.

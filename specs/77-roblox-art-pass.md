@@ -75,6 +75,20 @@ much closer (user decisions: procedural gradient sky backdrop + per-biome trees)
 Deferred: curve-following per-biome side ground (water/sand), roadside billboards,
 richer palm fronds, traffic as cars.
 
+## Fixes + features (marker-0106 / marker-0107) — DONE
+
+From playtest screenshots:
+- **0106 fixes**: `ZSHIFT` pushes the whole road toward the camera so it reaches the
+  screen bottom behind the car; traffic **sorted nearest-first** (the pool showed an
+  arbitrary far subset, so the car you hit was invisible — "you just stop"; the white
+  "flicker" was the crash-flash on those unseen cars); bigger canopies.
+- **0107 features** (clears the deferred list above): per-biome **side ground**
+  (`sideL/sideR` from `theme.sideLeft/sideRight`), roadside **billboards** (`signs`
+  post + panel), richer **palm fronds** (a second crown layer), and **traffic-as-cars**
+  (the traffic pool is now car rigs coloured by kind).
+
+Still deferred: state interpolation (smoother 20→60 fps) and per-biome car variety.
+
 ## Determinism / parity
 
 `roblox/src` is host + presentation; it writes no engine state and changes no

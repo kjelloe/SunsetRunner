@@ -2085,3 +2085,18 @@ stop"). Now sorts nearest-first within the draw distance and renders the closest
 traffic). (3) BIGGER canopies (palm 30-wide fronds, fir 26 tall, bush 17, rock 11).
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0107 — Roblox art features: side ground, billboards, palm fronds, traffic-as-cars (2026-08-11)
+
+Roblox-only (Render.luau), no engine/JS/Luau change. Clears the deferred art list.
+(1) PER-BIOME SIDE GROUND: sideL/sideR strip pools coloured by theme.sideLeft/
+sideRight (water/sand), following the curve, shown only where the biome defines them.
+(2) BILLBOARDS: a sparse signs pool (post + camera-facing panel), placed further out
+than the trees. (3) RICHER PALM FRONDS: a second offset crown layer (frond Ball) on
+palm props. (4) TRAFFIC-AS-CARS: the traffic pool is now makeCarRig rigs coloured by
+kind (blue trucks/buses, orange motorcycle, green sedan), positioned via placeCar/
+setCarShown. specs/77. Still deferred: state interpolation, per-biome car variety.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
