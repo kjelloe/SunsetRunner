@@ -73,6 +73,8 @@ local dashes: { Part } = {} -- scrolling centre-line dashes (speed cue)
 local props = {} -- pooled roadside scenery rigs { trunk, canopy }
 local ground: Part
 local carRig -- player car rig (body + cabin + 4 wheels)
+local boostEmitter: ParticleEmitter -- cyan trail while boosting (marker-0112)
+local boostActive = false
 
 local DASH_SPACING = ROAD_UNIT * 3 -- one centre dash every 3 road units
 local PROP_SPACING = ROAD_UNIT * 6 -- a roadside prop slot every 6 road units
@@ -303,6 +305,17 @@ function Render.init()
 		ghostTags[i] = tl
 	end
 	carRig = makeCarRig(Color3.fromRGB(224, 72, 48), world)
+	boostEmitter = Instance.new("ParticleEmitter")
+	boostEmitter.Enabled = false
+	boostEmitter.Color = ColorSequence.new(Color3.fromRGB(120, 240, 255))
+	boostEmitter.Lifetime = NumberRange.new(0.3, 0.55)
+	boostEmitter.Speed = NumberRange.new(0, 5)
+	boostEmitter.Rate = 140
+	boostEmitter.Size = NumberSequence.new({ NumberSequenceKeypoint.new(0, 3), NumberSequenceKeypoint.new(1, 0) })
+	boostEmitter.Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0.15), NumberSequenceKeypoint.new(1, 1) })
+	boostEmitter.LightEmission = 0.9
+	boostEmitter.SpreadAngle = Vector2.new(22, 22)
+	boostEmitter.Parent = carRig.body
 
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "SunsetHUD"
@@ -510,6 +523,10 @@ local function renderWorld(rz, laneX, view)
 	local boosting = seat.boostTicks > 0
 	carRig.body.Color = boosting and Color3.fromRGB(120, 240, 255)
 		or (seat.crashedTicks > 0 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(224, 72, 48))
+	boostActive = boosting
+	if boostEmitter then
+		boostEmitter.Enabled = boosting
+	end
 	placeCar(carRig, CFrame.new(carX, BASE_Y + baseHill + 1.6, 4))
 
 	-- Same-segment traffic ahead.
@@ -663,6 +680,9 @@ function Render.cameraCFrame(): CFrame
 	local cp = carRig.body.Position
 	local eye = Vector3.new(cp.X * 0.4, cp.Y + 7, cp.Z + 17)
 	local look = Vector3.new(cp.X * 0.15, cp.Y + 2, cp.Z - 40)
+	-- FOV kick while boosting adds to the sense of speed.
+	local cam = workspace.CurrentCamera
+	cam.FieldOfView += ((boostActive and 82 or 70) - cam.FieldOfView) * 0.12
 	return CFrame.lookAt(eye, look)
 end
 

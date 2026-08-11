@@ -169,6 +169,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-109 Roblox race framing: server phase machine (countdown/racing/summary) + client 3-2-1-GO + finish "new race in Ns" (marker-0109)
 - [x] slice-110 Roblox real-player multiplayer: one shared 6-seat race, players take over AI seats on join / revert on leave, per-seat views with others as ghosts (marker-0110)
 - [x] slice-111 Roblox mobile touch controls: on-screen steer/gas/brake/fork buttons merged with keyboard (marker-0111)
+- [x] slice-112 Roblox boost VFX: cyan particle trail + camera FOV kick while boosting (marker-0112)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 
