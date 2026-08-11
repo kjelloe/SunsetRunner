@@ -45,6 +45,7 @@ do
 	end
 end
 local lastStage = 1
+local prevCd, goFrames = 0, 0 -- countdown -> GO! edge (marker-0109)
 
 -- Engine-units -> studs.
 local SX = 14 / 256 -- lateral (one lane = 14 studs)
@@ -592,8 +593,29 @@ local function renderWorld(rz, laneX, view)
 	hud.timer.Text = tostring(math.max(0, math.floor(seat.timerTicks / 20))) -- TIME (big centre)
 	lastStage = stageOf[seat.segmentId] or lastStage
 	hud.stage.Text = "STAGE " .. lastStage .. "/" .. STAGE_TOTAL
-	hud.banner.Text = boosting and "BOOST!" or (seat.finishTicks >= 0 and "FINISH!" or (seat.timedOut ~= 0 and "TIME UP" or ""))
-	hud.banner.TextColor3 = boosting and Color3.fromRGB(120, 240, 255) or Color3.fromRGB(255, 220, 74)
+	-- Race framing (marker-0109): countdown 3-2-1, a brief GO!, then the finish/
+	-- time-up summary with a "new race in Ns" line.
+	local cd = view.countdown or 0
+	if prevCd > 0 and cd == 0 then
+		goFrames = 45
+	end
+	prevCd = cd
+	if cd > 0 then
+		hud.banner.Text = tostring(cd)
+		hud.banner.TextColor3 = Color3.fromRGB(255, 220, 74)
+	elseif goFrames > 0 then
+		goFrames -= 1
+		hud.banner.Text = "GO!"
+		hud.banner.TextColor3 = Color3.fromRGB(120, 240, 120)
+	elseif view.phase == "summary" then
+		hud.banner.Text = (seat.finishTicks >= 0 and "FINISH!" or "TIME UP") .. "   new race in " .. (view.restartIn or 0)
+		hud.banner.TextColor3 = Color3.fromRGB(255, 220, 74)
+	elseif boosting then
+		hud.banner.Text = "BOOST!"
+		hud.banner.TextColor3 = Color3.fromRGB(120, 240, 255)
+	else
+		hud.banner.Text = ""
+	end
 
 	-- (rendered)
 end

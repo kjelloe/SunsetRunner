@@ -47,8 +47,10 @@ local viewEvent = Instance.new("RemoteEvent")
 viewEvent.Name = "SunsetView"
 viewEvent.Parent = RS
 
-type Session = { state: any, input: { steer: number, accel: number, brake: number }, fork: number, seed: number }
+type Session = { state: any, input: { steer: number, accel: number, brake: number }, fork: number, seed: number, phase: string, cd: number, summ: number }
 local sessions: { [Player]: Session } = {}
+local COUNTDOWN_TICKS = 60 -- 3 s at 20 Hz
+local SUMMARY_TICKS = 100 -- 5 s finish/summary hold before a fresh race
 
 local function freshState(seed: number)
 	local seats = { { id = 1, carId = 1 } } -- seat 1 = the player
@@ -74,13 +76,14 @@ end
 
 local function startSession(player: Player)
 	local seed = 12345 + (player.UserId % 100000)
-	sessions[player] = { state = freshState(seed), input = { steer = 0, accel = 0, brake = 0 }, fork = 0, seed = seed }
+	sessions[player] = { state = freshState(seed), input = { steer = 0, accel = 0, brake = 0 }, fork = 0, seed = seed, phase = "countdown", cd = COUNTDOWN_TICKS, summ = 0 }
 	print("[SunsetRunner] session started for " .. player.Name .. " (seed " .. seed .. ")")
 end
 
 -- The slice of state a client needs to render: self seat + same-segment traffic
 -- + rival ghosts (AI opponents) on the self segment.
-local function buildView(state)
+local function buildView(sess)
+	local state = sess.state
 	local s = state.seats[1]
 	local traffic = {}
 	for _, t in ipairs(state.traffic) do
@@ -97,6 +100,9 @@ local function buildView(state)
 	end
 	return {
 		tick = state.tick,
+		phase = sess.phase,
+		countdown = (sess.phase == "countdown") and math.ceil(sess.cd / 20) or 0,
+		restartIn = (sess.phase == "summary") and math.ceil(sess.summ / 20) or 0,
 		ghosts = ghosts,
 		seat = {
 			segmentId = s.segmentId,
@@ -141,32 +147,45 @@ RunService.Heartbeat:Connect(function(dt)
 	while acc >= TICK_DT do
 		acc -= TICK_DT
 		for player, sess in pairs(sessions) do
-			local st = sess.state
-			local seat = st.seats[1]
-			-- Finished or timed out: loop into a fresh race (no framing yet, v1).
-			if seat.finishTicks >= 0 or seat.timedOut ~= 0 then
-				sess.seed += 1
-				sess.state = freshState(sess.seed)
-			else
-				st = reducer.apply(st, { type = "input", seatId = 1, steer = sess.input.steer, accel = sess.input.accel, brake = sess.input.brake }, ctx)
-				if sess.fork ~= 0 then
-					st = reducer.apply(st, { type = "forkChoice", seatId = 1, choice = sess.fork }, ctx)
-					sess.fork = 0
+			if sess.phase == "countdown" then
+				sess.cd -= 1 -- frozen at the line; 3-2-1 then GO
+				if sess.cd <= 0 then
+					sess.phase = "racing"
 				end
-				-- AI rivals drive with the deterministic ai_driver twin (medium skill).
-				for i = 2, #st.seats do
-					local seat = st.seats[i]
-					if seat.finishTicks < 0 and seat.timedOut == 0 then
-						local inp = ai.chooseInput(st, seat.id, ai.skillFor(AI_SKILLS[i - 1]))
-						st = reducer.apply(st, { type = "input", seatId = seat.id, steer = inp.steer, accel = inp.accel, brake = inp.brake }, ctx)
+			elseif sess.phase == "summary" then
+				sess.summ -= 1 -- hold the finish/time-up screen, then a fresh race
+				if sess.summ <= 0 then
+					sess.seed += 1
+					sess.state = freshState(sess.seed)
+					sess.phase = "countdown"
+					sess.cd = COUNTDOWN_TICKS
+				end
+			else -- racing
+				local st = sess.state
+				local seat = st.seats[1]
+				if seat.finishTicks >= 0 or seat.timedOut ~= 0 then
+					sess.phase = "summary"
+					sess.summ = SUMMARY_TICKS
+				else
+					st = reducer.apply(st, { type = "input", seatId = 1, steer = sess.input.steer, accel = sess.input.accel, brake = sess.input.brake }, ctx)
+					if sess.fork ~= 0 then
+						st = reducer.apply(st, { type = "forkChoice", seatId = 1, choice = sess.fork }, ctx)
+						sess.fork = 0
 					end
+					for i = 2, #st.seats do -- AI rivals via the ai_driver twin
+						local rseat = st.seats[i]
+						if rseat.finishTicks < 0 and rseat.timedOut == 0 then
+							local inp = ai.chooseInput(st, rseat.id, ai.skillFor(AI_SKILLS[i - 1]))
+							st = reducer.apply(st, { type = "input", seatId = rseat.id, steer = inp.steer, accel = inp.accel, brake = inp.brake }, ctx)
+						end
+					end
+					st = reducer.apply(st, { type = "advance_tick" }, ctx)
+					sess.state = st
 				end
-				st = reducer.apply(st, { type = "advance_tick" }, ctx)
-				sess.state = st
 			end
 		end
 	end
 	for player, sess in pairs(sessions) do
-		viewEvent:FireClient(player, buildView(sess.state))
+		viewEvent:FireClient(player, buildView(sess))
 	end
 end)

@@ -2116,3 +2116,17 @@ RenderStepped now calls Render.step(dt) + camera. Everything (road scroll, car,
 traffic, rivals) now moves at 60 fps.
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0109 — Roblox race framing (countdown + finish summary) (2026-08-11)
+
+Roblox host (GameServer.server.luau + Render.luau), no engine/JS/Luau change. The
+server session gains a phase machine: countdown (60t=3s, sim frozen at the line) ->
+racing -> summary (100t=5s finish/time-up hold) -> fresh race. buildView carries
+phase + countdown secs + restartIn. Client banner shows the 3-2-1 count, a brief GO!
+(client edge on countdown>0->0), then "FINISH!/TIME UP  new race in Ns". Input is
+naturally frozen during countdown (server only applies it in the racing phase) so
+there's no lurch at GO.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
