@@ -63,10 +63,12 @@ art pass (sunset sky, biome ground + side water/sand, rumble kerbs, yellow dashe
 per-biome trees + palm fronds, billboards, car models, traffic-as-cars); 0108 state
 interpolation (60 fps); 0109 race framing (3-2-1-GO + finish summary); 0110
 real-player multiplayer (one shared 6-seat race, drop-in on an AI seat); 0111 mobile
-touch controls.
+touch controls; 0112 boost VFX (particle trail + FOV kick); 0113 per-biome car
+variety (livery palette); 0114 end-of-race leaderboard (RESULTS panel); 0115 car +
+course select (cycle UI — per-player car, shared course).
 
 ## Not done yet (backlog)
 
-A lobby / course + car select, per-biome car variety, boost VFX, richer audio, and a
-proper end-of-race leaderboard. Feel/scale tuning is ongoing from playtest
-screenshots.
+A ready-up lobby phase, per-biome car SHAPES (not just colour), richer audio, points
+carried across races, and an all-time leaderboard. Feel/scale tuning is ongoing from
+playtest screenshots.
