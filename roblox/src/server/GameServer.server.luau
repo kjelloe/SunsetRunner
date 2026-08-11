@@ -52,6 +52,7 @@ local room -- { state, phase, cd, summ, seed }
 local roomCourseId = COURSE_ID -- shared course (car+course select, marker-0115)
 local prefCarByPlayer: { [Player]: number } = {}
 local readyByPlayer: { [Player]: boolean } = {} -- ready-up lobby (marker-0116)
+local pointsByPlayer: { [Player]: number } = {} -- carried across races (marker-0119)
 local seatOfPlayer: { [Player]: number } = {}
 local playerOfSeat: { [number]: Player } = {}
 local inputBySeat: { [number]: { steer: number, accel: number, brake: number } } = {}
@@ -185,6 +186,7 @@ local function buildViewFor(player: Player)
 		standings = standings,
 		courseId = roomCourseId,
 		car = s.carId,
+		points = pointsByPlayer[player] or 0,
 		ghosts = ghosts,
 		seat = {
 			segmentId = s.segmentId,
@@ -253,6 +255,7 @@ Players.PlayerRemoving:Connect(function(player)
 	end
 	readyByPlayer[player] = nil
 	prefCarByPlayer[player] = nil
+	pointsByPlayer[player] = nil
 end)
 for _, p in ipairs(Players:GetPlayers()) do
 	assignSeat(p)
@@ -318,6 +321,17 @@ RunService.Heartbeat:Connect(function(dt)
 					end
 				end
 				st = reducer.apply(st, { type = "advance_tick" }, ctx)
+				-- Award points for player seats (carried across races).
+				for _, e in ipairs(st.events) do
+					local p = playerOfSeat[e.seatId]
+					if p then
+						local d = 0
+						if e.type == "checkpoint" then d = 100
+						elseif e.type == "finish" then d = 1000
+						elseif e.type == "collision" then d = -30 end
+						if d ~= 0 then pointsByPlayer[p] = math.max(0, (pointsByPlayer[p] or 0) + d) end
+					end
+				end
 				room.state = st
 			end
 		end

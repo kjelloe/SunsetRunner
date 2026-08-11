@@ -2247,3 +2247,15 @@ need swapping to ones that exist / preferred assets (Play is harmless if an id i
 missing).
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0119 — Roblox points carried across races (2026-08-11)
+
+Roblox host+client, no engine/JS/Luau change. Server scans st.events after each
+advance and awards the controlling player points (checkpoint +100, finish +1000,
+collision -30, floored at 0) into pointsByPlayer, which is NOT reset by freshRoom
+(carries across races) and cleared on leave. View carries points; client HUD shows a
+"SCORE N" label top-right.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.

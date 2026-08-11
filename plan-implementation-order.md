@@ -176,6 +176,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-116 Roblox ready-up lobby: lobby phase (15s timer or all-ready) + READY button before each race (marker-0116)
 - [x] slice-117 Roblox per-biome car shapes: setCarStyle resizes rigs into sport/suv/compact/truck/bus/bike by kind + biome (marker-0117)
 - [x] slice-118 Roblox richer audio: bundled-sound SFX for checkpoint/countdown/GO/finish/crash/boost (marker-0118)
+- [x] slice-119 Roblox points carried across races: server awards (cp/finish/collision) persisted across races, HUD SCORE (marker-0119)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 
