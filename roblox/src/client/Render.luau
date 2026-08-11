@@ -31,6 +31,16 @@ local function themeFor(scenerySet: number)
 	return themes[tostring(scenerySet)] or themes[tostring(sceneryCfg.default or 1)] or {}
 end
 
+-- Recognizable terrain per biome (marker-0122): a real Roblox surface material so
+-- the ground/verge reads as sand/rock/snow/grass rather than flat plastic.
+local BIOME_MAT: { [number]: Enum.Material } = {
+	[2] = Enum.Material.Sand, -- beach
+	[3] = Enum.Material.Sandstone, -- canyon
+	[5] = Enum.Material.Concrete, -- city
+	[9] = Enum.Material.Ground, -- autumn
+	[11] = Enum.Material.Snow, -- alpine
+}
+
 -- Client-side stage index for the HUD, by walking the default path from the start
 -- (approximate at forks). Rebuilt when the room's selected course changes.
 local stageOf, STAGE_TOTAL = {}, 0
@@ -157,7 +167,7 @@ end
 -- base * offset, which is dead-simple and can't mis-pivot. Front is -Z (forward).
 local function makeCarRig(bodyColor: Color3, parent: Instance)
 	local rig = { parts = {}, body = nil :: Part? }
-	local function piece(size, color, offset, shape)
+	local function piece(size, color, offset, shape, material)
 		local p = Instance.new("Part")
 		p.Anchored = true
 		p.CanCollide = false
@@ -165,7 +175,7 @@ local function makeCarRig(bodyColor: Color3, parent: Instance)
 		p.CanTouch = false
 		p.Size = size
 		p.Color = color
-		p.Material = Enum.Material.SmoothPlastic
+		p.Material = material or Enum.Material.SmoothPlastic
 		if shape then
 			p.Shape = shape
 		end
@@ -173,17 +183,43 @@ local function makeCarRig(bodyColor: Color3, parent: Instance)
 		table.insert(rig.parts, { part = p, offset = offset })
 		return p
 	end
-	rig.body = piece(Vector3.new(7, 2.4, 11), bodyColor, CFrame.new(0, 0.2, 0))
-	piece(Vector3.new(5, 1.8, 5), bodyColor:Lerp(Color3.new(0, 0, 0), 0.28), CFrame.new(0, 1.5, 0.8)) -- cabin toward the rear
-	piece(Vector3.new(4.6, 0.3, 3.4), Color3.fromRGB(150, 195, 225), CFrame.new(0, 1.55, -1.5) * CFrame.Angles(math.rad(-34), 0, 0)) -- windshield
-	local shadow = piece(Vector3.new(9, 0.2, 13), Color3.fromRGB(18, 10, 18), CFrame.new(0, -1.05, 0))
+	local function wedge(size, color, offset)
+		local p = Instance.new("WedgePart")
+		p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch = true, false, false, false
+		p.Size, p.Color, p.Material = size, color, Enum.Material.SmoothPlastic
+		p.Parent = parent
+		table.insert(rig.parts, { part = p, offset = offset })
+		return p
+	end
+	-- Lower, sleeker chassis + a separate greenhouse cabin so the profile reads as a
+	-- car, not a box. parts[1]=body and parts[2]=cabin stay first (setCarStyle resizes
+	-- them); the detail pieces after are fixed accents.
+	rig.body = piece(Vector3.new(6.6, 1.8, 11), bodyColor, CFrame.new(0, 0.1, 0))
+	piece(Vector3.new(4.8, 1.7, 5), bodyColor:Lerp(Color3.new(0, 0, 0), 0.32), CFrame.new(0, 1.25, 0.8)) -- cabin toward the rear
+	piece(Vector3.new(4.4, 0.25, 3.1), Color3.fromRGB(150, 195, 225), CFrame.new(0, 1.35, -1.3) * CFrame.Angles(math.rad(-32), 0, 0)) -- windshield
+	local shadow = piece(Vector3.new(9, 0.2, 13), Color3.fromRGB(18, 10, 18), CFrame.new(0, -1.15, 0))
 	shadow.Transparency = 0.55
-	local wc = Color3.fromRGB(28, 28, 32)
-	local wheel = Vector3.new(1.4, 2.6, 2.6)
-	piece(wheel, wc, CFrame.new(-3.1, -1.0, -3.2), Enum.PartType.Cylinder)
-	piece(wheel, wc, CFrame.new(3.1, -1.0, -3.2), Enum.PartType.Cylinder)
-	piece(wheel, wc, CFrame.new(-3.1, -1.0, 3.2), Enum.PartType.Cylinder)
-	piece(wheel, wc, CFrame.new(3.1, -1.0, 3.2), Enum.PartType.Cylinder)
+	local wc = Color3.fromRGB(24, 24, 28)
+	local hub = Color3.fromRGB(150, 150, 158)
+	local wheel = Vector3.new(1.3, 2.5, 2.5)
+	for _, wx in ipairs({ -3.0, 3.0 }) do
+		for _, wz in ipairs({ -3.2, 3.2 }) do
+			piece(wheel, wc, CFrame.new(wx, -0.9, wz), Enum.PartType.Cylinder)
+			piece(Vector3.new(1.35, 1.1, 1.1), hub, CFrame.new(wx, -0.9, wz), Enum.PartType.Cylinder) -- hubcap
+		end
+	end
+	-- Sloped hood (front, high side toward the cabin) and boot (rear) so it's not a box.
+	wedge(Vector3.new(5.6, 1.2, 3.6), bodyColor, CFrame.new(0, 0.95, -3.6))
+	wedge(Vector3.new(5.4, 0.9, 2.6), bodyColor:Lerp(Color3.new(0, 0, 0), 0.1), CFrame.new(0, 0.9, 3.9) * CFrame.Angles(0, math.rad(180), 0))
+	-- Head + tail lights (small glowing accents at the corners).
+	piece(Vector3.new(1.1, 0.7, 0.4), Color3.fromRGB(255, 246, 214), CFrame.new(-2.0, 0.2, -5.45), nil, Enum.Material.Neon)
+	piece(Vector3.new(1.1, 0.7, 0.4), Color3.fromRGB(255, 246, 214), CFrame.new(2.0, 0.2, -5.45), nil, Enum.Material.Neon)
+	piece(Vector3.new(1.3, 0.6, 0.4), Color3.fromRGB(230, 40, 40), CFrame.new(-2.0, 0.45, 5.5), nil, Enum.Material.Neon)
+	piece(Vector3.new(1.3, 0.6, 0.4), Color3.fromRGB(230, 40, 40), CFrame.new(2.0, 0.45, 5.5), nil, Enum.Material.Neon)
+	-- Rear spoiler on two little posts.
+	piece(Vector3.new(6.2, 0.3, 1.5), bodyColor:Lerp(Color3.new(0, 0, 0), 0.2), CFrame.new(0, 1.45, 5.0))
+	piece(Vector3.new(0.4, 1.0, 0.5), Color3.fromRGB(30, 30, 34), CFrame.new(-2.5, 1.0, 5.0))
+	piece(Vector3.new(0.4, 1.0, 0.5), Color3.fromRGB(30, 30, 34), CFrame.new(2.5, 1.0, 5.0))
 	return rig
 end
 
@@ -270,6 +306,7 @@ local SKY_BANDS = {
 	{ Color3.fromRGB(178, 58, 110), 300, 300 }, -- magenta
 	{ Color3.fromRGB(255, 106, 74), 20, 340 }, -- orange (horizon; extends below to meet the ground)
 }
+local SKY_Z = -1500 -- backdrop wall depth (kept inside fog so it hazes into the horizon)
 local function makeSky(parent, baseY)
 	for _, b in ipairs(SKY_BANDS) do
 		local p = Instance.new("Part")
@@ -280,8 +317,39 @@ local function makeSky(parent, baseY)
 		p.Material = Enum.Material.SmoothPlastic
 		p.Size = Vector3.new(9000, b[3], 20)
 		p.Color = b[1]
-		p.CFrame = CFrame.new(0, baseY + b[2], -1500)
+		p.CFrame = CFrame.new(0, baseY + b[2], SKY_Z)
 		p.Parent = parent
+	end
+	-- The setting sun: a big neon disc on the horizon, with dark horizontal cuts
+	-- across its lower half (classic OutRun look). Sits just in front of the bands
+	-- so it never z-fights, and its lower half dips below the ground horizon.
+	local D = 360
+	local sun = Instance.new("Part")
+	sun.Anchored, sun.CanCollide, sun.CanQuery, sun.CanTouch = true, false, false, false
+	sun.Shape = Enum.PartType.Cylinder
+	sun.Material = Enum.Material.Neon
+	sun.Color = Color3.fromRGB(255, 156, 66)
+	sun.Size = Vector3.new(5, D, D)
+	sun.CFrame = CFrame.new(0, baseY + 96, SKY_Z + 8) * CFrame.Angles(0, math.rad(90), 0)
+	sun.Parent = parent
+	-- Gradient glow: a couple of larger, dimmer discs behind the sun.
+	for i, g in ipairs({ { 1.5, 0.6, Color3.fromRGB(255, 120, 90) }, { 2.2, 0.8, Color3.fromRGB(214, 80, 120) } }) do
+		local halo = sun:Clone()
+		halo.Size = Vector3.new(4 - i, D * g[1], D * g[1])
+		halo.Transparency = g[2]
+		halo.Color = g[3]
+		halo.CFrame = CFrame.new(0, baseY + 96, SKY_Z + 6 - i) * CFrame.Angles(0, math.rad(90), 0)
+		halo.Parent = parent
+	end
+	-- Horizontal cut lines across the lower half (they read as sky showing through).
+	for i = 0, 5 do
+		local cut = Instance.new("Part")
+		cut.Anchored, cut.CanCollide, cut.CanQuery, cut.CanTouch = true, false, false, false
+		cut.Material = Enum.Material.SmoothPlastic
+		cut.Color = Color3.fromRGB(150, 46, 96)
+		cut.Size = Vector3.new(D, 5 + i * 1.4, 2)
+		cut.CFrame = CFrame.new(0, baseY + 96 - 30 - i * 22, SKY_Z + 10)
+		cut.Parent = parent
 	end
 end
 
@@ -310,10 +378,11 @@ function Render.init()
 
 	makeSky(world, BASE_Y)
 
-	-- A big biome-coloured ground plane, its top just below the road so grass meets
-	-- the road edge (no dark gap). Flat material for the browser's vibrant look.
-	ground = mkPart("ground", Vector3.new(9000, 2, 6000), Color3.fromRGB(60, 150, 70), world, Enum.Material.SmoothPlastic)
-	ground.CFrame = CFrame.new(0, BASE_Y - 0.6, -1200)
+	-- A big biome-coloured ground plane. Its FAR edge stops at z ≈ -1410, in front of
+	-- the sky wall (z = -1500), so the two never overlap — that overlap was the
+	-- flickering "block" on the horizon. Grass material gives recognizable terrain.
+	ground = mkPart("ground", Vector3.new(9000, 2, 1900), Color3.fromRGB(60, 150, 70), world, Enum.Material.Grass)
+	ground.CFrame = CFrame.new(0, BASE_Y - 0.6, -460) -- spans z ≈ +490 … -1410
 
 	local roadW = ROAD_HALF * 2 * SX
 	for k = 1, N do
@@ -321,8 +390,8 @@ function Render.init()
 		strips[k] = mkPart("strip", Vector3.new(roadW, 1, STRIP_LEN + 0.4), shade, world)
 		rumbleL[k] = mkPart("rumbleL", Vector3.new(3.5, 1.2, STRIP_LEN + 0.4), Color3.fromRGB(220, 60, 60), world)
 		rumbleR[k] = mkPart("rumbleR", Vector3.new(3.5, 1.2, STRIP_LEN + 0.4), Color3.fromRGB(220, 60, 60), world)
-		sideL[k] = mkPart("sideL", Vector3.new(60, 0.5, STRIP_LEN + 0.6), Color3.fromRGB(40, 110, 180), world)
-		sideR[k] = mkPart("sideR", Vector3.new(60, 0.5, STRIP_LEN + 0.6), Color3.fromRGB(40, 110, 180), world)
+		sideL[k] = mkPart("sideL", Vector3.new(130, 0.5, STRIP_LEN + 0.6), Color3.fromRGB(40, 110, 180), world)
+		sideR[k] = mkPart("sideR", Vector3.new(130, 0.5, STRIP_LEN + 0.6), Color3.fromRGB(40, 110, 180), world)
 		sideL[k].Transparency = 1
 		sideR[k].Transparency = 1
 	end
@@ -472,6 +541,7 @@ end
 
 -- Reposition everything from a fresh view. Returns the car's world position so the
 -- camera loop can follow it every RenderStepped (smoother than the 20 Hz updates).
+local curBiome = -1 -- last biome whose surface materials were applied (change-gated)
 local function renderWorld(rz, laneX, view)
 	local seat = view.seat
 	if view.courseId and view.courseId ~= curCourse then
@@ -489,8 +559,27 @@ local function renderWorld(rz, laneX, view)
 	local drawDz = (N - 1) * ROAD_UNIT
 	local roadHalfStuds = ROAD_HALF * SX
 	local fadeFrom = N - 12
-	local sideLcol = hexToColor3(theme.sideLeft) -- water/sand strip beside the road (per biome)
+	local sideLcol = hexToColor3(theme.sideLeft) -- water strip beside the road (some biomes)
 	local sideRcol = hexToColor3(theme.sideRight)
+	-- Verge always renders now (recognizable terrain), water where the biome has it,
+	-- else a darker shade of the biome grass. Materials only change on a biome change.
+	local grassB = hexToColor3(theme.grassB) or gc
+	local vergeL = sideLcol or grassB
+	local vergeR = sideRcol or grassB
+	local vergeLb = vergeL:Lerp(Color3.new(0, 0, 0), 0.14) -- alt band for a textured look
+	local vergeRb = vergeR:Lerp(Color3.new(0, 0, 0), 0.14)
+	if scenerySet ~= curBiome then
+		curBiome = scenerySet
+		local gmat = BIOME_MAT[scenerySet] or Enum.Material.Grass
+		ground.Material = gmat
+		local vergeMat = BIOME_MAT[scenerySet] or Enum.Material.LeafyGrass
+		local lMat = sideLcol and Enum.Material.Glass or vergeMat
+		local rMat = sideRcol and Enum.Material.Glass or vergeMat
+		for k = 1, N do
+			sideL[k].Material = lMat
+			sideR[k].Material = rMat
+		end
+	end
 
 	-- Road strips + red/white kerbs + per-biome side ground, with a scrolling band
 	-- pattern (speed) and a far-fade so the treadmill dissolves into the sky.
@@ -510,18 +599,13 @@ local function renderWorld(rz, laneX, view)
 			rl.Color, rr.Color = kerb, kerb
 			rl.CFrame = CFrame.new(x - roadHalfStuds - 1.6, y + 0.1, z)
 			rr.CFrame = CFrame.new(x + roadHalfStuds + 1.6, y + 0.1, z)
-			if sideLcol then
-				sideL[k].Transparency, sideL[k].Color = fade, sideLcol
-				sideL[k].CFrame = CFrame.new(x - roadHalfStuds - 34, y - 0.25, z)
-			else
-				sideL[k].Transparency = 1
-			end
-			if sideRcol then
-				sideR[k].Transparency, sideR[k].Color = fade, sideRcol
-				sideR[k].CFrame = CFrame.new(x + roadHalfStuds + 34, y - 0.25, z)
-			else
-				sideR[k].Transparency = 1
-			end
+			local alt = (bandPhase + k) % 2 == 0
+			sideL[k].Transparency = fade
+			sideL[k].Color = alt and vergeL or vergeLb
+			sideL[k].CFrame = CFrame.new(x - roadHalfStuds - 66, y - 0.25, z)
+			sideR[k].Transparency = fade
+			sideR[k].Color = alt and vergeR or vergeRb
+			sideR[k].CFrame = CFrame.new(x + roadHalfStuds + 66, y - 0.25, z)
 		else
 			p.Transparency, rl.Transparency, rr.Transparency = 1, 1, 1
 			sideL[k].Transparency, sideR[k].Transparency = 1, 1
@@ -772,6 +856,13 @@ local function renderWorld(rz, laneX, view)
 		goFrames -= 1
 		hud.banner.Text = "GO!"
 		hud.banner.TextColor3 = Color3.fromRGB(120, 240, 120)
+	elseif view.raceOver and not view.watching then
+		local fin = seat.finishTicks >= 0
+		hud.banner.Text = (fin and "FINISHED  " or "TIME UP  ") .. (view.points or 0) .. " pts"
+		hud.banner.TextColor3 = fin and Color3.fromRGB(120, 240, 120) or Color3.fromRGB(255, 120, 90)
+	elseif view.watching then
+		hud.banner.Text = "SPECTATING"
+		hud.banner.TextColor3 = Color3.fromRGB(120, 200, 255)
 	elseif view.phase == "summary" then
 		hud.banner.Text = "new race in " .. (view.restartIn or 0)
 		hud.banner.TextColor3 = Color3.fromRGB(255, 220, 74)
@@ -782,10 +873,13 @@ local function renderWorld(rz, laneX, view)
 		hud.banner.Text = ""
 	end
 
-	-- Leaderboard panel: RESULTS during the summary, ALL-TIME during the lobby.
-	if view.phase == "summary" and view.standings then
+	-- Leaderboard panel: your live score the moment your race ends, RESULTS during
+	-- the summary, ALL-TIME during the lobby. Hidden while spectating the leader.
+	if (view.phase == "summary" or (view.raceOver and not view.watching)) and view.standings then
 		board.frame.Visible = true
-		board.title.Text = "RESULTS"
+		board.title.Text = view.raceOver
+			and ((seat.finishTicks >= 0 and "FINISHED — " or "TIME UP — ") .. (view.points or 0) .. " pts")
+			or "RESULTS"
 		for i, r in ipairs(board.rows) do
 			local e = view.standings[i]
 			if e then

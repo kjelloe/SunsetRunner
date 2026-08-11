@@ -68,7 +68,11 @@ variety (livery palette); 0114 end-of-race leaderboard (RESULTS panel); 0115 car
 course select (cycle UI — per-player car, shared course); 0116 ready-up lobby (15s
 timer / all-ready); 0117 per-biome car shapes (sport/suv/compact/truck/bus/bike);
 0118 richer audio (bundled-sound SFX); 0119 points carried across races; 0120
-all-time leaderboard (DataStore, shown in the lobby).
+all-time leaderboard (DataStore, shown in the lobby); 0121 fix traffic missing from
+the view (Render ipairs crash); 0122 playtest polish — setting-sun disc + fixed
+horizon z-fighting, detailed/varied cars (wedge hood/boot, lights, spoiler, hubcaps),
+per-biome terrain materials + textured verges, and per-player time-up scoring
+(instant score panel + SPECTATE the leader; stages-only reward).
 
 ## Not done yet (backlog)
 

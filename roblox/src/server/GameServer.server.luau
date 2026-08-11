@@ -54,6 +54,7 @@ local roomCourseId = COURSE_ID -- shared course (car+course select, marker-0115)
 local prefCarByPlayer: { [Player]: number } = {}
 local readyByPlayer: { [Player]: boolean } = {} -- ready-up lobby (marker-0116)
 local pointsByPlayer: { [Player]: number } = {} -- carried across races (marker-0119)
+local spectateByPlayer: { [Player]: boolean } = {} -- watching the leader after your own race ends
 
 -- All-time leaderboard (marker-0120), persisted via DataStore. All calls are
 -- pcall-guarded so it degrades to in-session-only if the API is unavailable
@@ -141,6 +142,7 @@ local function freshRoom(seed: number)
 	end
 	room = { state = state, phase = "lobby", lobbyTicks = LOBBY_TICKS, cd = COUNTDOWN_TICKS, summ = 0, seed = seed }
 	readyByPlayer = {}
+	spectateByPlayer = {}
 	for i = 1, SEATS do
 		inputBySeat[i] = { steer = 0, accel = 0, brake = 0 }
 		forkBySeat[i] = 0
@@ -201,8 +203,19 @@ end
 
 -- View centred on the player's seat (or seat 1 as a spectator if the field is full).
 local function buildViewFor(player: Player)
-	local sid = seatOfPlayer[player] or 1
+	local ownSid = seatOfPlayer[player] or 1
 	local state = room.state
+	local own = state.seats[ownSid]
+	-- "Race over" for YOU the moment your own seat finishes or times out — you get an
+	-- immediate score summary instead of being frozen at 0 until the AI field is done.
+	local selfDone = seatOfPlayer[player] ~= nil and (own.finishTicks >= 0 or own.timedOut ~= 0)
+	local raceOver = room.phase == "racing" and selfDone
+	-- Which seat to RENDER: normally your own, but once you're done and pressed
+	-- SPECTATE we render the current leader so you can watch the rest of the race.
+	local sid = ownSid
+	if raceOver and spectateByPlayer[player] then
+		sid = computeStandings(state)[1] or ownSid
+	end
 	local s = state.seats[sid]
 	local traffic = {}
 	for _, t in ipairs(state.traffic) do
@@ -217,11 +230,19 @@ local function buildViewFor(player: Player)
 			table.insert(ghosts, { seatId = j, name = nameOfSeat(j), carId = g.carId, roadZ = g.roadZ, laneX = g.laneX })
 		end
 	end
+	-- Standings: the frozen final order during summary, or a LIVE order the instant
+	-- your own race ends (so the score panel is populated immediately).
 	local standings = nil
+	local order = nil
 	if room.phase == "summary" and room.standings then
+		order = room.standings
+	elseif raceOver then
+		order = computeStandings(state)
+	end
+	if order then
 		standings = {}
-		for rank, j in ipairs(room.standings) do
-			table.insert(standings, { rank = rank, name = nameOfSeat(j), result = resultStr(state.seats[j]), isSelf = (j == sid) })
+		for rank, j in ipairs(order) do
+			table.insert(standings, { rank = rank, name = nameOfSeat(j), result = resultStr(state.seats[j]), isSelf = (j == ownSid) })
 		end
 	end
 	return {
@@ -240,6 +261,9 @@ local function buildViewFor(player: Player)
 		end)(),
 		playerCount = #Players:GetPlayers(),
 		spectating = seatOfPlayer[player] == nil,
+		raceOver = raceOver or nil, -- your own race ended (finished / timed out)
+		watching = (raceOver and spectateByPlayer[player]) or nil, -- rendering the leader
+		result = selfDone and resultStr(own) or nil,
 		standings = standings,
 		courseId = roomCourseId,
 		car = s.carId,
@@ -304,6 +328,9 @@ inputEvent.OnServerEvent:Connect(function(player, msg)
 	elseif msg.select == "ready" then
 		readyByPlayer[player] = true
 		return
+	elseif msg.select == "spectate" then
+		spectateByPlayer[player] = not spectateByPlayer[player] -- toggle watching the leader
+		return
 	end
 	local sid = seatOfPlayer[player]
 	if not sid then
@@ -327,6 +354,7 @@ Players.PlayerRemoving:Connect(function(player)
 	readyByPlayer[player] = nil
 	prefCarByPlayer[player] = nil
 	pointsByPlayer[player] = nil
+	spectateByPlayer[player] = nil
 end)
 for _, p in ipairs(Players:GetPlayers()) do
 	assignSeat(p)
@@ -395,15 +423,12 @@ RunService.Heartbeat:Connect(function(dt)
 					end
 				end
 				st = reducer.apply(st, { type = "advance_tick" }, ctx)
-				-- Award points for player seats (carried across races).
+				-- Reward players ONLY for stages completed: +100 per checkpoint passed.
+				-- No finish bonus, no collision penalty (carried across races).
 				for _, e in ipairs(st.events) do
 					local p = playerOfSeat[e.seatId]
-					if p then
-						local d = 0
-						if e.type == "checkpoint" then d = 100
-						elseif e.type == "finish" then d = 1000
-						elseif e.type == "collision" then d = -30 end
-						if d ~= 0 then pointsByPlayer[p] = math.max(0, (pointsByPlayer[p] or 0) + d) end
+					if p and e.type == "checkpoint" then
+						pointsByPlayer[p] = (pointsByPlayer[p] or 0) + 100
 					end
 				end
 				room.state = st

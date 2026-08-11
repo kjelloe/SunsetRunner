@@ -133,6 +133,25 @@ readyBtn.MouseButton1Click:Connect(function()
 	inputEvent:FireServer({ select = "ready" })
 end)
 
+-- SPECTATE button (marker-0122): shown once your own race ends (finished / timed
+-- out). Toggles between watching the leader race and your own score panel, so you
+-- are never just frozen at time 0 waiting for the AI field to finish.
+local spectateBtn = Instance.new("TextButton")
+spectateBtn.Name = "SunsetSpectate"
+spectateBtn.AnchorPoint = Vector2.new(0.5, 0.5)
+spectateBtn.Position = UDim2.new(0.5, 0, 0.9, 0)
+spectateBtn.Size = UDim2.new(0.22, 0, 0.08, 0)
+spectateBtn.BackgroundColor3 = Color3.fromRGB(60, 110, 170)
+spectateBtn.TextScaled = true
+spectateBtn.Font = Enum.Font.GothamBold
+spectateBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+spectateBtn.Text = "SPECTATE"
+spectateBtn.Visible = false
+spectateBtn.Parent = readyBtn.Parent
+spectateBtn.MouseButton1Click:Connect(function()
+	inputEvent:FireServer({ select = "spectate" })
+end)
+
 UIS.InputBegan:Connect(function(input, gpe)
 	if gpe then
 		return
@@ -160,6 +179,8 @@ viewEvent.OnClientEvent:Connect(function(view)
 		selSynced = true
 	end
 	readyBtn.Visible = view.phase == "lobby" and not view.ready
+	spectateBtn.Visible = view.raceOver == true
+	spectateBtn.Text = view.watching and "MY SCORE" or "SPECTATE"
 end)
 
 RunService.RenderStepped:Connect(function(dt)
