@@ -32,10 +32,12 @@ local function themeFor(scenerySet: number)
 end
 
 -- Client-side stage index for the HUD, by walking the default path from the start
--- (approximate at forks — good enough for a "1/30" readout).
+-- (approximate at forks). Rebuilt when the room's selected course changes.
 local stageOf, STAGE_TOTAL = {}, 0
-do
-	local id = road.getCourse(courseSet, 4).startSegment
+local curCourse = 0
+local function rebuildStageMap(courseId: number)
+	stageOf, STAGE_TOTAL = {}, 0
+	local id = road.getCourse(courseSet, courseId).startSegment
 	local guard = 0
 	while id and id ~= -1 and not stageOf[id] and guard < 500 do
 		STAGE_TOTAL += 1
@@ -43,7 +45,9 @@ do
 		id = road.nextSegment(courseSet, id, 0)
 		guard += 1
 	end
+	curCourse = courseId
 end
+rebuildStageMap(4)
 local lastStage = 1
 local prevCd, goFrames = 0, 0 -- countdown -> GO! edge (marker-0109)
 
@@ -411,6 +415,9 @@ end
 -- camera loop can follow it every RenderStepped (smoother than the 20 Hz updates).
 local function renderWorld(rz, laneX, view)
 	local seat = view.seat
+	if view.courseId and view.courseId ~= curCourse then
+		rebuildStageMap(view.courseId)
+	end
 	local built = buildStrips(seat.segmentId, rz, N, seat.forkChoice)
 
 	-- Recolour the ground to the current segment's biome (grass/sand/snow/etc),

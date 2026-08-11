@@ -48,6 +48,8 @@ viewEvent.Name = "SunsetView"
 viewEvent.Parent = RS
 
 local room -- { state, phase, cd, summ, seed }
+local roomCourseId = COURSE_ID -- shared course (car+course select, marker-0115)
+local prefCarByPlayer: { [Player]: number } = {}
 local seatOfPlayer: { [Player]: number } = {}
 local playerOfSeat: { [number]: Player } = {}
 local inputBySeat: { [number]: { steer: number, accel: number, brake: number } } = {}
@@ -62,7 +64,7 @@ local function freshRoom(seed: number)
 		seed = seed,
 		courseSet = courseSet,
 		carSet = carSet,
-		courseId = COURSE_ID,
+		courseId = roomCourseId,
 		seats = seats,
 		startTimeTicks = START_TIME_TICKS,
 		trafficConfig = trafficConfig,
@@ -70,6 +72,12 @@ local function freshRoom(seed: number)
 	-- Spread seats across lanes so the field races instead of stacking.
 	for i = 1, #state.seats do
 		state.seats[i].laneX = math.floor((i - (SEATS + 1) / 2) * 180)
+	end
+	-- Player-controlled seats race the car that player picked.
+	for sid, player in pairs(playerOfSeat) do
+		if prefCarByPlayer[player] then
+			state.seats[sid].carId = prefCarByPlayer[player]
+		end
 	end
 	room = { state = state, phase = "countdown", cd = COUNTDOWN_TICKS, summ = 0, seed = seed }
 	for i = 1, SEATS do
@@ -162,6 +170,8 @@ local function buildViewFor(player: Player)
 		restartIn = (room.phase == "summary") and math.ceil(room.summ / 20) or 0,
 		spectating = seatOfPlayer[player] == nil,
 		standings = standings,
+		courseId = roomCourseId,
+		car = s.carId,
 		ghosts = ghosts,
 		seat = {
 			segmentId = s.segmentId,
@@ -191,8 +201,24 @@ local function assignSeat(player: Player)
 end
 
 inputEvent.OnServerEvent:Connect(function(player, msg)
+	if typeof(msg) ~= "table" then
+		return
+	end
+	-- Car (per-player, applied now + at each fresh race) / course (room, next race).
+	if msg.select == "car" then
+		local carId = math.clamp(tonumber(msg.carId) or 1, 1, #carSet.cars)
+		prefCarByPlayer[player] = carId
+		local mySid = seatOfPlayer[player]
+		if mySid then
+			room.state.seats[mySid].carId = carId
+		end
+		return
+	elseif msg.select == "course" then
+		roomCourseId = math.clamp(tonumber(msg.courseId) or COURSE_ID, 1, 4)
+		return
+	end
 	local sid = seatOfPlayer[player]
-	if not sid or typeof(msg) ~= "table" then
+	if not sid then
 		return
 	end
 	local steer = math.clamp(tonumber(msg.steer) or 0, -256, 256)

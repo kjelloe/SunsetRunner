@@ -51,6 +51,63 @@ local function sendIfChanged()
 	end
 end
 
+-- Car + course select (marker-0115): cycle buttons top-left. Car applies to your
+-- seat now (and each race); course is the SHARED course, applied at the next race.
+local selCar, selCourse = 1, 4
+local selSynced = false
+local COURSE_NAMES = { "COAST", "CANYON", "MIRROR", "GRAND TOUR" }
+local carLbl: TextButton? = nil
+local courseLbl: TextButton? = nil
+local function refreshSelect()
+	if carLbl then
+		carLbl.Text = "CAR " .. selCar
+	end
+	if courseLbl then
+		courseLbl.Text = COURSE_NAMES[selCourse] or ("COURSE " .. selCourse)
+	end
+end
+do
+	local gui = Instance.new("ScreenGui")
+	gui.Name = "SunsetSelect"
+	gui.ResetOnSpawn = false
+	gui.IgnoreGuiInset = true
+	gui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+	local function b(text, x, y, w)
+		local btn = Instance.new("TextButton")
+		btn.Position = UDim2.new(x, 0, y, 0)
+		btn.Size = UDim2.new(w, 0, 0.06, 0)
+		btn.BackgroundColor3 = Color3.fromRGB(40, 30, 60)
+		btn.BackgroundTransparency = 0.35
+		btn.TextScaled = true
+		btn.Font = Enum.Font.GothamBold
+		btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+		btn.Text = text
+		btn.Parent = gui
+		return btn
+	end
+	local function mkRow(y, onChange)
+		b("◄", 0.02, y, 0.045).MouseButton1Click:Connect(function()
+			onChange(-1)
+		end)
+		local lbl = b("", 0.07, y, 0.17)
+		b("►", 0.25, y, 0.045).MouseButton1Click:Connect(function()
+			onChange(1)
+		end)
+		return lbl
+	end
+	carLbl = mkRow(0.17, function(dir)
+		selCar = ((selCar - 1 + dir) % 4 + 4) % 4 + 1
+		refreshSelect()
+		inputEvent:FireServer({ select = "car", carId = selCar })
+	end)
+	courseLbl = mkRow(0.25, function(dir)
+		selCourse = ((selCourse - 1 + dir) % 4 + 4) % 4 + 1
+		refreshSelect()
+		inputEvent:FireServer({ select = "course", courseId = selCourse })
+	end)
+	refreshSelect()
+end
+
 UIS.InputBegan:Connect(function(input, gpe)
 	if gpe then
 		return
@@ -71,6 +128,12 @@ end)
 
 viewEvent.OnClientEvent:Connect(function(view)
 	Render.update(view)
+	if not selSynced and view.car then
+		selCar = view.car
+		selCourse = view.courseId or selCourse
+		refreshSelect()
+		selSynced = true
+	end
 end)
 
 RunService.RenderStepped:Connect(function(dt)

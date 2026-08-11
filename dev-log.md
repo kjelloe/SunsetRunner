@@ -2191,3 +2191,18 @@ by progress via a server stageIndexOf map) and sends a formatted standings list
 (rank/name/result/isSelf) in the view during summary. Client shows a RESULTS panel
 listing rank + name + result (finish time or "Stage N"), the viewer's row
 highlighted. Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0115 — Roblox car + course select (2026-08-11)
+
+Roblox host+client, no engine/JS/Luau change. Server: prefCarByPlayer (per-player
+car, applied to the seat now + at each fresh race) + roomCourseId (shared course,
+applied at the next freshRoom); input handler takes {select="car",carId}/{select=
+"course",courseId}; view carries courseId + the seat's car. Client: a top-left
+◄ CAR N ► / ◄ COURSE ► selector (cycle buttons), synced from the first view; the HUD
+stage map (stageOf/STAGE_TOTAL) is now rebuildable and refreshes when the room's
+courseId changes. Completes the Roblox backlog batch (lobby/select + variety + VFX +
+leaderboard).
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
