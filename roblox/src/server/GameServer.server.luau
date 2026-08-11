@@ -96,7 +96,7 @@ local function buildViewFor(player: Player)
 	local traffic = {}
 	for _, t in ipairs(state.traffic) do
 		if t.segmentId == s.segmentId and t.roadZ >= s.roadZ then
-			table.insert(traffic, { roadZ = t.roadZ, laneX = t.laneX, kind = t.kind })
+			table.insert(traffic, { id = t.id, roadZ = t.roadZ, laneX = t.laneX, kind = t.kind })
 		end
 	end
 	local ghosts = {}

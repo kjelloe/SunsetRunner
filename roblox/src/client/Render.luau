@@ -47,6 +47,22 @@ end
 local lastStage = 1
 local prevCd, goFrames = 0, 0 -- countdown -> GO! edge (marker-0109)
 
+-- Car livery palette (marker-0113): rivals + traffic pick a colour by identity,
+-- shifted by the biome so the field looks varied AND different across biomes.
+local CAR_PALETTE = {
+	Color3.fromRGB(224, 72, 48),
+	Color3.fromRGB(72, 132, 224),
+	Color3.fromRGB(72, 200, 96),
+	Color3.fromRGB(240, 196, 64),
+	Color3.fromRGB(210, 96, 220),
+	Color3.fromRGB(64, 210, 210),
+	Color3.fromRGB(240, 140, 60),
+	Color3.fromRGB(232, 232, 240),
+}
+local function carColor(id: number, scenerySet: number): Color3
+	return CAR_PALETTE[((id + scenerySet) % #CAR_PALETTE) + 1]
+end
+
 -- Engine-units -> studs.
 local SX = 14 / 256 -- lateral (one lane = 14 studs)
 local SZ = 9 / 256 -- forward depth per road unit
@@ -554,8 +570,7 @@ local function renderWorld(rz, laneX, view)
 			local rig = traffic[ti]
 			local t = e.t
 			setCarShown(rig, true)
-			rig.body.Color = (t.kind == 2 or t.kind == 3) and Color3.fromRGB(70, 120, 210)
-				or (t.kind == 4 and Color3.fromRGB(230, 150, 60) or Color3.fromRGB(90, 200, 120))
+			rig.body.Color = carColor(t.id or ti, scenerySet)
 			placeCar(rig, CFrame.new((s.curveX + t.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - e.dz * SZ))
 		end
 	end
@@ -574,6 +589,7 @@ local function renderWorld(rz, laneX, view)
 				gi += 1
 				local rig = ghostRigs[gi]
 				setCarShown(rig, true)
+				rig.body.Color = carColor(g.seatId + 3, scenerySet) -- distinct from the player (red)
 				placeCar(rig, CFrame.new((s.curveX + g.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - dz * SZ))
 				ghostTags[gi].Text = g.name or ("P" .. g.seatId)
 			end

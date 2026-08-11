@@ -170,6 +170,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-110 Roblox real-player multiplayer: one shared 6-seat race, players take over AI seats on join / revert on leave, per-seat views with others as ghosts (marker-0110)
 - [x] slice-111 Roblox mobile touch controls: on-screen steer/gas/brake/fork buttons merged with keyboard (marker-0111)
 - [x] slice-112 Roblox boost VFX: cyan particle trail + camera FOV kick while boosting (marker-0112)
+- [x] slice-113 Roblox per-biome car variety: 8-colour livery palette for rivals + traffic, shifted by biome (marker-0113)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 

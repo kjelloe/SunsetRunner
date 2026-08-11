@@ -2169,3 +2169,14 @@ Roblox client (Render.luau), no engine/JS/Luau change. A cyan ParticleEmitter is
 parented to the player car body, enabled while seat.boostTicks>0 (in addition to the
 existing cyan body tint), plus a camera FOV kick (70->82, eased) for the sense of
 speed. Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0113 — Roblox per-biome car variety (2026-08-11)
+
+Roblox host+client, no engine/JS/Luau change. Server adds the traffic id to the view
+(stable per-car identity). Client CAR_PALETTE (8 vivid liveries); rivals + traffic
+pick a colour by identity shifted by the segment's scenerySet, so the field looks
+varied within a biome AND changes across biomes. Player stays red (identity).
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
