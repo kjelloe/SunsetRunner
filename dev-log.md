@@ -2069,3 +2069,19 @@ side water/sand, billboards, richer fronds, traffic-as-cars.
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched. UNTESTED in Studio
 (user to screenshot for tuning).
+
+---
+
+## marker-0106 — Roblox art fixes: road-to-bottom, traffic visibility, canopies (2026-08-11)
+
+Roblox-only (Render.luau), no engine/JS/Luau change. From playtest screenshot-2.
+(1) ROAD TO BOTTOM: ZSHIFT (14 studs) pushes the whole road (strips/rumble/dashes/
+props/traffic/ghosts/pads) toward the camera so it reaches the bottom of the screen
+behind the car, instead of starting at the car's depth. (2) TRAFFIC VISIBILITY: the
+pool rendered an arbitrary 14 same-segment cars in server order, so on course-4's
+huge first segment the NEAREST car (the one you hit) was often invisible ("you just
+stop"). Now sorts nearest-first within the draw distance and renders the closest 14
+— this also explains the white "flicker" (the engine crash-flash firing on unseen
+traffic). (3) BIGGER canopies (palm 30-wide fronds, fir 26 tall, bush 17, rock 11).
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.

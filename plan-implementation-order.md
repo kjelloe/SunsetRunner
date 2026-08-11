@@ -163,6 +163,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-103 Roblox art pass phase 2: scrolling road bands + centre dashes + roadside props (foliage/rocks), biome-tinted (marker-0103)
 - [x] slice-104 Roblox art pass phase 3: procedural low-poly car rigs (body+cabin+4 wheels) for player + rivals; camera follows the body (marker-0104)
 - [x] slice-105 Roblox art refinement: match browser look (gradient sky backdrop, rumble kerbs, yellow dashes, brighter ground, per-biome trees, car windshield/shadow, HUD layout) (marker-0105)
+- [x] slice-106 Roblox art fixes: road reaches screen bottom (ZSHIFT), traffic sorted nearest-first (visible), bigger tree canopies (marker-0106)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 

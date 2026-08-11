@@ -54,6 +54,8 @@ local ROAD_HALF = 512 -- engine off-road edge
 local N = 80 -- strips drawn ahead
 local STRIP_LEN = ROAD_UNIT * SZ
 local BASE_Y = 50 -- lift the whole world above any baseplate so it's clearly visible
+local ZSHIFT = 14 -- push the whole road toward the camera so it reaches the bottom
+-- of the screen (behind the car), not just start at the car's depth
 
 local Render = {}
 local strips: { Part } = {}
@@ -315,7 +317,7 @@ function Render.init()
 	-- server view arrives (a straight road that never moves = server not sending;
 	-- an empty world = this script never ran).
 	for k = 1, N do
-		strips[k].CFrame = CFrame.new(0, BASE_Y, -(k - 1) * STRIP_LEN)
+		strips[k].CFrame = CFrame.new(0, BASE_Y, ZSHIFT - (k - 1) * STRIP_LEN)
 	end
 	placeCar(carRig, CFrame.new(0, BASE_Y + 1.6, 4))
 	local cam = workspace.CurrentCamera
@@ -350,7 +352,7 @@ function Render.update(view)
 		local rl, rr = rumbleL[k], rumbleR[k]
 		if s then
 			local fade = (k > fadeFrom) and math.min(0.9, (k - fadeFrom) / 12 * 0.9) or 0
-			local x, y, z = s.curveX * SX, BASE_Y + s.hill * SY, -s.dz * SZ
+			local x, y, z = s.curveX * SX, BASE_Y + s.hill * SY, ZSHIFT - s.dz * SZ
 			p.Transparency = fade
 			p.Color = ((bandPhase + k) % 2 == 0) and Color3.fromRGB(54, 54, 62) or Color3.fromRGB(44, 44, 52)
 			p.CFrame = CFrame.new(x, y, z)
@@ -372,7 +374,7 @@ function Render.update(view)
 			local s = built[math.min(math.floor(d / ROAD_UNIT) + 1, N)]
 			if s then
 				dashes[i].Transparency = 0
-				dashes[i].CFrame = CFrame.new(s.curveX * SX, BASE_Y + s.hill * SY + 0.6, -d * SZ)
+				dashes[i].CFrame = CFrame.new(s.curveX * SX, BASE_Y + s.hill * SY + 0.6, ZSHIFT - d * SZ)
 			else
 				dashes[i].Transparency = 1
 			end
@@ -403,24 +405,24 @@ function Render.update(view)
 					rig.trunk.Transparency = 1
 					rig.canopy.Transparency = 0
 					rig.canopy.Color = Color3.fromRGB(122, 118, 112)
-					rig.canopy.Size = Vector3.new(8, 5, 8)
-					rig.canopy.CFrame = CFrame.new(x, baseY + 2.5, -d * SZ)
+					rig.canopy.Size = Vector3.new(11, 7, 11)
+					rig.canopy.CFrame = CFrame.new(x, baseY + 3, ZSHIFT - d * SZ)
 				else
 					local trunkH, canopySize, canopyY
 					if isPalm then
-						trunkH, canopySize, canopyY = 20, Vector3.new(18, 6, 18), 20 -- tall trunk + wide flat fronds
+						trunkH, canopySize, canopyY = 24, Vector3.new(30, 9, 30), 26 -- tall trunk + wide fronds
 					elseif isFir then
-						trunkH, canopySize, canopyY = 8, Vector3.new(9, 16, 9), 10 -- short trunk + tall conical foliage
+						trunkH, canopySize, canopyY = 9, Vector3.new(16, 26, 16), 16 -- short trunk + tall conical foliage
 					else
-						trunkH, canopySize, canopyY = 6, Vector3.new(10, 10, 10), 7 -- bush
+						trunkH, canopySize, canopyY = 7, Vector3.new(17, 17, 17), 11 -- bush
 					end
 					rig.trunk.Transparency = 0
 					rig.trunk.Size = Vector3.new(2, trunkH, 2)
-					rig.trunk.CFrame = CFrame.new(x, baseY + trunkH / 2, -d * SZ)
+					rig.trunk.CFrame = CFrame.new(x, baseY + trunkH / 2, ZSHIFT - d * SZ)
 					rig.canopy.Transparency = 0
 					rig.canopy.Color = isFir and Color3.fromRGB(40, 96, 54) or foliage
 					rig.canopy.Size = canopySize
-					rig.canopy.CFrame = CFrame.new(x, baseY + canopyY, -d * SZ)
+					rig.canopy.CFrame = CFrame.new(x, baseY + canopyY, ZSHIFT - d * SZ)
 				end
 			else
 				rig.trunk.Transparency, rig.canopy.Transparency = 1, 1
@@ -439,19 +441,32 @@ function Render.update(view)
 	placeCar(carRig, CFrame.new(carX, BASE_Y + baseHill + 1.6, 4))
 
 	-- Same-segment traffic ahead.
-	local ti = 0
+	-- Sort traffic NEAREST-first and render only the closest #traffic within the
+	-- draw distance — otherwise the pool can render an arbitrary far subset and the
+	-- car you're about to hit is invisible (you "just stop").
+	local nearTraffic = {}
 	for _, t in ipairs(view.traffic) do
 		local dz = t.roadZ - seat.roadZ
-		if dz >= 0 then
-			local k = math.floor(dz / ROAD_UNIT) + 1
-			local s = built[math.min(k, N)]
-			if s and ti < #traffic then
-				ti += 1
-				local part = traffic[ti]
-				part.Transparency = 0
-				part.Color = (t.kind == 2 or t.kind == 3) and Color3.fromRGB(58, 110, 165) or Color3.fromRGB(224, 192, 64)
-				part.CFrame = CFrame.new((s.curveX + t.laneX) * SX, BASE_Y + s.hill * SY + 1.5, -dz * SZ)
-			end
+		if dz >= 0 and dz <= drawDz then
+			table.insert(nearTraffic, { dz = dz, t = t })
+		end
+	end
+	table.sort(nearTraffic, function(a, b)
+		return a.dz < b.dz
+	end)
+	local ti = 0
+	for _, e in ipairs(nearTraffic) do
+		if ti >= #traffic then
+			break
+		end
+		local s = built[math.min(math.floor(e.dz / ROAD_UNIT) + 1, N)]
+		if s then
+			ti += 1
+			local part = traffic[ti]
+			local t = e.t
+			part.Transparency = 0
+			part.Color = (t.kind == 2 or t.kind == 3) and Color3.fromRGB(58, 110, 165) or Color3.fromRGB(224, 192, 64)
+			part.CFrame = CFrame.new((s.curveX + t.laneX) * SX, BASE_Y + s.hill * SY + 1.5, ZSHIFT - e.dz * SZ)
 		end
 	end
 	for i = ti + 1, #traffic do
@@ -469,7 +484,7 @@ function Render.update(view)
 				gi += 1
 				local rig = ghostRigs[gi]
 				setCarShown(rig, true)
-				placeCar(rig, CFrame.new((s.curveX + g.laneX) * SX, BASE_Y + s.hill * SY + 1.6, -dz * SZ))
+				placeCar(rig, CFrame.new((s.curveX + g.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - dz * SZ))
 				ghostTags[gi].Text = g.name or ("P" .. g.seatId)
 			end
 		end
@@ -492,7 +507,7 @@ function Render.update(view)
 					pi += 1
 					local part = pads[pi]
 					part.Transparency = 0.15
-					part.CFrame = CFrame.new((s.curveX + pad.laneX) * SX, BASE_Y + s.hill * SY + 0.3, -dz * SZ)
+					part.CFrame = CFrame.new((s.curveX + pad.laneX) * SX, BASE_Y + s.hill * SY + 0.3, ZSHIFT - dz * SZ)
 				end
 			end
 		end
