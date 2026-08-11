@@ -2232,3 +2232,18 @@ per car AND per biome; player is sport. Combined with the 0113 livery palette th
 field now varies in shape + colour.
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0118 — Roblox richer audio (event SFX) (2026-08-11)
+
+Roblox client (Render.luau), no engine/JS/Luau change. Roblox has no procedural
+synthesis, so uses BUNDLED rbxasset sounds (not marketplace assets): one
+electronicpingshort re-pitched for checkpoint (1.4) / countdown beeps (1.0) / GO
+(1.9) / finish (1.75), uuhhh for crash, action_jump for boost. Edges detected in
+renderWorld (crash/boost/timer-bump/finish), gated to the racing phase so a
+fresh-race timer reset can't fire a false checkpoint. NOTE: rbxasset SoundIds may
+need swapping to ones that exist / preferred assets (Play is harmless if an id is
+missing).
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.

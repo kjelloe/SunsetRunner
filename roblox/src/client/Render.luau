@@ -96,6 +96,12 @@ local carRig -- player car rig (body + cabin + 4 wheels)
 local boostEmitter: ParticleEmitter -- cyan trail while boosting (marker-0112)
 local boostActive = false
 
+-- Audio (marker-0118): bundled rbxasset sounds (no marketplace assets). One ping is
+-- re-pitched for checkpoint/countdown/GO/finish; distinct sounds for crash/boost.
+local SoundService = game:GetService("SoundService")
+local sfxPing, sfxCrash, sfxBoost
+local prevCrashS, prevBoostS, prevTimerS, prevFinishS, prevCdBeep = 0, 0, -1, -1, 0
+
 local DASH_SPACING = ROAD_UNIT * 3 -- one centre dash every 3 road units
 local PROP_SPACING = ROAD_UNIT * 6 -- a roadside prop slot every 6 road units
 local hud: { speed: TextLabel, timer: TextLabel, stage: TextLabel, banner: TextLabel }
@@ -279,8 +285,25 @@ local function makeSky(parent, baseY)
 	end
 end
 
+local function mkSound(id: string, vol: number)
+	local s = Instance.new("Sound")
+	s.SoundId = id
+	s.Volume = vol
+	s.Parent = SoundService
+	return s
+end
+local function ping(speed: number)
+	if sfxPing then
+		sfxPing.PlaybackSpeed = speed
+		sfxPing:Play()
+	end
+end
+
 function Render.init()
 	setupLighting()
+	sfxPing = mkSound("rbxasset://sounds/electronicpingshort.wav", 0.5)
+	sfxCrash = mkSound("rbxasset://sounds/uuhhh.mp3", 0.55)
+	sfxBoost = mkSound("rbxasset://sounds/action_jump.mp3", 0.5)
 	local world = Instance.new("Folder")
 	world.Name = "SunsetWorld"
 	world.Parent = workspace
@@ -710,6 +733,32 @@ local function renderWorld(rz, laneX, view)
 		goFrames = 45
 	end
 	prevCd = cd
+
+	-- Audio edges (marker-0118): only during racing (so a fresh-race timer reset
+	-- can't fire a false checkpoint); countdown beeps + a GO chime.
+	local racing = view.phase == "racing"
+	if racing and seat.crashedTicks > 0 and prevCrashS == 0 then
+		sfxCrash:Play()
+	end
+	prevCrashS = seat.crashedTicks
+	if racing and seat.boostTicks > 0 and prevBoostS == 0 then
+		sfxBoost:Play()
+	end
+	prevBoostS = seat.boostTicks
+	if racing and prevTimerS >= 0 and seat.timerTicks > prevTimerS then
+		ping(1.4) -- checkpoint bonus
+	end
+	prevTimerS = seat.timerTicks
+	if racing and seat.finishTicks >= 0 and prevFinishS < 0 then
+		ping(1.75)
+	end
+	prevFinishS = seat.finishTicks
+	if cd ~= prevCdBeep and cd > 0 then
+		ping(1.0) -- 3-2-1 beeps
+	elseif prevCdBeep > 0 and cd == 0 then
+		ping(1.9) -- GO chime
+	end
+	prevCdBeep = cd
 	if view.phase == "lobby" then
 		hud.banner.Text = "GET READY  " .. (view.lobbyIn or 0) .. "s   " .. (view.readyCount or 0) .. "/" .. (view.playerCount or 0) .. " ready"
 		hud.banner.TextColor3 = Color3.fromRGB(120, 240, 120)
