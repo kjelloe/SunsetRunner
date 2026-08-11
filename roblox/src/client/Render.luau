@@ -193,6 +193,39 @@ local function setCarShown(rig, shown: boolean)
 	end
 end
 
+-- Body silhouettes (marker-0117): resize the body + cabin so cars have distinct
+-- shapes. setCarStyle only resizes when the style key changes (cheap).
+local STYLES = {
+	sport = { body = Vector3.new(7, 2.2, 12), cabin = Vector3.new(4.6, 1.6, 4.5), cabinY = 1.4 },
+	suv = { body = Vector3.new(7.4, 3.2, 10.5), cabin = Vector3.new(5.4, 2.4, 6), cabinY = 1.9 },
+	compact = { body = Vector3.new(6.4, 2.4, 9), cabin = Vector3.new(5, 1.9, 5), cabinY = 1.5 },
+	truck = { body = Vector3.new(7.6, 3.6, 13), cabin = Vector3.new(5.2, 2.6, 4.5), cabinY = 2.2 },
+	bus = { body = Vector3.new(7.6, 3.4, 16), cabin = Vector3.new(6.4, 2.6, 12), cabinY = 1.9 },
+	bike = { body = Vector3.new(3.2, 2, 7), cabin = Vector3.new(2.4, 1.6, 2.4), cabinY = 1.4 },
+}
+local RIVAL_STYLES = { "sport", "suv", "compact" }
+local function setCarStyle(rig, key: string)
+	if rig.styleKey == key then
+		return
+	end
+	rig.styleKey = key
+	local s = STYLES[key] or STYLES.sport
+	rig.parts[1].part.Size = s.body
+	rig.parts[2].part.Size = s.cabin
+	rig.parts[2].offset = CFrame.new(0, s.cabinY, 0.8)
+end
+
+local function trafficStyleKey(kind: number): string
+	if kind == 2 then
+		return "truck"
+	elseif kind == 3 then
+		return "bus"
+	elseif kind == 4 then
+		return "bike"
+	end
+	return "sport"
+end
+
 -- Sunset mood (marker-0102): warm dusk lighting + haze, no textures. Global +
 -- one-time; fog fades the end of the treadmill draw distance into the horizon.
 local function setupLighting()
@@ -326,6 +359,7 @@ function Render.init()
 		ghostTags[i] = tl
 	end
 	carRig = makeCarRig(Color3.fromRGB(224, 72, 48), world)
+	setCarStyle(carRig, "sport")
 	boostEmitter = Instance.new("ParticleEmitter")
 	boostEmitter.Enabled = false
 	boostEmitter.Color = ColorSequence.new(Color3.fromRGB(120, 240, 255))
@@ -611,6 +645,7 @@ local function renderWorld(rz, laneX, view)
 			local rig = traffic[ti]
 			local t = e.t
 			setCarShown(rig, true)
+			setCarStyle(rig, trafficStyleKey(t.kind))
 			rig.body.Color = carColor(t.id or ti, scenerySet)
 			placeCar(rig, CFrame.new((s.curveX + t.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - e.dz * SZ))
 		end
@@ -630,6 +665,7 @@ local function renderWorld(rz, laneX, view)
 				gi += 1
 				local rig = ghostRigs[gi]
 				setCarShown(rig, true)
+				setCarStyle(rig, RIVAL_STYLES[((g.seatId + scenerySet) % 3) + 1]) -- shape varies by seat + biome
 				rig.body.Color = carColor(g.seatId + 3, scenerySet) -- distinct from the player (red)
 				placeCar(rig, CFrame.new((s.curveX + g.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - dz * SZ))
 				ghostTags[gi].Text = g.name or ("P" .. g.seatId)

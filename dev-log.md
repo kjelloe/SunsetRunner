@@ -2219,3 +2219,16 @@ ready/readyCount/playerCount. Client shows a "GET READY  Ns  X/Y ready" banner +
 READY button (visible only in lobby, until you've readied).
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0117 — Roblox per-biome car shapes (2026-08-11)
+
+Roblox client (Render.luau), no engine/JS/Luau change. setCarStyle resizes a rig's
+body+cabin (and cabin offset) into distinct silhouettes (STYLES sport/suv/compact/
+truck/bus/bike), only when the style key changes (cheap). Traffic gets a shape by
+KIND (sedan/truck/bus/bike); rivals a shape by (seatId+biome)%3 so silhouettes vary
+per car AND per biome; player is sport. Combined with the 0113 livery palette the
+field now varies in shape + colour.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
