@@ -12,6 +12,24 @@ local constants = require(Shared:WaitForChild("constants"))
 local ROAD_UNIT = constants.ROAD_UNIT
 
 local courseSet = road.loadCourseSet(require(GameData:WaitForChild("roads")))
+-- Same per-biome palettes the browser uses (data/scenery.json), read raw.
+local sceneryCfg = require(GameData:WaitForChild("scenery"))
+
+local function hexToColor3(hex)
+	if type(hex) ~= "string" then
+		return nil
+	end
+	hex = string.gsub(hex, "#", "")
+	local r = tonumber(string.sub(hex, 1, 2), 16) or 0
+	local g = tonumber(string.sub(hex, 3, 4), 16) or 0
+	local b = tonumber(string.sub(hex, 5, 6), 16) or 0
+	return Color3.fromRGB(r, g, b)
+end
+
+local function themeFor(scenerySet: number)
+	local themes = sceneryCfg.themes or {}
+	return themes[tostring(scenerySet)] or themes[tostring(sceneryCfg.default or 1)] or {}
+end
 
 -- Engine-units -> studs.
 local SX = 14 / 256 -- lateral (one lane = 14 studs)
@@ -28,6 +46,7 @@ local traffic: { Part } = {}
 local pads: { Part } = {}
 local ghosts: { Part } = {}
 local ghostTags: { TextLabel } = {}
+local ground: Part
 local car: Part
 local hud: { speed: TextLabel, timer: TextLabel, banner: TextLabel }
 
@@ -76,10 +95,44 @@ local function mkPart(name, size, color, parent, material)
 	return p
 end
 
+-- Sunset mood (marker-0102): warm dusk lighting + haze, no textures. Global +
+-- one-time; fog fades the end of the treadmill draw distance into the horizon.
+local function setupLighting()
+	local L = game:GetService("Lighting")
+	L.ClockTime = 17.3
+	L.GeographicLatitude = 20
+	L.Brightness = 2.4
+	L.Ambient = Color3.fromRGB(74, 56, 66)
+	L.OutdoorAmbient = Color3.fromRGB(158, 112, 92)
+	L.FogColor = Color3.fromRGB(255, 150, 104)
+	L.FogStart = 340
+	L.FogEnd = 720 -- == N strips * STRIP_LEN, so the road fades right at the horizon
+	L.EnvironmentDiffuseScale = 0.4
+	L.EnvironmentSpecularScale = 0.35
+	local atmo = L:FindFirstChildOfClass("Atmosphere") or Instance.new("Atmosphere")
+	atmo.Density = 0.34
+	atmo.Offset = 0.2
+	atmo.Color = Color3.fromRGB(220, 152, 112)
+	atmo.Decay = Color3.fromRGB(255, 120, 80)
+	atmo.Glare = 0.35
+	atmo.Haze = 2
+	atmo.Parent = L
+	local cc = L:FindFirstChildOfClass("ColorCorrectionEffect") or Instance.new("ColorCorrectionEffect")
+	cc.TintColor = Color3.fromRGB(255, 236, 222)
+	cc.Saturation = 0.08
+	cc.Contrast = 0.06
+	cc.Parent = L
+end
+
 function Render.init()
+	setupLighting()
 	local world = Instance.new("Folder")
 	world.Name = "SunsetWorld"
 	world.Parent = workspace
+
+	-- A big biome-coloured ground plane under the road (recoloured per segment).
+	ground = mkPart("ground", Vector3.new(4000, 2, 4000), Color3.fromRGB(47, 120, 60), world, Enum.Material.Grass)
+	ground.CFrame = CFrame.new(0, BASE_Y - 2.2, -300)
 
 	local roadW = ROAD_HALF * 2 * SX
 	for k = 1, N do
@@ -163,6 +216,12 @@ end
 function Render.update(view)
 	local seat = view.seat
 	local built = buildStrips(seat.segmentId, seat.roadZ, N, seat.forkChoice)
+
+	-- Recolour the ground to the current segment's biome (grass/sand/snow/etc).
+	if seat.segmentId ~= -1 then
+		local theme = themeFor(road.getSegment(courseSet, seat.segmentId).scenerySet)
+		ground.Color = hexToColor3(theme.grassA) or Color3.fromRGB(47, 120, 60)
+	end
 	for k = 1, N do
 		local s = built[k]
 		local p = strips[k]

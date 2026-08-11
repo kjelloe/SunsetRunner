@@ -159,6 +159,9 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-099 multiplayer polish: server-authoritative MP countdown (input freeze + GO!) + spectate rank-cycle & points + dedicated rejoin button + browser-level strand test (client-only, no repin) (marker-0099)
 - [x] slice-100 Roblox AI opponents: ai_driver Luau twin + ai_1a parity gate (6th) + named AI rivals in the Roblox host (server seats/drives, client rival Parts + name tags) (marker-0100)
 - [x] slice-101 Roblox varied AI field: rivals spread across hard/medium/easy skills so they race apart (server-only, proven ai_driver tiers) (marker-0101)
+- [x] slice-102 Roblox art pass phase 1: sunset lighting/atmosphere/fog + biome-coloured ground (reads GameData.scenery; procedural, no textures) (marker-0102)
+- [ ] slice-103 Roblox art pass phase 2: roadside props + scrolling road-surface speed markings + per-biome side ground
+- [ ] slice-104 Roblox art pass phase 3: procedural low-poly car Model (player/rivals/traffic) + camera follows PrimaryPart
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 

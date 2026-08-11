@@ -1997,3 +1997,21 @@ Server-only (roblox/src/server), no engine/JS/Luau change. The 4 Roblox rivals n
 draw from a hard/medium/medium/easy skill spread (AI_SKILLS indexed per rival) via
 the proven ai_driver AI_SKILL tiers, so they separate into a race instead of a
 uniform pack. Gate: rojo build valid; npm test 316/316 unaffected.
+
+---
+
+## marker-0102 — Roblox art pass phase 1: sunset sky + biome ground (2026-08-11)
+
+Roblox-only presentation (roblox/src/client/Render.luau), no engine/JS/Luau change.
+Art pass is procedural-only + phased + sunset (user decisions). Phase 1 of 3.
+
+Render.setupLighting (one-time): warm dusk ClockTime 17.3 + orange Atmosphere
+(density/haze/decay) + warm ambient + ColorCorrection tint + fog (FogStart 340,
+FogEnd 720 = N*STRIP_LEN) so the treadmill draw distance fades into the horizon. No
+textures. NEW biome ground: a Grass-material plane under the road recoloured each
+view to the current segment's scenerySet palette — reads the SAME data/scenery.json
+the browser uses (mounted as GameData.scenery; themeFor + hexToColor3). Snaps at
+segment boundaries. specs/77 (documents all 3 phases; phase 1 done).
+
+Gate: rojo build valid (scenery mounts, ground+lighting apply); npm test 316/316;
+6 Luau gates untouched.
