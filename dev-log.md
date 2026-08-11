@@ -2048,3 +2048,24 @@ traffic-as-cars, per-biome car variety.
 
 Gate: no leftover bare car./ghosts[] refs; rojo build valid; npm test 316/316; 6
 Luau gates untouched.
+
+---
+
+## marker-0105 — Roblox art refinement: match the browser look (2026-08-11)
+
+Roblox-only presentation (Render.luau), no engine/JS/Luau change. From a browser-vs-
+Roblox screenshot comparison (user: procedural gradient sky + per-biome trees).
+Sky: static SKY_BANDS backdrop (indigo->purple->magenta->orange) far ahead — camera
+barely moves (treadmill) so a fixed wall reads as the sky; ground occludes its lower
+half. Lighting toned down (Brightness 2.4->1.7, saturation up) so the red car stops
+washing to pink; light haze, road end faded manually (far strips). Ground raised to
+meet the road (kills the dark gap) + brighter flat biome colour. Red/white rumble
+kerbs (rumbleL/R pools, alternating per strip) + bold YELLOW centre dashes. Per-biome
+trees: palm (tall trunk + wide fronds) / fir (short trunk + tall foliage) / bush +
+rocks, each a trunk+canopy rig from scenerySet. Cars: windshield + soft shadow +
+lowered onto the road. HUD matches browser: TIME big centre, STAGE bottom-left cyan
+(client stage map), SPEED bottom-right. specs/77 (refinement section). Deferred:
+side water/sand, billboards, richer fronds, traffic-as-cars.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched. UNTESTED in Studio
+(user to screenshot for tuning).

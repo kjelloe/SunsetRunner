@@ -31,6 +31,21 @@ local function themeFor(scenerySet: number)
 	return themes[tostring(scenerySet)] or themes[tostring(sceneryCfg.default or 1)] or {}
 end
 
+-- Client-side stage index for the HUD, by walking the default path from the start
+-- (approximate at forks — good enough for a "1/30" readout).
+local stageOf, STAGE_TOTAL = {}, 0
+do
+	local id = road.getCourse(courseSet, 4).startSegment
+	local guard = 0
+	while id and id ~= -1 and not stageOf[id] and guard < 500 do
+		STAGE_TOTAL += 1
+		stageOf[id] = STAGE_TOTAL
+		id = road.nextSegment(courseSet, id, 0)
+		guard += 1
+	end
+end
+local lastStage = 1
+
 -- Engine-units -> studs.
 local SX = 14 / 256 -- lateral (one lane = 14 studs)
 local SZ = 9 / 256 -- forward depth per road unit
@@ -42,18 +57,20 @@ local BASE_Y = 50 -- lift the whole world above any baseplate so it's clearly vi
 
 local Render = {}
 local strips: { Part } = {}
+local rumbleL: { Part } = {} -- red/white kerb, left edge
+local rumbleR: { Part } = {} -- red/white kerb, right edge
 local traffic: { Part } = {}
 local pads: { Part } = {}
 local ghostRigs = {} -- rival car rigs (marker-0104)
 local ghostTags: { TextLabel } = {}
 local dashes: { Part } = {} -- scrolling centre-line dashes (speed cue)
-local props: { Part } = {} -- pooled roadside scenery
+local props = {} -- pooled roadside scenery rigs { trunk, canopy }
 local ground: Part
 local carRig -- player car rig (body + cabin + 4 wheels)
 
 local DASH_SPACING = ROAD_UNIT * 3 -- one centre dash every 3 road units
 local PROP_SPACING = ROAD_UNIT * 6 -- a roadside prop slot every 6 road units
-local hud: { speed: TextLabel, timer: TextLabel, banner: TextLabel }
+local hud: { speed: TextLabel, timer: TextLabel, stage: TextLabel, banner: TextLabel }
 
 -- Accumulate curve (double integral, like the browser road renderer) + read hill,
 -- walking segments forward from the seat's position. Presentation-only shape.
@@ -123,6 +140,9 @@ local function makeCarRig(bodyColor: Color3, parent: Instance)
 	end
 	rig.body = piece(Vector3.new(7, 2.4, 11), bodyColor, CFrame.new(0, 0.2, 0))
 	piece(Vector3.new(5, 1.8, 5), bodyColor:Lerp(Color3.new(0, 0, 0), 0.28), CFrame.new(0, 1.5, 0.8)) -- cabin toward the rear
+	piece(Vector3.new(4.6, 0.3, 3.4), Color3.fromRGB(150, 195, 225), CFrame.new(0, 1.55, -1.5) * CFrame.Angles(math.rad(-34), 0, 0)) -- windshield
+	local shadow = piece(Vector3.new(9, 0.2, 13), Color3.fromRGB(18, 10, 18), CFrame.new(0, -1.05, 0))
+	shadow.Transparency = 0.55
 	local wc = Color3.fromRGB(28, 28, 32)
 	local wheel = Vector3.new(1.4, 2.6, 2.6)
 	piece(wheel, wc, CFrame.new(-3.1, -1.0, -3.2), Enum.PartType.Cylinder)
@@ -148,29 +168,53 @@ end
 -- one-time; fog fades the end of the treadmill draw distance into the horizon.
 local function setupLighting()
 	local L = game:GetService("Lighting")
-	L.ClockTime = 17.3
+	L.ClockTime = 17.6
 	L.GeographicLatitude = 20
-	L.Brightness = 2.4
-	L.Ambient = Color3.fromRGB(74, 56, 66)
-	L.OutdoorAmbient = Color3.fromRGB(158, 112, 92)
-	L.FogColor = Color3.fromRGB(255, 150, 104)
-	L.FogStart = 340
-	L.FogEnd = 720 -- == N strips * STRIP_LEN, so the road fades right at the horizon
-	L.EnvironmentDiffuseScale = 0.4
-	L.EnvironmentSpecularScale = 0.35
+	L.Brightness = 1.7 -- lower so saturated colours (the red car etc.) don't wash out
+	L.Ambient = Color3.fromRGB(66, 52, 66)
+	L.OutdoorAmbient = Color3.fromRGB(130, 96, 92)
+	L.FogColor = Color3.fromRGB(214, 108, 96)
+	L.FogStart = 900 -- light haze only; the road's end is faded manually (far strips),
+	L.FogEnd = 2200 -- so the gradient sky backdrop stays visible at distance
+	L.EnvironmentDiffuseScale = 0.25
+	L.EnvironmentSpecularScale = 0.2
 	local atmo = L:FindFirstChildOfClass("Atmosphere") or Instance.new("Atmosphere")
-	atmo.Density = 0.34
+	atmo.Density = 0.28
 	atmo.Offset = 0.2
-	atmo.Color = Color3.fromRGB(220, 152, 112)
-	atmo.Decay = Color3.fromRGB(255, 120, 80)
-	atmo.Glare = 0.35
-	atmo.Haze = 2
+	atmo.Color = Color3.fromRGB(200, 140, 120)
+	atmo.Decay = Color3.fromRGB(180, 70, 90)
+	atmo.Glare = 0.2
+	atmo.Haze = 1.5
 	atmo.Parent = L
 	local cc = L:FindFirstChildOfClass("ColorCorrectionEffect") or Instance.new("ColorCorrectionEffect")
-	cc.TintColor = Color3.fromRGB(255, 236, 222)
-	cc.Saturation = 0.08
-	cc.Contrast = 0.06
+	cc.TintColor = Color3.fromRGB(255, 238, 228)
+	cc.Saturation = 0.12 -- push saturation UP so grass/road/cars read like the browser
+	cc.Contrast = 0.05
 	cc.Parent = L
+end
+
+-- Procedural OutRun sky (marker-0105): a static stack of big coloured Parts far
+-- ahead. The camera barely moves (treadmill), so a fixed backdrop reads as the
+-- sky in the forward view; the ground plane occludes its lower half at the horizon.
+local SKY_BANDS = {
+	{ Color3.fromRGB(43, 26, 84), 1600, 2400 }, -- indigo (top): {color, yCentre, height}
+	{ Color3.fromRGB(90, 42, 110), 620, 500 }, -- purple
+	{ Color3.fromRGB(178, 58, 110), 300, 300 }, -- magenta
+	{ Color3.fromRGB(255, 106, 74), 20, 340 }, -- orange (horizon; extends below to meet the ground)
+}
+local function makeSky(parent, baseY)
+	for _, b in ipairs(SKY_BANDS) do
+		local p = Instance.new("Part")
+		p.Anchored = true
+		p.CanCollide = false
+		p.CanQuery = false
+		p.CanTouch = false
+		p.Material = Enum.Material.SmoothPlastic
+		p.Size = Vector3.new(9000, b[3], 20)
+		p.Color = b[1]
+		p.CFrame = CFrame.new(0, baseY + b[2], -1500)
+		p.Parent = parent
+	end
 end
 
 function Render.init()
@@ -179,14 +223,19 @@ function Render.init()
 	world.Name = "SunsetWorld"
 	world.Parent = workspace
 
-	-- A big biome-coloured ground plane under the road (recoloured per segment).
-	ground = mkPart("ground", Vector3.new(4000, 2, 4000), Color3.fromRGB(47, 120, 60), world, Enum.Material.Grass)
-	ground.CFrame = CFrame.new(0, BASE_Y - 2.2, -300)
+	makeSky(world, BASE_Y)
+
+	-- A big biome-coloured ground plane, its top just below the road so grass meets
+	-- the road edge (no dark gap). Flat material for the browser's vibrant look.
+	ground = mkPart("ground", Vector3.new(9000, 2, 6000), Color3.fromRGB(60, 150, 70), world, Enum.Material.SmoothPlastic)
+	ground.CFrame = CFrame.new(0, BASE_Y - 0.6, -1200)
 
 	local roadW = ROAD_HALF * 2 * SX
 	for k = 1, N do
 		local shade = (k % 2 == 0) and Color3.fromRGB(58, 58, 66) or Color3.fromRGB(48, 48, 56)
 		strips[k] = mkPart("strip", Vector3.new(roadW, 1, STRIP_LEN + 0.4), shade, world)
+		rumbleL[k] = mkPart("rumbleL", Vector3.new(3.5, 1.2, STRIP_LEN + 0.4), Color3.fromRGB(220, 60, 60), world)
+		rumbleR[k] = mkPart("rumbleR", Vector3.new(3.5, 1.2, STRIP_LEN + 0.4), Color3.fromRGB(220, 60, 60), world)
 	end
 	for i = 1, 14 do
 		local t = mkPart("traffic", Vector3.new(6, 3, 10), Color3.fromRGB(224, 192, 64), world)
@@ -199,15 +248,17 @@ function Render.init()
 		pads[i] = p
 	end
 	for i = 1, 28 do
-		local d = mkPart("dash", Vector3.new(2, 0.3, 8), Color3.fromRGB(240, 240, 220), world)
+		local d = mkPart("dash", Vector3.new(2.6, 0.4, 11), Color3.fromRGB(255, 214, 60), world) -- bold yellow centre line
 		d.Transparency = 1
 		dashes[i] = d
 	end
-	for i = 1, 24 do
-		local pr = mkPart("prop", Vector3.new(8, 12, 8), Color3.fromRGB(60, 120, 60), world)
-		pr.Shape = Enum.PartType.Ball -- foliage/rock blob, recoloured + scaled per slot
-		pr.Transparency = 1
-		props[i] = pr
+	for i = 1, 20 do
+		local trunk = mkPart("trunk", Vector3.new(2, 10, 2), Color3.fromRGB(104, 72, 44), world, Enum.Material.Wood)
+		trunk.Transparency = 1
+		local canopy = mkPart("canopy", Vector3.new(10, 10, 10), Color3.fromRGB(60, 140, 66), world)
+		canopy.Shape = Enum.PartType.Ball
+		canopy.Transparency = 1
+		props[i] = { trunk = trunk, canopy = canopy }
 	end
 	local RIVAL_COLORS = { Color3.fromRGB(224, 72, 48), Color3.fromRGB(72, 132, 224), Color3.fromRGB(72, 200, 96), Color3.fromRGB(224, 192, 64) }
 	for i = 1, 8 do
@@ -253,10 +304,12 @@ function Render.init()
 		return l
 	end
 	hud = {
-		speed = label(UDim2.new(0.62, 0, 0.82, 0), UDim2.new(0.36, 0, 0.14, 0), Enum.TextXAlignment.Right),
-		timer = label(UDim2.new(0.02, 0, 0.03, 0), UDim2.new(0.3, 0, 0.1, 0), Enum.TextXAlignment.Left),
+		speed = label(UDim2.new(0.6, 0, 0.8, 0), UDim2.new(0.38, 0, 0.16, 0), Enum.TextXAlignment.Right),
+		timer = label(UDim2.new(0.35, 0, 0.015, 0), UDim2.new(0.3, 0, 0.16, 0), Enum.TextXAlignment.Center),
+		stage = label(UDim2.new(0.02, 0, 0.8, 0), UDim2.new(0.3, 0, 0.16, 0), Enum.TextXAlignment.Left),
 		banner = label(UDim2.new(0.25, 0, 0.4, 0), UDim2.new(0.5, 0, 0.12, 0), Enum.TextXAlignment.Center),
 	}
+	hud.stage.TextColor3 = Color3.fromRGB(90, 224, 235) -- cyan like the browser
 
 	-- Lay a straight flat road immediately so SOMETHING is visible before the first
 	-- server view arrives (a straight road that never moves = server not sending;
@@ -264,7 +317,7 @@ function Render.init()
 	for k = 1, N do
 		strips[k].CFrame = CFrame.new(0, BASE_Y, -(k - 1) * STRIP_LEN)
 	end
-	placeCar(carRig, CFrame.new(0, BASE_Y + 2.4, 4))
+	placeCar(carRig, CFrame.new(0, BASE_Y + 1.6, 4))
 	local cam = workspace.CurrentCamera
 	cam.CameraType = Enum.CameraType.Scriptable
 	cam.CFrame = CFrame.lookAt(Vector3.new(0, BASE_Y + 7, 17), Vector3.new(0, BASE_Y + 2, -40))
@@ -277,26 +330,37 @@ function Render.update(view)
 	local seat = view.seat
 	local built = buildStrips(seat.segmentId, seat.roadZ, N, seat.forkChoice)
 
-	-- Recolour the ground to the current segment's biome (grass/sand/snow/etc).
-	if seat.segmentId ~= -1 then
-		local theme = themeFor(road.getSegment(courseSet, seat.segmentId).scenerySet)
-		ground.Color = hexToColor3(theme.grassA) or Color3.fromRGB(47, 120, 60)
-	end
+	-- Recolour the ground to the current segment's biome (grass/sand/snow/etc),
+	-- brightened toward the browser's vibrant flat look.
+	local scenerySet = seat.segmentId ~= -1 and road.getSegment(courseSet, seat.segmentId).scenerySet or 1
+	local theme = themeFor(scenerySet)
+	ground.Color = (hexToColor3(theme.grassA) or Color3.fromRGB(60, 150, 70)):Lerp(Color3.fromRGB(255, 255, 255), 0.12)
 	local gc = ground.Color
-	local foliage = Color3.new(gc.R * 0.5, gc.G * 0.7, gc.B * 0.5) -- roadside greenery from the biome
+	local foliage = Color3.new(gc.R * 0.45, gc.G * 0.7, gc.B * 0.45) -- roadside greenery from the biome
 	local drawDz = (N - 1) * ROAD_UNIT
+	local roadHalfStuds = ROAD_HALF * SX
+	local fadeFrom = N - 12
 
-	-- Road strips, with a scrolling asphalt band pattern so the surface reads speed.
+	-- Road strips + red/white kerbs, with a scrolling band pattern (speed) and a
+	-- far-fade so the treadmill's end dissolves into the sky instead of a hard edge.
 	local bandPhase = math.floor(seat.roadZ / ROAD_UNIT)
 	for k = 1, N do
 		local s = built[k]
 		local p = strips[k]
+		local rl, rr = rumbleL[k], rumbleR[k]
 		if s then
-			p.Transparency = 0
+			local fade = (k > fadeFrom) and math.min(0.9, (k - fadeFrom) / 12 * 0.9) or 0
+			local x, y, z = s.curveX * SX, BASE_Y + s.hill * SY, -s.dz * SZ
+			p.Transparency = fade
 			p.Color = ((bandPhase + k) % 2 == 0) and Color3.fromRGB(54, 54, 62) or Color3.fromRGB(44, 44, 52)
-			p.CFrame = CFrame.new(s.curveX * SX, BASE_Y + s.hill * SY, -s.dz * SZ)
+			p.CFrame = CFrame.new(x, y, z)
+			local kerb = ((bandPhase + k) % 2 == 0) and Color3.fromRGB(230, 66, 66) or Color3.fromRGB(238, 238, 238)
+			rl.Transparency, rr.Transparency = fade, fade
+			rl.Color, rr.Color = kerb, kerb
+			rl.CFrame = CFrame.new(x - roadHalfStuds - 1.6, y + 0.1, z)
+			rr.CFrame = CFrame.new(x + roadHalfStuds + 1.6, y + 0.1, z)
 		else
-			p.Transparency = 1
+			p.Transparency, rl.Transparency, rr.Transparency = 1, 1, 1
 		end
 	end
 
@@ -317,32 +381,52 @@ function Render.update(view)
 		end
 	end
 
-	-- Pooled roadside props (foliage / rocks), stable per world slot so they don't jitter.
-	local roadEdge = ROAD_HALF * SX + 6
+	-- Pooled roadside props as per-biome trees (palm/fir/bush) + occasional rocks,
+	-- stable per world slot so they don't jitter as they approach.
+	local isPalm = (scenerySet == 1 or scenerySet == 2)
+	local isFir = (scenerySet == 5 or scenerySet == 10 or scenerySet == 11)
+	local roadEdge = ROAD_HALF * SX + 10
 	local propOff = seat.roadZ % PROP_SPACING
 	local baseSlot = math.floor(seat.roadZ / PROP_SPACING)
 	for i = 1, #props do
-		local pr = props[i]
+		local rig = props[i]
 		local d = (i - 1) * PROP_SPACING - propOff
 		if d >= 0 and d <= drawDz then
 			local s = built[math.min(math.floor(d / ROAD_UNIT) + 1, N)]
 			if s then
 				local worldSlot = baseSlot + (i - 1)
 				local side = if worldSlot % 2 == 0 then -1 else 1
-				pr.Transparency = 0
-				if worldSlot % 3 == 0 then
-					pr.Color = Color3.fromRGB(120, 116, 110) -- rock
-					pr.Size = Vector3.new(7, 4, 7)
+				local x = s.curveX * SX + side * roadEdge
+				local baseY = BASE_Y + s.hill * SY
+				if worldSlot % 4 == 0 then
+					-- rock: grey blob, no trunk
+					rig.trunk.Transparency = 1
+					rig.canopy.Transparency = 0
+					rig.canopy.Color = Color3.fromRGB(122, 118, 112)
+					rig.canopy.Size = Vector3.new(8, 5, 8)
+					rig.canopy.CFrame = CFrame.new(x, baseY + 2.5, -d * SZ)
 				else
-					pr.Color = foliage
-					pr.Size = Vector3.new(8, 12, 8)
+					local trunkH, canopySize, canopyY
+					if isPalm then
+						trunkH, canopySize, canopyY = 20, Vector3.new(18, 6, 18), 20 -- tall trunk + wide flat fronds
+					elseif isFir then
+						trunkH, canopySize, canopyY = 8, Vector3.new(9, 16, 9), 10 -- short trunk + tall conical foliage
+					else
+						trunkH, canopySize, canopyY = 6, Vector3.new(10, 10, 10), 7 -- bush
+					end
+					rig.trunk.Transparency = 0
+					rig.trunk.Size = Vector3.new(2, trunkH, 2)
+					rig.trunk.CFrame = CFrame.new(x, baseY + trunkH / 2, -d * SZ)
+					rig.canopy.Transparency = 0
+					rig.canopy.Color = isFir and Color3.fromRGB(40, 96, 54) or foliage
+					rig.canopy.Size = canopySize
+					rig.canopy.CFrame = CFrame.new(x, baseY + canopyY, -d * SZ)
 				end
-				pr.CFrame = CFrame.new(s.curveX * SX + side * roadEdge, BASE_Y + s.hill * SY + pr.Size.Y / 2, -d * SZ)
 			else
-				pr.Transparency = 1
+				rig.trunk.Transparency, rig.canopy.Transparency = 1, 1
 			end
 		else
-			pr.Transparency = 1
+			rig.trunk.Transparency, rig.canopy.Transparency = 1, 1
 		end
 	end
 
@@ -352,7 +436,7 @@ function Render.update(view)
 	local boosting = seat.boostTicks > 0
 	carRig.body.Color = boosting and Color3.fromRGB(120, 240, 255)
 		or (seat.crashedTicks > 0 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(224, 72, 48))
-	placeCar(carRig, CFrame.new(carX, BASE_Y + baseHill + 2.4, 4))
+	placeCar(carRig, CFrame.new(carX, BASE_Y + baseHill + 1.6, 4))
 
 	-- Same-segment traffic ahead.
 	local ti = 0
@@ -385,7 +469,7 @@ function Render.update(view)
 				gi += 1
 				local rig = ghostRigs[gi]
 				setCarShown(rig, true)
-				placeCar(rig, CFrame.new((s.curveX + g.laneX) * SX, BASE_Y + s.hill * SY + 2.4, -dz * SZ))
+				placeCar(rig, CFrame.new((s.curveX + g.laneX) * SX, BASE_Y + s.hill * SY + 1.6, -dz * SZ))
 				ghostTags[gi].Text = g.name or ("P" .. g.seatId)
 			end
 		end
@@ -418,7 +502,9 @@ function Render.update(view)
 	end
 
 	hud.speed.Text = tostring(math.floor(seat.speed / 256 * 12)) .. " mph"
-	hud.timer.Text = string.format("TIME %0.1f", math.max(0, seat.timerTicks) / 20)
+	hud.timer.Text = tostring(math.max(0, math.floor(seat.timerTicks / 20))) -- TIME (big centre)
+	lastStage = stageOf[seat.segmentId] or lastStage
+	hud.stage.Text = "STAGE " .. lastStage .. "/" .. STAGE_TOTAL
 	hud.banner.Text = boosting and "BOOST!" or (seat.finishTicks >= 0 and "FINISH!" or (seat.timedOut ~= 0 and "TIME UP" or ""))
 	hud.banner.TextColor3 = boosting and Color3.fromRGB(120, 240, 255) or Color3.fromRGB(255, 220, 74)
 

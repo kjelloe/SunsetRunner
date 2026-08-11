@@ -50,6 +50,31 @@ richer multi-part trees — folded into the phase-3 / refinement backlog.
 Deferred to a refinement pass: wedge nose / headlights, traffic as cars, and
 per-biome car variety.
 
+## Refinement — match the browser look (marker-0105) — DONE
+
+From a side-by-side of the browser vs Roblox screenshots, brought the Roblox view
+much closer (user decisions: procedural gradient sky backdrop + per-biome trees):
+
+- **OutRun sky**: a static stack of big coloured Parts far ahead (`makeSky`,
+  `SKY_BANDS` indigo→purple→magenta→orange) — the camera barely moves (treadmill)
+  so a fixed backdrop reads as the sky; the ground occludes its lower half at the
+  horizon. Lighting toned down (`Brightness` 2.4→1.7, saturation up) so colours
+  (the red car) stop washing out; light haze only, the road end is faded manually.
+- **Ground** raised to meet the road (kills the dark gap), flat material, biome
+  colour brightened toward the browser's vibrant green.
+- **Red/white rumble kerbs** (`rumbleL/rumbleR` pools) alternating per strip, and
+  the centre line is now **bold yellow** dashes.
+- **Far-fade** on the last ~12 road strips so the treadmill dissolves into the sky.
+- **Per-biome trees**: palm (tall trunk + wide flat fronds), fir (short trunk +
+  tall conical foliage), bush elsewhere, + occasional rocks — each a trunk+canopy
+  rig from `scenerySet`.
+- **Cars**: windshield + a soft shadow, and lowered so wheels sit on the road.
+- **HUD** matches the browser: TIME big centre-top, STAGE bottom-left (cyan, from a
+  client-side stage map), SPEED bottom-right.
+
+Deferred: curve-following per-biome side ground (water/sand), roadside billboards,
+richer palm fronds, traffic as cars.
+
 ## Determinism / parity
 
 `roblox/src` is host + presentation; it writes no engine state and changes no
