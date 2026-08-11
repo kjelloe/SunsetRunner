@@ -56,9 +56,17 @@ parity gates (`spine`, `checkpoint_1a`, `collision_1a`, `fork_1a`, `boost_1a`)
 still prove the Luau `ReplicatedStorage.Shared` modules match the JS engine
 byte-for-byte, so the Roblox sim can never silently drift from the browser.
 
+## Done
+
+marker-0098 minimum host; 0100/0101 AI rivals (varied skills); 0102-0107 procedural
+art pass (sunset sky, biome ground + side water/sand, rumble kerbs, yellow dashes,
+per-biome trees + palm fronds, billboards, car models, traffic-as-cars); 0108 state
+interpolation (60 fps); 0109 race framing (3-2-1-GO + finish summary); 0110
+real-player multiplayer (one shared 6-seat race, drop-in on an AI seat); 0111 mobile
+touch controls.
+
 ## Not done yet (backlog)
 
-Multiplayer/ghosts of REAL players (AI rivals are in — marker-0100), race framing
-(countdown/lobby/summary), art pass (real car model, road textures, skybox, boost
-VFX), mobile controls, AI difficulty selection, and state interpolation for smoother
-motion. marker-0098 was the minimum playable host; marker-0100 added AI opponents.
+A lobby / course + car select, per-biome car variety, boost VFX, richer audio, and a
+proper end-of-race leaderboard. Feel/scale tuning is ongoing from playtest
+screenshots.
