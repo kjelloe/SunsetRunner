@@ -1,9 +1,10 @@
 --!strict
--- Sunset Runner — authoritative server (marker-0098). Runs the SAME deterministic
--- reducer as the browser/lune twin (ReplicatedStorage.Shared) at 20 Hz, one solo
--- race per player (seat 1, course 4 grand_tour with traffic + boost pads + forks),
--- and streams a per-seat view to each client. No gameplay logic lives here — this
--- is only the host: seed, tick, replicate. Mirrors server/index.js + game_room.js.
+-- Sunset Runner — authoritative server. Runs the SAME deterministic reducer as the
+-- browser/lune twin (ReplicatedStorage.Shared) at 20 Hz. ONE SHARED race of a fixed
+-- number of seats (marker-0110): players take over AI seats on join (drop-in) and a
+-- seat reverts to AI on leave, so no mid-race seat insertion is needed (the Luau
+-- twin builds seats up front). Each client gets a view centred on its own seat with
+-- the others as ghosts. Host only — no gameplay logic here.
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -32,12 +33,11 @@ print("[SunsetRunner] server booting — engine + course data loaded")
 local COURSE_ID = 4
 local START_TIME_TICKS = 3000
 local TICK_DT = 1 / 20
-local AI_COUNT = 4 -- named rivals per solo race (marker-0100)
-local AI_NAMES = { "Max", "Zoe", "Kai", "Ava", "Leo", "Mia", "Ivy", "Rex" }
--- A varied field (marker-0101): a couple of quick rivals, a mid, and a slower one,
--- so they spread out into a race instead of a uniform pack. Uses the proven
--- ai_driver AI_SKILL tiers (indexed per rival).
-local AI_SKILLS = { "hard", "medium", "medium", "easy" }
+local SEATS = 6 -- fixed field size; players fill from seat 1, the rest are AI
+local COUNTDOWN_TICKS = 60 -- 3 s
+local SUMMARY_TICKS = 100 -- 5 s finish/summary hold
+local AI_NAMES = { "Max", "Zoe", "Kai", "Ava", "Leo", "Mia" }
+local AI_SKILLS = { "hard", "medium", "hard", "medium", "easy", "medium" }
 
 -- Two channels: intents in, per-seat views out.
 local inputEvent = Instance.new("RemoteEvent")
@@ -47,15 +47,16 @@ local viewEvent = Instance.new("RemoteEvent")
 viewEvent.Name = "SunsetView"
 viewEvent.Parent = RS
 
-type Session = { state: any, input: { steer: number, accel: number, brake: number }, fork: number, seed: number, phase: string, cd: number, summ: number }
-local sessions: { [Player]: Session } = {}
-local COUNTDOWN_TICKS = 60 -- 3 s at 20 Hz
-local SUMMARY_TICKS = 100 -- 5 s finish/summary hold before a fresh race
+local room -- { state, phase, cd, summ, seed }
+local seatOfPlayer: { [Player]: number } = {}
+local playerOfSeat: { [number]: Player } = {}
+local inputBySeat: { [number]: { steer: number, accel: number, brake: number } } = {}
+local forkBySeat: { [number]: number } = {}
 
-local function freshState(seed: number)
-	local seats = { { id = 1, carId = 1 } } -- seat 1 = the player
-	for i = 1, AI_COUNT do
-		table.insert(seats, { id = i + 1, carId = (i % 4) + 1 })
+local function freshRoom(seed: number)
+	local seats = {}
+	for i = 1, SEATS do
+		table.insert(seats, { id = i, carId = (i % 4) + 1 })
 	end
 	local state = stateMod.createInitialState({
 		seed = seed,
@@ -66,25 +67,32 @@ local function freshState(seed: number)
 		startTimeTicks = START_TIME_TICKS,
 		trafficConfig = trafficConfig,
 	})
-	-- The Luau createInitialState starts every seat at lane centre; spread the AI
-	-- across lanes so the field races instead of stacking (server-side, presentation).
-	for i = 2, #state.seats do
-		state.seats[i].laneX = math.floor((i - 1 - (AI_COUNT + 1) / 2) * 200)
+	-- Spread seats across lanes so the field races instead of stacking.
+	for i = 1, #state.seats do
+		state.seats[i].laneX = math.floor((i - (SEATS + 1) / 2) * 180)
 	end
-	return state
+	room = { state = state, phase = "countdown", cd = COUNTDOWN_TICKS, summ = 0, seed = seed }
+	for i = 1, SEATS do
+		inputBySeat[i] = { steer = 0, accel = 0, brake = 0 }
+		forkBySeat[i] = 0
+	end
 end
 
-local function startSession(player: Player)
-	local seed = 12345 + (player.UserId % 100000)
-	sessions[player] = { state = freshState(seed), input = { steer = 0, accel = 0, brake = 0 }, fork = 0, seed = seed, phase = "countdown", cd = COUNTDOWN_TICKS, summ = 0 }
-	print("[SunsetRunner] session started for " .. player.Name .. " (seed " .. seed .. ")")
+freshRoom(12345)
+
+local function nameOfSeat(sid: number): string
+	local p = playerOfSeat[sid]
+	if p then
+		return p.DisplayName
+	end
+	return AI_NAMES[sid] or ("P" .. sid)
 end
 
--- The slice of state a client needs to render: self seat + same-segment traffic
--- + rival ghosts (AI opponents) on the self segment.
-local function buildView(sess)
-	local state = sess.state
-	local s = state.seats[1]
+-- View centred on the player's seat (or seat 1 as a spectator if the field is full).
+local function buildViewFor(player: Player)
+	local sid = seatOfPlayer[player] or 1
+	local state = room.state
+	local s = state.seats[sid]
 	local traffic = {}
 	for _, t in ipairs(state.traffic) do
 		if t.segmentId == s.segmentId and t.roadZ >= s.roadZ then
@@ -92,17 +100,18 @@ local function buildView(sess)
 		end
 	end
 	local ghosts = {}
-	for i = 2, #state.seats do
-		local g = state.seats[i]
-		if g.segmentId == s.segmentId then
-			table.insert(ghosts, { seatId = g.id, name = AI_NAMES[i - 1] or ("P" .. g.id), carId = g.carId, roadZ = g.roadZ, laneX = g.laneX })
+	for j = 1, #state.seats do
+		local g = state.seats[j]
+		if j ~= sid and g.segmentId == s.segmentId then
+			table.insert(ghosts, { seatId = j, name = nameOfSeat(j), carId = g.carId, roadZ = g.roadZ, laneX = g.laneX })
 		end
 	end
 	return {
 		tick = state.tick,
-		phase = sess.phase,
-		countdown = (sess.phase == "countdown") and math.ceil(sess.cd / 20) or 0,
-		restartIn = (sess.phase == "summary") and math.ceil(sess.summ / 20) or 0,
+		phase = room.phase,
+		countdown = (room.phase == "countdown") and math.ceil(room.cd / 20) or 0,
+		restartIn = (room.phase == "summary") and math.ceil(room.summ / 20) or 0,
+		spectating = seatOfPlayer[player] == nil,
 		ghosts = ghosts,
 		seat = {
 			segmentId = s.segmentId,
@@ -116,76 +125,95 @@ local function buildView(sess)
 			crashedTicks = s.crashedTicks,
 			forkChoice = s.forkChoice,
 		},
-		traffic = traffic,
 	}
 end
 
+local function assignSeat(player: Player)
+	for i = 1, SEATS do
+		if not playerOfSeat[i] then
+			playerOfSeat[i] = player
+			seatOfPlayer[player] = i
+			print("[SunsetRunner] " .. player.Name .. " took seat " .. i)
+			return
+		end
+	end
+	print("[SunsetRunner] field full — " .. player.Name .. " is spectating")
+end
+
 inputEvent.OnServerEvent:Connect(function(player, msg)
-	local sess = sessions[player]
-	if not sess or typeof(msg) ~= "table" then
+	local sid = seatOfPlayer[player]
+	if not sid or typeof(msg) ~= "table" then
 		return
 	end
-	-- Clamp to the same range the JS protocol enforces (analog steer magnitude).
 	local steer = math.clamp(tonumber(msg.steer) or 0, -256, 256)
-	sess.input = { steer = steer, accel = (msg.accel == 1) and 1 or 0, brake = (msg.brake == 1) and 1 or 0 }
+	inputBySeat[sid] = { steer = steer, accel = (msg.accel == 1) and 1 or 0, brake = (msg.brake == 1) and 1 or 0 }
 	if msg.fork == -1 or msg.fork == 1 then
-		sess.fork = msg.fork
+		forkBySeat[sid] = msg.fork
 	end
 end)
 
-Players.PlayerAdded:Connect(startSession)
+Players.PlayerAdded:Connect(assignSeat)
 Players.PlayerRemoving:Connect(function(player)
-	sessions[player] = nil
+	local sid = seatOfPlayer[player]
+	if sid then
+		playerOfSeat[sid] = nil -- seat reverts to AI
+		seatOfPlayer[player] = nil
+	end
 end)
-for _, p in ipairs(Players:GetPlayers()) do -- players already present (Studio Play)
-	startSession(p)
+for _, p in ipairs(Players:GetPlayers()) do
+	assignSeat(p)
 end
 
 local acc = 0
 RunService.Heartbeat:Connect(function(dt)
-	acc += math.min(dt, 0.25) -- clamp so a hitch can't fast-forward the race
+	acc += math.min(dt, 0.25)
 	while acc >= TICK_DT do
 		acc -= TICK_DT
-		for player, sess in pairs(sessions) do
-			if sess.phase == "countdown" then
-				sess.cd -= 1 -- frozen at the line; 3-2-1 then GO
-				if sess.cd <= 0 then
-					sess.phase = "racing"
+		if room.phase == "countdown" then
+			room.cd -= 1
+			if room.cd <= 0 then
+				room.phase = "racing"
+			end
+		elseif room.phase == "summary" then
+			room.summ -= 1
+			if room.summ <= 0 then
+				freshRoom(room.seed + 1)
+			end
+		else -- racing
+			local st = room.state
+			local allDone = true
+			for _, s in ipairs(st.seats) do
+				if s.finishTicks < 0 and s.timedOut == 0 then
+					allDone = false
+					break
 				end
-			elseif sess.phase == "summary" then
-				sess.summ -= 1 -- hold the finish/time-up screen, then a fresh race
-				if sess.summ <= 0 then
-					sess.seed += 1
-					sess.state = freshState(sess.seed)
-					sess.phase = "countdown"
-					sess.cd = COUNTDOWN_TICKS
-				end
-			else -- racing
-				local st = sess.state
-				local seat = st.seats[1]
-				if seat.finishTicks >= 0 or seat.timedOut ~= 0 then
-					sess.phase = "summary"
-					sess.summ = SUMMARY_TICKS
-				else
-					st = reducer.apply(st, { type = "input", seatId = 1, steer = sess.input.steer, accel = sess.input.accel, brake = sess.input.brake }, ctx)
-					if sess.fork ~= 0 then
-						st = reducer.apply(st, { type = "forkChoice", seatId = 1, choice = sess.fork }, ctx)
-						sess.fork = 0
-					end
-					for i = 2, #st.seats do -- AI rivals via the ai_driver twin
-						local rseat = st.seats[i]
-						if rseat.finishTicks < 0 and rseat.timedOut == 0 then
-							local inp = ai.chooseInput(st, rseat.id, ai.skillFor(AI_SKILLS[i - 1]))
-							st = reducer.apply(st, { type = "input", seatId = rseat.id, steer = inp.steer, accel = inp.accel, brake = inp.brake }, ctx)
+			end
+			if allDone then
+				room.phase = "summary"
+				room.summ = SUMMARY_TICKS
+			else
+				for i = 1, #st.seats do
+					local seat = st.seats[i]
+					if seat.finishTicks < 0 and seat.timedOut == 0 then
+						local inp
+						if playerOfSeat[i] then
+							inp = inputBySeat[i]
+							if forkBySeat[i] ~= 0 then
+								st = reducer.apply(st, { type = "forkChoice", seatId = i, choice = forkBySeat[i] }, ctx)
+								forkBySeat[i] = 0
+							end
+						else
+							inp = ai.chooseInput(st, i, ai.skillFor(AI_SKILLS[i]))
 						end
+						st = reducer.apply(st, { type = "input", seatId = i, steer = inp.steer, accel = inp.accel, brake = inp.brake }, ctx)
 					end
-					st = reducer.apply(st, { type = "advance_tick" }, ctx)
-					sess.state = st
 				end
+				st = reducer.apply(st, { type = "advance_tick" }, ctx)
+				room.state = st
 			end
 		end
 	end
-	for player, sess in pairs(sessions) do
-		viewEvent:FireClient(player, buildView(sess))
+	for _, player in ipairs(Players:GetPlayers()) do
+		viewEvent:FireClient(player, buildViewFor(player))
 	end
 end)

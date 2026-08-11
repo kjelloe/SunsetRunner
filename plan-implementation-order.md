@@ -167,6 +167,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-107 Roblox art features: per-biome side ground (water/sand) + roadside billboards + richer palm fronds + traffic-as-cars (marker-0107)
 - [x] slice-108 Roblox state interpolation: render at 60fps by extrapolating roadZ between 20Hz views (snap on segment change) (marker-0108)
 - [x] slice-109 Roblox race framing: server phase machine (countdown/racing/summary) + client 3-2-1-GO + finish "new race in Ns" (marker-0109)
+- [x] slice-110 Roblox real-player multiplayer: one shared 6-seat race, players take over AI seats on join / revert on leave, per-seat views with others as ghosts (marker-0110)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 

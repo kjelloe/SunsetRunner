@@ -2130,3 +2130,20 @@ naturally frozen during countdown (server only applies it in the racing phase) s
 there's no lurch at GO.
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0110 — Roblox real-player multiplayer (shared race) (2026-08-11)
+
+Roblox host rewrite (GameServer.server.luau), no engine/JS/Luau change, no client
+change (the client already renders ghosts by name). Was one solo race per player;
+now ONE SHARED race of a fixed SEATS=6 field. Players take over AI seats on join
+(drop-in at the AI's current position) and a seat reverts to AI on leave — so no
+mid-race seat insertion (the Luau createInitialState fixes seats up front). Each
+client gets a view centred on its own seat with the others (players + AI) as
+ghosts (real player DisplayName vs AI_NAMES). Shared phase machine (countdown/
+racing/summary); race ends when ALL seats are done. Field full (>6) => spectate
+seat 1. inputBySeat/forkBySeat keyed by seat; PlayerAdded assignSeat, PlayerRemoving
+frees it.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
