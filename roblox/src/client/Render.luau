@@ -345,9 +345,9 @@ end
 
 -- Reposition everything from a fresh view. Returns the car's world position so the
 -- camera loop can follow it every RenderStepped (smoother than the 20 Hz updates).
-function Render.update(view)
+local function renderWorld(rz, laneX, view)
 	local seat = view.seat
-	local built = buildStrips(seat.segmentId, seat.roadZ, N, seat.forkChoice)
+	local built = buildStrips(seat.segmentId, rz, N, seat.forkChoice)
 
 	-- Recolour the ground to the current segment's biome (grass/sand/snow/etc),
 	-- brightened toward the browser's vibrant flat look.
@@ -364,7 +364,7 @@ function Render.update(view)
 
 	-- Road strips + red/white kerbs + per-biome side ground, with a scrolling band
 	-- pattern (speed) and a far-fade so the treadmill dissolves into the sky.
-	local bandPhase = math.floor(seat.roadZ / ROAD_UNIT)
+	local bandPhase = math.floor(rz / ROAD_UNIT)
 	for k = 1, N do
 		local s = built[k]
 		local p = strips[k]
@@ -399,7 +399,7 @@ function Render.update(view)
 	end
 
 	-- Scrolling centre-line dashes (the clearest speed cue).
-	local dashOff = seat.roadZ % DASH_SPACING
+	local dashOff = rz % DASH_SPACING
 	for i = 1, #dashes do
 		local d = (i - 1) * DASH_SPACING - dashOff
 		if d >= 0 and d <= drawDz then
@@ -420,8 +420,8 @@ function Render.update(view)
 	local isPalm = (scenerySet == 1 or scenerySet == 2)
 	local isFir = (scenerySet == 5 or scenerySet == 10 or scenerySet == 11)
 	local roadEdge = ROAD_HALF * SX + 10
-	local propOff = seat.roadZ % PROP_SPACING
-	local baseSlot = math.floor(seat.roadZ / PROP_SPACING)
+	local propOff = rz % PROP_SPACING
+	local baseSlot = math.floor(rz / PROP_SPACING)
 	for i = 1, #props do
 		local rig = props[i]
 		local d = (i - 1) * PROP_SPACING - propOff
@@ -477,8 +477,8 @@ function Render.update(view)
 	-- Roadside billboards (sparse), further out than the trees. The panel faces the
 	-- camera (its wide face is on ±Z).
 	local SIGN_SPACING = ROAD_UNIT * 24
-	local signOff = seat.roadZ % SIGN_SPACING
-	local signBase = math.floor(seat.roadZ / SIGN_SPACING)
+	local signOff = rz % SIGN_SPACING
+	local signBase = math.floor(rz / SIGN_SPACING)
 	for i = 1, #signs do
 		local sg = signs[i]
 		local d = (i - 1) * SIGN_SPACING - signOff
@@ -505,7 +505,7 @@ function Render.update(view)
 
 	local near = built[1]
 	local baseHill = near and near.hill * SY or 0
-	local carX = seat.laneX * SX
+	local carX = laneX * SX
 	local boosting = seat.boostTicks > 0
 	carRig.body.Color = boosting and Color3.fromRGB(120, 240, 255)
 		or (seat.crashedTicks > 0 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(224, 72, 48))
@@ -517,7 +517,7 @@ function Render.update(view)
 	-- car you're about to hit is invisible (you "just stop").
 	local nearTraffic = {}
 	for _, t in ipairs(view.traffic) do
-		local dz = t.roadZ - seat.roadZ
+		local dz = t.roadZ - rz
 		if dz >= 0 and dz <= drawDz then
 			table.insert(nearTraffic, { dz = dz, t = t })
 		end
@@ -548,7 +548,7 @@ function Render.update(view)
 	-- Rival AI ghosts (same-segment) as car rigs with a name tag.
 	local gi = 0
 	for _, g in ipairs(view.ghosts or {}) do
-		local dz = g.roadZ - seat.roadZ
+		local dz = g.roadZ - rz
 		if dz >= 0 and gi < #ghostRigs then
 			local k = math.floor(dz / ROAD_UNIT) + 1
 			local s = built[math.min(k, N)]
@@ -571,7 +571,7 @@ function Render.update(view)
 	local padList = seg and seg.boostPads
 	if padList then
 		for _, pad in ipairs(padList) do
-			local dz = pad.roadZ - seat.roadZ
+			local dz = pad.roadZ - rz
 			if dz >= 0 and pi < #pads then
 				local k = math.floor(dz / ROAD_UNIT) + 1
 				local s = built[math.min(k, N)]
@@ -595,7 +595,42 @@ function Render.update(view)
 	hud.banner.Text = boosting and "BOOST!" or (seat.finishTicks >= 0 and "FINISH!" or (seat.timedOut ~= 0 and "TIME UP" or ""))
 	hud.banner.TextColor3 = boosting and Color3.fromRGB(120, 240, 255) or Color3.fromRGB(255, 220, 74)
 
-	return carRig.body.Position
+	-- (rendered)
+end
+
+-- Interpolation (marker-0108): the server view arrives at 20 Hz. We render every
+-- RenderStepped (~60 fps) from a locally EXTRAPOLATED road position — roadZ
+-- advances by speed each tick, so between views we advance it by speed*20*dt and
+-- gently correct toward each authoritative view; laneX eases toward the view.
+-- roadZ resets per segment, so on a segment change we SNAP (no backward jump).
+local latest = nil
+local renderRoadZ, renderLaneX = 0, 0
+local interpSeg = nil
+local haveState = false
+
+function Render.update(view)
+	latest = view
+	local sid = view.seat.segmentId
+	if not haveState or sid ~= interpSeg then
+		renderRoadZ = view.seat.roadZ
+		renderLaneX = view.seat.laneX
+		interpSeg = sid
+		haveState = true
+	else
+		renderRoadZ += (view.seat.roadZ - renderRoadZ) * 0.3 -- drift correction
+	end
+end
+
+function Render.step(dt: number)
+	if not haveState or not latest then
+		return
+	end
+	local seat = latest.seat
+	if seat.finishTicks < 0 and seat.timedOut == 0 then
+		renderRoadZ += seat.speed * 20 * dt -- engine advances roadZ by speed each tick
+	end
+	renderLaneX += (seat.laneX - renderLaneX) * math.min(1, dt * 12)
+	renderWorld(renderRoadZ, renderLaneX, latest)
 end
 
 -- Chase camera derived from the car body each RenderStepped (smoother than 20 Hz).

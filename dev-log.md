@@ -2100,3 +2100,19 @@ kind (blue trucks/buses, orange motorcycle, green sedan), positioned via placeCa
 setCarShown. specs/77. Still deferred: state interpolation, per-biome car variety.
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0108 — Roblox state interpolation (smooth 20Hz->60fps) (2026-08-11)
+
+Roblox-only (Render.luau + Main.client.luau), no engine/JS/Luau change. The server
+view arrives at 20 Hz; the world stepped visibly. Refactor: the big render body is
+now a local renderWorld(rz, laneX, view); Render.update(view) just stores the latest
+view + a drift correction; NEW Render.step(dt) runs each RenderStepped (~60 fps),
+EXTRAPOLATING renderRoadZ by speed*20*dt (engine advances roadZ by speed/tick) and
+easing renderLaneX toward the view, then calls renderWorld. roadZ resets per segment,
+so on a segmentId change the interpolator SNAPS (no backward jump). Main's
+RenderStepped now calls Render.step(dt) + camera. Everything (road scroll, car,
+traffic, rivals) now moves at 60 fps.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.

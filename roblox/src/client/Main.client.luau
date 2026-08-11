@@ -70,6 +70,7 @@ viewEvent.OnClientEvent:Connect(function(view)
 	Render.update(view)
 end)
 
-RunService.RenderStepped:Connect(function()
+RunService.RenderStepped:Connect(function(dt)
+	Render.step(dt) -- interpolate + render at ~60 fps from the 20 Hz views
 	workspace.CurrentCamera.CFrame = Render.cameraCFrame()
 end)
