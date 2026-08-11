@@ -213,8 +213,9 @@ local function makeCarRig(bodyColor: Color3, parent: Instance, variant: number?)
 	rig.body = box(Vector3.new(6.2, 1.5, L), bodyColor, CFrame.new(0, rideY, 0))
 	box(Vector3.new(4.3, 1.15, 4.4), trim, CFrame.new(0, rideY + 1.15, roofZ)) -- greenhouse cabin
 	-- Long sloping hood (front) and a fastback roofline (rear of the cabin).
-	wedge(Vector3.new(5.7, 1.0, L * 0.34), bodyColor, CFrame.new(0, rideY + 0.85, -L * 0.28))
+	local hood = wedge(Vector3.new(5.7, 1.0, L * 0.34), bodyColor, CFrame.new(0, rideY + 0.85, -L * 0.28))
 	wedge(Vector3.new(4.3, 1.15, L * 0.3), trim, CFrame.new(0, rideY + 1.1, roofZ + L * 0.24) * CFrame.Angles(0, math.rad(180), 0)) -- fastback
+	rig.bodyParts = { rig.body, hood } -- body-coloured panels (tinted together on boost/crash)
 	-- Raked windshield + rear glass.
 	box(Vector3.new(4.0, 0.18, 2.7), glass, CFrame.new(0, rideY + 1.55, roofZ - 2.2) * CFrame.Angles(math.rad(-32), 0, 0), Enum.Material.Glass, 0.25)
 	box(Vector3.new(3.9, 0.18, 2.3), glass, CFrame.new(0, rideY + 1.5, roofZ + 2.3) * CFrame.Angles(math.rad(34), 0, 0), Enum.Material.Glass, 0.25)
@@ -223,8 +224,8 @@ local function makeCarRig(bodyColor: Color3, parent: Instance, variant: number?)
 	box(Vector3.new(0.4, 0.5, L * 0.7), Color3.fromRGB(24, 24, 28), CFrame.new(-3.05, rideY - 0.5, 0.3))
 	box(Vector3.new(0.4, 0.5, L * 0.7), Color3.fromRGB(24, 24, 28), CFrame.new(3.05, rideY - 0.5, 0.3))
 	-- Rear haunches (small wedges over the back wheels) for a muscular stance.
-	wedge(Vector3.new(1.3, 0.9, 3.2), bodyColor, CFrame.new(-2.7, rideY + 0.35, L * 0.22) * CFrame.Angles(0, math.rad(180), 0))
-	wedge(Vector3.new(1.3, 0.9, 3.2), bodyColor, CFrame.new(2.7, rideY + 0.35, L * 0.22) * CFrame.Angles(0, math.rad(180), 0))
+	table.insert(rig.bodyParts, wedge(Vector3.new(1.3, 0.9, 3.2), bodyColor, CFrame.new(-2.7, rideY + 0.35, L * 0.22) * CFrame.Angles(0, math.rad(180), 0)))
+	table.insert(rig.bodyParts, wedge(Vector3.new(1.3, 0.9, 3.2), bodyColor, CFrame.new(2.7, rideY + 0.35, L * 0.22) * CFrame.Angles(0, math.rad(180), 0)))
 	-- Front splitter + rear diffuser.
 	box(Vector3.new(6.0, 0.3, 1.1), Color3.fromRGB(28, 28, 32), CFrame.new(0, rideY - 0.75, -L * 0.5 + 0.4))
 	box(Vector3.new(6.0, 0.35, 1.0), Color3.fromRGB(28, 28, 32), CFrame.new(0, rideY - 0.7, L * 0.5 - 0.4))
@@ -730,8 +731,11 @@ local function renderWorld(rz, laneX, view)
 	local baseHill = near and near.hill * SY or 0
 	local carX = laneX * SX
 	local boosting = seat.boostTicks > 0
-	carRig.body.Color = boosting and Color3.fromRGB(120, 240, 255)
+	local carCol = boosting and Color3.fromRGB(120, 240, 255)
 		or (seat.crashedTicks > 0 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(224, 72, 48))
+	for _, bp in ipairs(carRig.bodyParts) do
+		bp.Color = carCol -- tint the whole shell (hull, hood, haunches) together
+	end
 	boostActive = boosting
 	if boostEmitter then
 		boostEmitter.Enabled = boosting
@@ -870,7 +874,7 @@ local function renderWorld(rz, laneX, view)
 		hud.banner.Text = (fin and "FINISHED  " or "TIME UP  ") .. (view.points or 0) .. " pts"
 		hud.banner.TextColor3 = fin and Color3.fromRGB(120, 240, 120) or Color3.fromRGB(255, 120, 90)
 	elseif view.watching then
-		hud.banner.Text = "SPECTATING"
+		hud.banner.Text = "SPECTATING  " .. (view.watchingName or "leader")
 		hud.banner.TextColor3 = Color3.fromRGB(120, 200, 255)
 	elseif view.phase == "summary" then
 		hud.banner.Text = "new race in " .. (view.restartIn or 0)

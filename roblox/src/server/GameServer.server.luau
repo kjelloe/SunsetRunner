@@ -270,6 +270,7 @@ local function buildViewFor(player: Player)
 		spectating = seatOfPlayer[player] == nil,
 		raceOver = raceOver or nil, -- your own race ended (finished / timed out)
 		watching = (raceOver and spectateByPlayer[player]) or nil, -- rendering the leader
+		watchingName = (raceOver and spectateByPlayer[player]) and nameOfSeat(sid) or nil,
 		result = selfDone and resultStr(own, ownSid) or nil,
 		standings = standings,
 		courseId = roomCourseId,
