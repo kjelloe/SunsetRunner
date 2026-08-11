@@ -65,10 +65,13 @@ interpolation (60 fps); 0109 race framing (3-2-1-GO + finish summary); 0110
 real-player multiplayer (one shared 6-seat race, drop-in on an AI seat); 0111 mobile
 touch controls; 0112 boost VFX (particle trail + FOV kick); 0113 per-biome car
 variety (livery palette); 0114 end-of-race leaderboard (RESULTS panel); 0115 car +
-course select (cycle UI — per-player car, shared course).
+course select (cycle UI — per-player car, shared course); 0116 ready-up lobby (15s
+timer / all-ready); 0117 per-biome car shapes (sport/suv/compact/truck/bus/bike);
+0118 richer audio (bundled-sound SFX); 0119 points carried across races; 0120
+all-time leaderboard (DataStore, shown in the lobby).
 
 ## Not done yet (backlog)
 
-A ready-up lobby phase, per-biome car SHAPES (not just colour), richer audio, points
-carried across races, and an all-time leaderboard. Feel/scale tuning is ongoing from
-playtest screenshots.
+Feel/scale tuning from playtest; verify the bundled SoundIds exist (swap if silent);
+optionally an OrderedDataStore board and richer engine audio. The Roblox host is now
+a full shared-race game (lobby, framing, MP, AI, art pass, mobile, VFX, scoring).
