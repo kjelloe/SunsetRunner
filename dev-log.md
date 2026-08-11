@@ -2274,3 +2274,61 @@ lobby and RESULTS during the summary; READY button moved below it. Completes the
 Roblox backlog batch.
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+## marker-0121 — Roblox fix: traffic missing from view (2026-08-12)
+
+Roblox host+client. buildViewFor built the same-segment traffic list but never put
+it in the returned view, so view.traffic was nil and Render's ipairs(view.traffic)
+threw every RenderStepped frame. Added traffic to the view; client loop guarded with
+`or {}`.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0122 — Roblox playtest polish: sun/horizon, cars, terrain, time-up (2026-08-12)
+
+Roblox presentation/host only. (1) Setting-sun neon disc + fixed the flickering
+horizon "block" (ground slab overlapped the sky wall — ground now ends z~-1410, in
+front of the wall at -1500). (2) Cars less boxy: sloped hood/boot wedges, neon
+head/tail-lights, hubcaps, spoiler. (3) Per-biome surface materials (sand/sandstone/
+concrete/ground/snow/grass) + always-on textured side verges (water where the biome
+has it). (4) Per-player time-up: your finish/timeout ends YOUR race immediately with
+a live score panel + SPECTATE the leader, instead of freezing at 0; reward is
+stages-only (+100/checkpoint, no finish bonus / no collision penalty).
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0123 — Roblox full-width horizon, sports-car rigs, grace-stop (2026-08-12)
+
+Roblox presentation/host only. (1) Replaced the central circular sun halos with
+full-width (9000) neon glow bands so the sunset colour spans the whole horizon. (2)
+Rebuilt makeCarRig as a sculpted ~24-part sports coupe (long hood, raked screen,
+fastback, haunches, splitter/diffuser, skirts, wing, light bars, hubcaps) with 3
+proportion variants baked per rig; setCarStyle is now a no-op; per-part shown-
+transparency keeps glass/shadow/neon right on pooled cars. (3) Grace-stop: when every
+human seat is done, end the race within 5 s and mark still-running AI cars STOPPED.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0124 — Roblox polish: whole-car tint + spectate name (2026-08-12)
+
+Roblox presentation/host only. Player car tints its whole shell (hull+hood+haunches)
+on boost/crash, not just the hull. Server sends the watched driver's name; banner
+shows "SPECTATING <name>".
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0125 — Roblox race HUD: position + progress bar (2026-08-12)
+
+Roblox presentation/host only. Server sends the player's live standings position and
+field size; client HUD shows "P n/6" (gold when leading) and a top progress bar that
+fills with stages cleared. Both hidden outside racing/race-over.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
