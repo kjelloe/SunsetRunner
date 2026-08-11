@@ -362,6 +362,22 @@ local function makeSky(parent, baseY)
 		cut.CFrame = CFrame.new(0, SUN_Y - 30 - i * 22, SKY_Z + 10)
 		cut.Parent = parent
 	end
+	-- A few soft dusk clouds high across the sky for depth (flat, warm, off-centre so
+	-- they don't sit on the sun). Static — the treadmill camera barely moves.
+	local clouds = {
+		{ -2600, 780, 1500, 0.45 }, { 2200, 900, 1300, 0.5 }, { -900, 1150, 1100, 0.55 },
+		{ 3000, 1250, 1400, 0.6 }, { -3400, 1050, 1200, 0.6 },
+	}
+	for _, c in ipairs(clouds) do
+		local cl = Instance.new("Part")
+		cl.Anchored, cl.CanCollide, cl.CanQuery, cl.CanTouch = true, false, false, false
+		cl.Material = Enum.Material.SmoothPlastic
+		cl.Color = Color3.fromRGB(226, 150, 150)
+		cl.Transparency = c[4]
+		cl.Size = Vector3.new(c[3], 120, 2)
+		cl.CFrame = CFrame.new(c[1], baseY + c[2], SKY_Z + 2)
+		cl.Parent = parent
+	end
 end
 
 local function mkSound(id: string, vol: number)
