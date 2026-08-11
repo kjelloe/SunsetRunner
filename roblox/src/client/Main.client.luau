@@ -113,8 +113,8 @@ end
 local readyBtn = Instance.new("TextButton")
 readyBtn.Name = "SunsetReady"
 readyBtn.AnchorPoint = Vector2.new(0.5, 0.5)
-readyBtn.Position = UDim2.new(0.5, 0, 0.62, 0)
-readyBtn.Size = UDim2.new(0.22, 0, 0.1, 0)
+readyBtn.Position = UDim2.new(0.5, 0, 0.86, 0)
+readyBtn.Size = UDim2.new(0.22, 0, 0.09, 0)
 readyBtn.BackgroundColor3 = Color3.fromRGB(60, 160, 80)
 readyBtn.TextScaled = true
 readyBtn.Font = Enum.Font.GothamBold

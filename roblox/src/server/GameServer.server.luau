@@ -9,6 +9,7 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local RS = game:GetService("ReplicatedStorage")
+local DataStoreService = game:GetService("DataStoreService")
 
 -- Camera-only racer: no avatars. The car is a rendered Part, not a character.
 Players.CharacterAutoLoads = false
@@ -53,6 +54,62 @@ local roomCourseId = COURSE_ID -- shared course (car+course select, marker-0115)
 local prefCarByPlayer: { [Player]: number } = {}
 local readyByPlayer: { [Player]: boolean } = {} -- ready-up lobby (marker-0116)
 local pointsByPlayer: { [Player]: number } = {} -- carried across races (marker-0119)
+
+-- All-time leaderboard (marker-0120), persisted via DataStore. All calls are
+-- pcall-guarded so it degrades to in-session-only if the API is unavailable
+-- (e.g. Studio without "Enable Studio Access to API Services").
+local store = nil
+pcall(function()
+	store = DataStoreService:GetDataStore("SunsetAllTime_v1")
+end)
+local allTimeBoard = {} -- { { name, points }, ... } desc, top 10
+if store then
+	pcall(function()
+		local t = store:GetAsync("top")
+		if type(t) == "table" then
+			allTimeBoard = t
+		end
+	end)
+end
+local function updateBoard(name: string, points: number)
+	if points <= 0 then
+		return
+	end
+	local found = false
+	for _, e in ipairs(allTimeBoard) do
+		if e.name == name then
+			e.points = math.max(e.points, points)
+			found = true
+			break
+		end
+	end
+	if not found then
+		table.insert(allTimeBoard, { name = name, points = points })
+	end
+	table.sort(allTimeBoard, function(a, b)
+		return a.points > b.points
+	end)
+	while #allTimeBoard > 10 do
+		table.remove(allTimeBoard)
+	end
+	if store then
+		pcall(function()
+			store:SetAsync("top", allTimeBoard)
+		end)
+	end
+end
+local function persistPlayer(player: Player)
+	local pts = pointsByPlayer[player]
+	if not pts then
+		return
+	end
+	updateBoard(player.DisplayName, pts)
+	if store then
+		pcall(function()
+			store:SetAsync("p_" .. player.UserId, pts)
+		end)
+	end
+end
 local seatOfPlayer: { [Player]: number } = {}
 local playerOfSeat: { [number]: Player } = {}
 local inputBySeat: { [number]: { steer: number, accel: number, brake: number } } = {}
@@ -187,6 +244,7 @@ local function buildViewFor(player: Player)
 		courseId = roomCourseId,
 		car = s.carId,
 		points = pointsByPlayer[player] or 0,
+		allTime = ((room.phase == "lobby" or room.phase == "summary") and allTimeBoard) or nil,
 		ghosts = ghosts,
 		seat = {
 			segmentId = s.segmentId,
@@ -209,6 +267,17 @@ local function assignSeat(player: Player)
 			playerOfSeat[i] = player
 			seatOfPlayer[player] = i
 			print("[SunsetRunner] " .. player.Name .. " took seat " .. i)
+			if store then -- load their carried-over points (async, non-blocking)
+				local uid = player.UserId
+				task.spawn(function()
+					local ok, v = pcall(function()
+						return store:GetAsync("p_" .. uid)
+					end)
+					if ok and type(v) == "number" and not pointsByPlayer[player] then
+						pointsByPlayer[player] = v
+					end
+				end)
+			end
 			return
 		end
 	end
@@ -253,6 +322,7 @@ Players.PlayerRemoving:Connect(function(player)
 		playerOfSeat[sid] = nil -- seat reverts to AI
 		seatOfPlayer[player] = nil
 	end
+	persistPlayer(player)
 	readyByPlayer[player] = nil
 	prefCarByPlayer[player] = nil
 	pointsByPlayer[player] = nil
@@ -303,6 +373,9 @@ RunService.Heartbeat:Connect(function(dt)
 				room.phase = "summary"
 				room.summ = SUMMARY_TICKS
 				room.standings = computeStandings(st)
+				for p in pairs(pointsByPlayer) do -- bank into the all-time board
+					persistPlayer(p)
+				end
 			else
 				for i = 1, #st.seats do
 					local seat = st.seats[i]

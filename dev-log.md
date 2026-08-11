@@ -2259,3 +2259,18 @@ collision -30, floored at 0) into pointsByPlayer, which is NOT reset by freshRoo
 "SCORE N" label top-right.
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0120 — Roblox all-time leaderboard (DataStore) (2026-08-11)
+
+Roblox host+client, no engine/JS/Luau change. Server: DataStoreService (all calls
+pcall-guarded -> degrades to in-session-only without API access). allTimeBoard (top
+10 {name,points}) loaded from the "top" key at boot; updateBoard merges a player and
+saves; personal points loaded on join (p_<userId>) so they carry across SESSIONS,
+banked into the board on race-end + on leave. View carries allTime during lobby/
+summary. Client: the leaderboard panel shows ALL-TIME (rank/name/points) during the
+lobby and RESULTS during the summary; READY button moved below it. Completes the
+Roblox backlog batch.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.

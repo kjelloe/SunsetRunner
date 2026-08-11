@@ -105,7 +105,7 @@ local prevCrashS, prevBoostS, prevTimerS, prevFinishS, prevCdBeep = 0, 0, -1, -1
 local DASH_SPACING = ROAD_UNIT * 3 -- one centre dash every 3 road units
 local PROP_SPACING = ROAD_UNIT * 6 -- a roadside prop slot every 6 road units
 local hud: { speed: TextLabel, timer: TextLabel, stage: TextLabel, score: TextLabel, banner: TextLabel }
-local board: { frame: Frame, rows: { TextLabel } } -- end-of-race leaderboard (marker-0114)
+local board: { frame: Frame, title: TextLabel, rows: { TextLabel } } -- leaderboard panel
 
 -- Accumulate curve (double integral, like the browser road renderer) + read hill,
 -- walking segments forward from the seat's position. Presentation-only shape.
@@ -455,7 +455,7 @@ function Render.init()
 		r.Parent = frame
 		rows[i] = r
 	end
-	board = { frame = frame, rows = rows }
+	board = { frame = frame, title = title, rows = rows }
 
 	-- Lay a straight flat road immediately so SOMETHING is visible before the first
 	-- server view arrives (a straight road that never moves = server not sending;
@@ -782,14 +782,27 @@ local function renderWorld(rz, laneX, view)
 		hud.banner.Text = ""
 	end
 
-	-- End-of-race leaderboard (marker-0114): shown during the summary phase.
+	-- Leaderboard panel: RESULTS during the summary, ALL-TIME during the lobby.
 	if view.phase == "summary" and view.standings then
 		board.frame.Visible = true
+		board.title.Text = "RESULTS"
 		for i, r in ipairs(board.rows) do
 			local e = view.standings[i]
 			if e then
-				r.Text = string.format("%d.  %s", e.rank, e.name) .. "    " .. e.result
+				r.Text = string.format("%d.  %s    %s", e.rank, e.name, e.result)
 				r.TextColor3 = e.isSelf and Color3.fromRGB(120, 240, 120) or Color3.fromRGB(230, 230, 240)
+			else
+				r.Text = ""
+			end
+		end
+	elseif view.phase == "lobby" and view.allTime then
+		board.frame.Visible = true
+		board.title.Text = "ALL-TIME"
+		for i, r in ipairs(board.rows) do
+			local e = view.allTime[i]
+			if e then
+				r.Text = string.format("%d.  %s    %d", i, e.name, e.points)
+				r.TextColor3 = Color3.fromRGB(230, 230, 240)
 			else
 				r.Text = ""
 			end
