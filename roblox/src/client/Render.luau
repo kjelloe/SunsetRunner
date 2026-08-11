@@ -261,6 +261,13 @@ local function setCarShown(rig, shown: boolean)
 	end
 end
 
+-- Recolour the whole body shell (hull + hood + haunches) so a car is one colour.
+local function tintCar(rig, color: Color3)
+	for _, bp in ipairs(rig.bodyParts) do
+		bp.Color = color
+	end
+end
+
 -- Shape variety is now baked per rig at creation (variant 1..3 in makeCarRig), so
 -- these are no-ops kept only so existing call sites stay valid.
 local RIVAL_STYLES = { 1, 2, 3 }
@@ -766,9 +773,7 @@ local function renderWorld(rz, laneX, view)
 	local boosting = seat.boostTicks > 0
 	local carCol = boosting and Color3.fromRGB(120, 240, 255)
 		or (seat.crashedTicks > 0 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(224, 72, 48))
-	for _, bp in ipairs(carRig.bodyParts) do
-		bp.Color = carCol -- tint the whole shell (hull, hood, haunches) together
-	end
+	tintCar(carRig, carCol) -- whole shell (hull, hood, haunches) together
 	boostActive = boosting
 	if boostEmitter then
 		boostEmitter.Enabled = boosting
@@ -801,7 +806,7 @@ local function renderWorld(rz, laneX, view)
 			local t = e.t
 			setCarShown(rig, true)
 			setCarStyle(rig, trafficStyleKey(t.kind))
-			rig.body.Color = carColor(t.id or ti, scenerySet)
+			tintCar(rig, carColor(t.id or ti, scenerySet))
 			placeCar(rig, CFrame.new((s.curveX + t.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - e.dz * SZ))
 		end
 	end
@@ -821,7 +826,7 @@ local function renderWorld(rz, laneX, view)
 				local rig = ghostRigs[gi]
 				setCarShown(rig, true)
 				setCarStyle(rig, RIVAL_STYLES[((g.seatId + scenerySet) % 3) + 1]) -- shape varies by seat + biome
-				rig.body.Color = carColor(g.seatId + 3, scenerySet) -- distinct from the player (red)
+				tintCar(rig, carColor(g.seatId + 3, scenerySet)) -- distinct from the player (red)
 				placeCar(rig, CFrame.new((s.curveX + g.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - dz * SZ))
 				ghostTags[gi].Text = g.name or ("P" .. g.seatId)
 			end
