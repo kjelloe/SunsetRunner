@@ -114,7 +114,7 @@ local prevCrashS, prevBoostS, prevTimerS, prevFinishS, prevCdBeep = 0, 0, -1, -1
 
 local DASH_SPACING = ROAD_UNIT * 3 -- one centre dash every 3 road units
 local PROP_SPACING = ROAD_UNIT * 6 -- a roadside prop slot every 6 road units
-local hud: { speed: TextLabel, timer: TextLabel, stage: TextLabel, score: TextLabel, banner: TextLabel }
+local hud: { speed: TextLabel, timer: TextLabel, stage: TextLabel, score: TextLabel, banner: TextLabel, pos: TextLabel, prog: Frame }
 local board: { frame: Frame, title: TextLabel, rows: { TextLabel } } -- leaderboard panel
 
 -- Accumulate curve (double integral, like the browser road renderer) + read hill,
@@ -493,15 +493,32 @@ function Render.init()
 		l.Parent = gui
 		return l
 	end
+	-- Stage progress bar along the very top (fill grows with stages cleared).
+	local progBg = Instance.new("Frame")
+	progBg.Position = UDim2.new(0.3, 0, 0.005, 0)
+	progBg.Size = UDim2.new(0.4, 0, 0.012, 0)
+	progBg.BackgroundColor3 = Color3.fromRGB(30, 22, 44)
+	progBg.BackgroundTransparency = 0.35
+	progBg.BorderSizePixel = 0
+	progBg.Parent = gui
+	local progFill = Instance.new("Frame")
+	progFill.Size = UDim2.new(0, 0, 1, 0)
+	progFill.BackgroundColor3 = Color3.fromRGB(90, 224, 235)
+	progFill.BorderSizePixel = 0
+	progFill.Parent = progBg
+
 	hud = {
 		speed = label(UDim2.new(0.6, 0, 0.8, 0), UDim2.new(0.38, 0, 0.16, 0), Enum.TextXAlignment.Right),
 		timer = label(UDim2.new(0.35, 0, 0.015, 0), UDim2.new(0.3, 0, 0.16, 0), Enum.TextXAlignment.Center),
 		stage = label(UDim2.new(0.02, 0, 0.8, 0), UDim2.new(0.3, 0, 0.16, 0), Enum.TextXAlignment.Left),
 		score = label(UDim2.new(0.62, 0, 0.02, 0), UDim2.new(0.36, 0, 0.09, 0), Enum.TextXAlignment.Right),
 		banner = label(UDim2.new(0.25, 0, 0.4, 0), UDim2.new(0.5, 0, 0.12, 0), Enum.TextXAlignment.Center),
+		pos = label(UDim2.new(0.02, 0, 0.68, 0), UDim2.new(0.3, 0, 0.12, 0), Enum.TextXAlignment.Left),
+		prog = progFill,
 	}
 	hud.stage.TextColor3 = Color3.fromRGB(90, 224, 235) -- cyan like the browser
 	hud.score.TextColor3 = Color3.fromRGB(255, 220, 74)
+	hud.pos.TextColor3 = Color3.fromRGB(255, 255, 255)
 
 	-- End-of-race leaderboard panel (hidden until the summary phase).
 	local frame = Instance.new("Frame")
@@ -826,6 +843,15 @@ local function renderWorld(rz, laneX, view)
 	lastStage = stageOf[seat.segmentId] or lastStage
 	hud.stage.Text = "STAGE " .. lastStage .. "/" .. STAGE_TOTAL
 	hud.score.Text = "SCORE " .. (view.points or 0)
+	local field = view.fieldSize or 6
+	hud.pos.Text = "P" .. (view.position or 1) .. "/" .. field
+	hud.pos.TextColor3 = (view.position == 1) and Color3.fromRGB(255, 220, 74) or Color3.fromRGB(235, 235, 245)
+	local frac = (STAGE_TOTAL > 0) and math.clamp(lastStage / STAGE_TOTAL, 0, 1) or 0
+	hud.prog.Size = UDim2.new(frac, 0, 1, 0)
+	-- show race HUD only while a race is on-screen
+	local onTrack = view.phase == "racing" or view.raceOver
+	hud.pos.Visible = onTrack
+	hud.prog.Parent.Visible = onTrack
 	-- Race framing (marker-0109): countdown 3-2-1, a brief GO!, then the finish/
 	-- time-up summary with a "new race in Ns" line.
 	local cd = view.countdown or 0

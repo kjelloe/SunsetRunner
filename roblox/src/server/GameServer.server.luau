@@ -252,9 +252,19 @@ local function buildViewFor(player: Player)
 			table.insert(standings, { rank = rank, name = nameOfSeat(j), result = resultStr(state.seats[j], j), isSelf = (j == ownSid) })
 		end
 	end
+	-- Live race position of the player's own seat (P n / field), for the HUD.
+	local position = 1
+	for rank, j in ipairs(order or computeStandings(state)) do
+		if j == ownSid then
+			position = rank
+			break
+		end
+	end
 	return {
 		tick = state.tick,
 		phase = room.phase,
+		position = position,
+		fieldSize = #state.seats,
 		countdown = (room.phase == "countdown") and math.ceil(room.cd / 20) or 0,
 		restartIn = (room.phase == "summary") and math.ceil(room.summ / 20) or 0,
 		lobbyIn = (room.phase == "lobby") and math.ceil(room.lobbyTicks / 20) or 0,
