@@ -165,61 +165,86 @@ end
 -- A procedural low-poly car (marker-0104): body + cabin + 4 wheels, each a Part at
 -- a fixed local offset. No Model/pivot — placeCar just sets every part's CFrame =
 -- base * offset, which is dead-simple and can't mis-pivot. Front is -Z (forward).
-local function makeCarRig(bodyColor: Color3, parent: Instance)
+-- A detailed low-poly SPORTS car (marker-0123): a sculpted silhouette from ~24
+-- Parts/Wedges — long low hood, raked screen, fastback roof, rear haunches,
+-- splitter, side skirts, wing, and light bars — so it reads like a classic
+-- coupe (Porsche/Corvette/Ferrari/Mustang) rather than a box. `variant` (1..3)
+-- shifts the proportions so the field looks varied without runtime restyling.
+local function makeCarRig(bodyColor: Color3, parent: Instance, variant: number?)
+	local v = variant or 1
 	local rig = { parts = {}, body = nil :: Part? }
-	local function piece(size, color, offset, shape, material)
-		local p = Instance.new("Part")
-		p.Anchored = true
-		p.CanCollide = false
-		p.CanQuery = false
-		p.CanTouch = false
-		p.Size = size
-		p.Color = color
-		p.Material = material or Enum.Material.SmoothPlastic
-		if shape then
-			p.Shape = shape
-		end
-		p.Parent = parent
-		table.insert(rig.parts, { part = p, offset = offset })
-		return p
-	end
-	local function wedge(size, color, offset)
-		local p = Instance.new("WedgePart")
+	local trim = bodyColor:Lerp(Color3.new(0, 0, 0), 0.35)
+	local glass = Color3.fromRGB(120, 165, 200)
+	local function add(p, offset, shownT)
 		p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch = true, false, false, false
-		p.Size, p.Color, p.Material = size, color, Enum.Material.SmoothPlastic
+		p.TopSurface, p.BottomSurface = Enum.SurfaceType.Smooth, Enum.SurfaceType.Smooth
 		p.Parent = parent
-		table.insert(rig.parts, { part = p, offset = offset })
+		p.Transparency = shownT or 0
+		table.insert(rig.parts, { part = p, offset = offset, t = shownT or 0 })
 		return p
 	end
-	-- Lower, sleeker chassis + a separate greenhouse cabin so the profile reads as a
-	-- car, not a box. parts[1]=body and parts[2]=cabin stay first (setCarStyle resizes
-	-- them); the detail pieces after are fixed accents.
-	rig.body = piece(Vector3.new(6.6, 1.8, 11), bodyColor, CFrame.new(0, 0.1, 0))
-	piece(Vector3.new(4.8, 1.7, 5), bodyColor:Lerp(Color3.new(0, 0, 0), 0.32), CFrame.new(0, 1.25, 0.8)) -- cabin toward the rear
-	piece(Vector3.new(4.4, 0.25, 3.1), Color3.fromRGB(150, 195, 225), CFrame.new(0, 1.35, -1.3) * CFrame.Angles(math.rad(-32), 0, 0)) -- windshield
-	local shadow = piece(Vector3.new(9, 0.2, 13), Color3.fromRGB(18, 10, 18), CFrame.new(0, -1.15, 0))
-	shadow.Transparency = 0.55
-	local wc = Color3.fromRGB(24, 24, 28)
-	local hub = Color3.fromRGB(150, 150, 158)
-	local wheel = Vector3.new(1.3, 2.5, 2.5)
-	for _, wx in ipairs({ -3.0, 3.0 }) do
-		for _, wz in ipairs({ -3.2, 3.2 }) do
-			piece(wheel, wc, CFrame.new(wx, -0.9, wz), Enum.PartType.Cylinder)
-			piece(Vector3.new(1.35, 1.1, 1.1), hub, CFrame.new(wx, -0.9, wz), Enum.PartType.Cylinder) -- hubcap
+	local function box(size, color, offset, material, shownT)
+		local p = Instance.new("Part")
+		p.Size, p.Color, p.Material = size, color, material or Enum.Material.SmoothPlastic
+		return add(p, offset, shownT)
+	end
+	local function cyl(size, color, offset, material)
+		local p = Instance.new("Part")
+		p.Shape = Enum.PartType.Cylinder
+		p.Size, p.Color, p.Material = size, color, material or Enum.Material.SmoothPlastic
+		return add(p, offset)
+	end
+	-- WedgePart: tall vertical face at +Z, slope descends toward -Z.
+	local function wedge(size, color, offset, material)
+		local p = Instance.new("WedgePart")
+		p.Size, p.Color, p.Material = size, color, material or Enum.Material.SmoothPlastic
+		return add(p, offset)
+	end
+
+	-- Per-variant proportions: length, ride height, roof rake, wing size.
+	local L = ({ 12.5, 13.5, 12.0 })[v] -- overall body length
+	local rideY = ({ 0.0, 0.15, -0.15 })[v] -- muscle sits higher, supercar lower
+	local roofZ = ({ 0.7, 1.1, 0.4 })[v] -- cabin bias (muscle roof further back)
+	local wingH = ({ 1.35, 1.5, 1.6 })[v]
+
+	-- Shadow first (kept subtle even when the pooled car is "shown").
+	box(Vector3.new(8.4, 0.2, L + 2), Color3.fromRGB(16, 10, 18), CFrame.new(0, -1.35 + rideY, 0), Enum.Material.SmoothPlastic, 0.55)
+	-- [1] main lower hull, [2] cabin — kept first for compatibility with setCarStyle.
+	rig.body = box(Vector3.new(6.2, 1.5, L), bodyColor, CFrame.new(0, rideY, 0))
+	box(Vector3.new(4.3, 1.15, 4.4), trim, CFrame.new(0, rideY + 1.15, roofZ)) -- greenhouse cabin
+	-- Long sloping hood (front) and a fastback roofline (rear of the cabin).
+	wedge(Vector3.new(5.7, 1.0, L * 0.34), bodyColor, CFrame.new(0, rideY + 0.85, -L * 0.28))
+	wedge(Vector3.new(4.3, 1.15, L * 0.3), trim, CFrame.new(0, rideY + 1.1, roofZ + L * 0.24) * CFrame.Angles(0, math.rad(180), 0)) -- fastback
+	-- Raked windshield + rear glass.
+	box(Vector3.new(4.0, 0.18, 2.7), glass, CFrame.new(0, rideY + 1.55, roofZ - 2.2) * CFrame.Angles(math.rad(-32), 0, 0), Enum.Material.Glass, 0.25)
+	box(Vector3.new(3.9, 0.18, 2.3), glass, CFrame.new(0, rideY + 1.5, roofZ + 2.3) * CFrame.Angles(math.rad(34), 0, 0), Enum.Material.Glass, 0.25)
+	-- Belt/side stripe + skirts to break up the slab sides.
+	box(Vector3.new(6.3, 0.5, L * 0.9), trim, CFrame.new(0, rideY - 0.55, 0))
+	box(Vector3.new(0.4, 0.5, L * 0.7), Color3.fromRGB(24, 24, 28), CFrame.new(-3.05, rideY - 0.5, 0.3))
+	box(Vector3.new(0.4, 0.5, L * 0.7), Color3.fromRGB(24, 24, 28), CFrame.new(3.05, rideY - 0.5, 0.3))
+	-- Rear haunches (small wedges over the back wheels) for a muscular stance.
+	wedge(Vector3.new(1.3, 0.9, 3.2), bodyColor, CFrame.new(-2.7, rideY + 0.35, L * 0.22) * CFrame.Angles(0, math.rad(180), 0))
+	wedge(Vector3.new(1.3, 0.9, 3.2), bodyColor, CFrame.new(2.7, rideY + 0.35, L * 0.22) * CFrame.Angles(0, math.rad(180), 0))
+	-- Front splitter + rear diffuser.
+	box(Vector3.new(6.0, 0.3, 1.1), Color3.fromRGB(28, 28, 32), CFrame.new(0, rideY - 0.75, -L * 0.5 + 0.4))
+	box(Vector3.new(6.0, 0.35, 1.0), Color3.fromRGB(28, 28, 32), CFrame.new(0, rideY - 0.7, L * 0.5 - 0.4))
+	-- Wheels (wide, low) + bright hubcaps + dark arches.
+	local wheel = Vector3.new(1.5, 2.7, 2.7)
+	local wz = L * 0.3
+	for _, wx in ipairs({ -3.05, 3.05 }) do
+		for _, z in ipairs({ -wz, wz }) do
+			cyl(wheel, Color3.fromRGB(22, 22, 26), CFrame.new(wx, rideY - 0.85, z))
+			cyl(Vector3.new(1.55, 1.2, 1.2), Color3.fromRGB(180, 182, 190), CFrame.new(wx, rideY - 0.85, z))
 		end
 	end
-	-- Sloped hood (front, high side toward the cabin) and boot (rear) so it's not a box.
-	wedge(Vector3.new(5.6, 1.2, 3.6), bodyColor, CFrame.new(0, 0.95, -3.6))
-	wedge(Vector3.new(5.4, 0.9, 2.6), bodyColor:Lerp(Color3.new(0, 0, 0), 0.1), CFrame.new(0, 0.9, 3.9) * CFrame.Angles(0, math.rad(180), 0))
-	-- Head + tail lights (small glowing accents at the corners).
-	piece(Vector3.new(1.1, 0.7, 0.4), Color3.fromRGB(255, 246, 214), CFrame.new(-2.0, 0.2, -5.45), nil, Enum.Material.Neon)
-	piece(Vector3.new(1.1, 0.7, 0.4), Color3.fromRGB(255, 246, 214), CFrame.new(2.0, 0.2, -5.45), nil, Enum.Material.Neon)
-	piece(Vector3.new(1.3, 0.6, 0.4), Color3.fromRGB(230, 40, 40), CFrame.new(-2.0, 0.45, 5.5), nil, Enum.Material.Neon)
-	piece(Vector3.new(1.3, 0.6, 0.4), Color3.fromRGB(230, 40, 40), CFrame.new(2.0, 0.45, 5.5), nil, Enum.Material.Neon)
-	-- Rear spoiler on two little posts.
-	piece(Vector3.new(6.2, 0.3, 1.5), bodyColor:Lerp(Color3.new(0, 0, 0), 0.2), CFrame.new(0, 1.45, 5.0))
-	piece(Vector3.new(0.4, 1.0, 0.5), Color3.fromRGB(30, 30, 34), CFrame.new(-2.5, 1.0, 5.0))
-	piece(Vector3.new(0.4, 1.0, 0.5), Color3.fromRGB(30, 30, 34), CFrame.new(2.5, 1.0, 5.0))
+	-- Headlights (slim neon), full-width taillight bar (neon red).
+	box(Vector3.new(1.3, 0.45, 0.35), Color3.fromRGB(255, 248, 220), CFrame.new(-1.9, rideY + 0.15, -L * 0.5 + 0.2), Enum.Material.Neon)
+	box(Vector3.new(1.3, 0.45, 0.35), Color3.fromRGB(255, 248, 220), CFrame.new(1.9, rideY + 0.15, -L * 0.5 + 0.2), Enum.Material.Neon)
+	box(Vector3.new(5.2, 0.45, 0.3), Color3.fromRGB(235, 42, 42), CFrame.new(0, rideY + 0.35, L * 0.5 - 0.2), Enum.Material.Neon)
+	-- Rear wing on two posts (bigger on the supercar variant).
+	box(Vector3.new(6.0, 0.28, 1.5), trim, CFrame.new(0, rideY + wingH, L * 0.45))
+	box(Vector3.new(0.4, wingH - 0.5, 0.5), Color3.fromRGB(28, 28, 32), CFrame.new(-2.4, rideY + wingH * 0.55, L * 0.45))
+	box(Vector3.new(0.4, wingH - 0.5, 0.5), Color3.fromRGB(28, 28, 32), CFrame.new(2.4, rideY + wingH * 0.55, L * 0.45))
 	return rig
 end
 
@@ -231,41 +256,17 @@ end
 
 local function setCarShown(rig, shown: boolean)
 	for _, e in ipairs(rig.parts) do
-		e.part.Transparency = shown and 0 or 1
+		e.part.Transparency = shown and e.t or 1
 	end
 end
 
--- Body silhouettes (marker-0117): resize the body + cabin so cars have distinct
--- shapes. setCarStyle only resizes when the style key changes (cheap).
-local STYLES = {
-	sport = { body = Vector3.new(7, 2.2, 12), cabin = Vector3.new(4.6, 1.6, 4.5), cabinY = 1.4 },
-	suv = { body = Vector3.new(7.4, 3.2, 10.5), cabin = Vector3.new(5.4, 2.4, 6), cabinY = 1.9 },
-	compact = { body = Vector3.new(6.4, 2.4, 9), cabin = Vector3.new(5, 1.9, 5), cabinY = 1.5 },
-	truck = { body = Vector3.new(7.6, 3.6, 13), cabin = Vector3.new(5.2, 2.6, 4.5), cabinY = 2.2 },
-	bus = { body = Vector3.new(7.6, 3.4, 16), cabin = Vector3.new(6.4, 2.6, 12), cabinY = 1.9 },
-	bike = { body = Vector3.new(3.2, 2, 7), cabin = Vector3.new(2.4, 1.6, 2.4), cabinY = 1.4 },
-}
-local RIVAL_STYLES = { "sport", "suv", "compact" }
-local function setCarStyle(rig, key: string)
-	if rig.styleKey == key then
-		return
-	end
-	rig.styleKey = key
-	local s = STYLES[key] or STYLES.sport
-	rig.parts[1].part.Size = s.body
-	rig.parts[2].part.Size = s.cabin
-	rig.parts[2].offset = CFrame.new(0, s.cabinY, 0.8)
+-- Shape variety is now baked per rig at creation (variant 1..3 in makeCarRig), so
+-- these are no-ops kept only so existing call sites stay valid.
+local RIVAL_STYLES = { 1, 2, 3 }
+local function setCarStyle(_rig, _key)
 end
-
-local function trafficStyleKey(kind: number): string
-	if kind == 2 then
-		return "truck"
-	elseif kind == 3 then
-		return "bus"
-	elseif kind == 4 then
-		return "bike"
-	end
-	return "sport"
+local function trafficStyleKey(_kind: number)
+	return 1
 end
 
 -- Sunset mood (marker-0102): warm dusk lighting + haze, no textures. Global +
@@ -320,27 +321,36 @@ local function makeSky(parent, baseY)
 		p.CFrame = CFrame.new(0, baseY + b[2], SKY_Z)
 		p.Parent = parent
 	end
+	-- Full-width warm horizon glow: the coloured band must span the WHOLE horizon,
+	-- not a central patch. These are wide (9000) semi-transparent neon bands in front
+	-- of the wall, so the sunset colour reaches both screen edges.
+	local SUN_Y = baseY + 96
+	for _, g in ipairs({
+		{ 300, 60, Color3.fromRGB(255, 128, 74), 0.32 }, -- {height, yOff, color, transparency}
+		{ 360, 210, Color3.fromRGB(210, 78, 124), 0.5 }, -- magenta above
+		{ 460, 470, Color3.fromRGB(120, 60, 140), 0.66 }, -- purple higher still
+	}) do
+		local band = Instance.new("Part")
+		band.Anchored, band.CanCollide, band.CanQuery, band.CanTouch = true, false, false, false
+		band.Material = Enum.Material.Neon
+		band.Size = Vector3.new(9000, g[1], 2)
+		band.Color = g[3]
+		band.Transparency = g[4]
+		band.CFrame = CFrame.new(0, baseY + g[2], SKY_Z + 4)
+		band.Parent = parent
+	end
 	-- The setting sun: a big neon disc on the horizon, with dark horizontal cuts
-	-- across its lower half (classic OutRun look). Sits just in front of the bands
-	-- so it never z-fights, and its lower half dips below the ground horizon.
+	-- across its lower half (classic OutRun look). Sits just in front of the glow so
+	-- it never z-fights; its lower half dips below the ground horizon.
 	local D = 360
 	local sun = Instance.new("Part")
 	sun.Anchored, sun.CanCollide, sun.CanQuery, sun.CanTouch = true, false, false, false
 	sun.Shape = Enum.PartType.Cylinder
 	sun.Material = Enum.Material.Neon
-	sun.Color = Color3.fromRGB(255, 156, 66)
+	sun.Color = Color3.fromRGB(255, 168, 78)
 	sun.Size = Vector3.new(5, D, D)
-	sun.CFrame = CFrame.new(0, baseY + 96, SKY_Z + 8) * CFrame.Angles(0, math.rad(90), 0)
+	sun.CFrame = CFrame.new(0, SUN_Y, SKY_Z + 8) * CFrame.Angles(0, math.rad(90), 0)
 	sun.Parent = parent
-	-- Gradient glow: a couple of larger, dimmer discs behind the sun.
-	for i, g in ipairs({ { 1.5, 0.6, Color3.fromRGB(255, 120, 90) }, { 2.2, 0.8, Color3.fromRGB(214, 80, 120) } }) do
-		local halo = sun:Clone()
-		halo.Size = Vector3.new(4 - i, D * g[1], D * g[1])
-		halo.Transparency = g[2]
-		halo.Color = g[3]
-		halo.CFrame = CFrame.new(0, baseY + 96, SKY_Z + 6 - i) * CFrame.Angles(0, math.rad(90), 0)
-		halo.Parent = parent
-	end
 	-- Horizontal cut lines across the lower half (they read as sky showing through).
 	for i = 0, 5 do
 		local cut = Instance.new("Part")
@@ -348,7 +358,7 @@ local function makeSky(parent, baseY)
 		cut.Material = Enum.Material.SmoothPlastic
 		cut.Color = Color3.fromRGB(150, 46, 96)
 		cut.Size = Vector3.new(D, 5 + i * 1.4, 2)
-		cut.CFrame = CFrame.new(0, baseY + 96 - 30 - i * 22, SKY_Z + 10)
+		cut.CFrame = CFrame.new(0, SUN_Y - 30 - i * 22, SKY_Z + 10)
 		cut.Parent = parent
 	end
 end
@@ -396,7 +406,7 @@ function Render.init()
 		sideR[k].Transparency = 1
 	end
 	for i = 1, 14 do
-		local rig = makeCarRig(Color3.fromRGB(224, 192, 64), world)
+		local rig = makeCarRig(Color3.fromRGB(224, 192, 64), world, (i % 3) + 1)
 		setCarShown(rig, false)
 		traffic[i] = rig
 	end
@@ -430,7 +440,7 @@ function Render.init()
 	end
 	local RIVAL_COLORS = { Color3.fromRGB(224, 72, 48), Color3.fromRGB(72, 132, 224), Color3.fromRGB(72, 200, 96), Color3.fromRGB(224, 192, 64) }
 	for i = 1, 8 do
-		local rig = makeCarRig(RIVAL_COLORS[(i % 4) + 1], world)
+		local rig = makeCarRig(RIVAL_COLORS[(i % 4) + 1], world, ((i + 1) % 3) + 1)
 		setCarShown(rig, false)
 		ghostRigs[i] = rig
 		local bb = Instance.new("BillboardGui")
@@ -450,8 +460,7 @@ function Render.init()
 		tl.Parent = bb
 		ghostTags[i] = tl
 	end
-	carRig = makeCarRig(Color3.fromRGB(224, 72, 48), world)
-	setCarStyle(carRig, "sport")
+	carRig = makeCarRig(Color3.fromRGB(224, 72, 48), world, 3) -- player = low supercar
 	boostEmitter = Instance.new("ParticleEmitter")
 	boostEmitter.Enabled = false
 	boostEmitter.Color = ColorSequence.new(Color3.fromRGB(120, 240, 255))

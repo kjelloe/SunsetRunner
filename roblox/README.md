@@ -72,7 +72,9 @@ all-time leaderboard (DataStore, shown in the lobby); 0121 fix traffic missing f
 the view (Render ipairs crash); 0122 playtest polish — setting-sun disc + fixed
 horizon z-fighting, detailed/varied cars (wedge hood/boot, lights, spoiler, hubcaps),
 per-biome terrain materials + textured verges, and per-player time-up scoring
-(instant score panel + SPECTATE the leader; stages-only reward).
+(instant score panel + SPECTATE the leader; stages-only reward); 0123 full-width
+sunset horizon glow, sculpted higher-poly sports cars (3 variants), and grace-stop
+(when only AI remain, end within 5 s and mark those cars STOPPED).
 
 ## Not done yet (backlog)
 

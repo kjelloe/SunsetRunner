@@ -38,6 +38,7 @@ local SEATS = 6 -- fixed field size; players fill from seat 1, the rest are AI
 local LOBBY_TICKS = 300 -- 15 s ready-up window (players can start sooner)
 local COUNTDOWN_TICKS = 60 -- 3 s
 local SUMMARY_TICKS = 100 -- 5 s finish/summary hold
+local GRACE_TICKS = 100 -- once every human is done, end within 5 s (AI still racing = STOPPED)
 local AI_NAMES = { "Max", "Zoe", "Kai", "Ava", "Leo", "Mia" }
 local AI_SKILLS = { "hard", "medium", "hard", "medium", "easy", "medium" }
 
@@ -140,7 +141,7 @@ local function freshRoom(seed: number)
 			state.seats[sid].carId = prefCarByPlayer[player]
 		end
 	end
-	room = { state = state, phase = "lobby", lobbyTicks = LOBBY_TICKS, cd = COUNTDOWN_TICKS, summ = 0, seed = seed }
+	room = { state = state, phase = "lobby", lobbyTicks = LOBBY_TICKS, cd = COUNTDOWN_TICKS, summ = 0, seed = seed, stopped = {}, graceTicks = nil }
 	readyByPlayer = {}
 	spectateByPlayer = {}
 	for i = 1, SEATS do
@@ -186,9 +187,15 @@ local function computeStandings(state)
 	return order
 end
 
-local function resultStr(seat): string
+local function resultStr(seat, sid: number?): string
+	if sid and room.stopped and room.stopped[sid] then
+		return "STOPPED"
+	end
 	if seat.finishTicks >= 0 then
 		return string.format("%.1fs", seat.finishTicks / 20)
+	end
+	if seat.timedOut ~= 0 then
+		return "Time up · Stage " .. (stageIndexOf[seat.segmentId] or 1)
 	end
 	return "Stage " .. (stageIndexOf[seat.segmentId] or 1)
 end
@@ -242,7 +249,7 @@ local function buildViewFor(player: Player)
 	if order then
 		standings = {}
 		for rank, j in ipairs(order) do
-			table.insert(standings, { rank = rank, name = nameOfSeat(j), result = resultStr(state.seats[j]), isSelf = (j == ownSid) })
+			table.insert(standings, { rank = rank, name = nameOfSeat(j), result = resultStr(state.seats[j], j), isSelf = (j == ownSid) })
 		end
 	end
 	return {
@@ -263,7 +270,7 @@ local function buildViewFor(player: Player)
 		spectating = seatOfPlayer[player] == nil,
 		raceOver = raceOver or nil, -- your own race ended (finished / timed out)
 		watching = (raceOver and spectateByPlayer[player]) or nil, -- rendering the leader
-		result = selfDone and resultStr(own) or nil,
+		result = selfDone and resultStr(own, ownSid) or nil,
 		standings = standings,
 		courseId = roomCourseId,
 		car = s.carId,
@@ -398,9 +405,35 @@ RunService.Heartbeat:Connect(function(dt)
 					break
 				end
 			end
+			-- Grace-stop: once every HUMAN seat is done, don't wait for the AI field to
+			-- finish — end within 5 s and mark the still-running (AI) cars as STOPPED.
+			if not allDone then
+				local humans, humansDone = 0, 0
+				for sid in pairs(playerOfSeat) do
+					humans += 1
+					local s = st.seats[sid]
+					if s.finishTicks >= 0 or s.timedOut ~= 0 then
+						humansDone += 1
+					end
+				end
+				if humans > 0 and humansDone == humans then
+					room.graceTicks = (room.graceTicks or GRACE_TICKS) - 1
+					if room.graceTicks <= 0 then
+						allDone = true
+					end
+				else
+					room.graceTicks = nil
+				end
+			end
 			if allDone then
 				room.phase = "summary"
 				room.summ = SUMMARY_TICKS
+				room.stopped = {}
+				for i, s in ipairs(st.seats) do
+					if s.finishTicks < 0 and s.timedOut == 0 then
+						room.stopped[i] = true
+					end
+				end
 				room.standings = computeStandings(st)
 				for p in pairs(pointsByPlayer) do -- bank into the all-time board
 					persistPlayer(p)
