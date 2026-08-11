@@ -2206,3 +2206,16 @@ courseId changes. Completes the Roblox backlog batch (lobby/select + variety + V
 leaderboard).
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0116 — Roblox ready-up lobby phase (2026-08-11)
+
+Roblox host+client, no engine/JS/Luau change. New room phase "lobby" (LOBBY_TICKS=15s)
+between races: freshRoom now enters lobby (fresh race frozen at the line); it advances
+to countdown when ALL present players are ready OR the timer expires. readyByPlayer +
+{select="ready"} message; PlayerRemoving clears ready+pref. View carries phase/lobbyIn/
+ready/readyCount/playerCount. Client shows a "GET READY  Ns  X/Y ready" banner + a
+READY button (visible only in lobby, until you've readied).
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.

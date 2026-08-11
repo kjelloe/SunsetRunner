@@ -108,6 +108,31 @@ do
 	refreshSelect()
 end
 
+-- READY button (marker-0116): shown only in the lobby; starts sooner when everyone
+-- is ready (else the lobby timer starts it).
+local readyBtn = Instance.new("TextButton")
+readyBtn.Name = "SunsetReady"
+readyBtn.AnchorPoint = Vector2.new(0.5, 0.5)
+readyBtn.Position = UDim2.new(0.5, 0, 0.62, 0)
+readyBtn.Size = UDim2.new(0.22, 0, 0.1, 0)
+readyBtn.BackgroundColor3 = Color3.fromRGB(60, 160, 80)
+readyBtn.TextScaled = true
+readyBtn.Font = Enum.Font.GothamBold
+readyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+readyBtn.Text = "READY"
+readyBtn.Visible = false
+do
+	local g = Instance.new("ScreenGui")
+	g.Name = "SunsetReadyGui"
+	g.ResetOnSpawn = false
+	g.IgnoreGuiInset = true
+	g.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+	readyBtn.Parent = g
+end
+readyBtn.MouseButton1Click:Connect(function()
+	inputEvent:FireServer({ select = "ready" })
+end)
+
 UIS.InputBegan:Connect(function(input, gpe)
 	if gpe then
 		return
@@ -134,6 +159,7 @@ viewEvent.OnClientEvent:Connect(function(view)
 		refreshSelect()
 		selSynced = true
 	end
+	readyBtn.Visible = view.phase == "lobby" and not view.ready
 end)
 
 RunService.RenderStepped:Connect(function(dt)

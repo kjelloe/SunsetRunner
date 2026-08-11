@@ -173,6 +173,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-113 Roblox per-biome car variety: 8-colour livery palette for rivals + traffic, shifted by biome (marker-0113)
 - [x] slice-114 Roblox end-of-race leaderboard: server standings (finish order/progress) + client RESULTS panel during summary (marker-0114)
 - [x] slice-115 Roblox car + course select: per-player car (applied now) + shared course (next race), client cycle UI, HUD stage map rebuilt on course change (marker-0115)
+- [x] slice-116 Roblox ready-up lobby: lobby phase (15s timer or all-ready) + READY button before each race (marker-0116)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 

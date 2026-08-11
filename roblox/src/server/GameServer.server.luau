@@ -34,6 +34,7 @@ local COURSE_ID = 4
 local START_TIME_TICKS = 3000
 local TICK_DT = 1 / 20
 local SEATS = 6 -- fixed field size; players fill from seat 1, the rest are AI
+local LOBBY_TICKS = 300 -- 15 s ready-up window (players can start sooner)
 local COUNTDOWN_TICKS = 60 -- 3 s
 local SUMMARY_TICKS = 100 -- 5 s finish/summary hold
 local AI_NAMES = { "Max", "Zoe", "Kai", "Ava", "Leo", "Mia" }
@@ -50,6 +51,7 @@ viewEvent.Parent = RS
 local room -- { state, phase, cd, summ, seed }
 local roomCourseId = COURSE_ID -- shared course (car+course select, marker-0115)
 local prefCarByPlayer: { [Player]: number } = {}
+local readyByPlayer: { [Player]: boolean } = {} -- ready-up lobby (marker-0116)
 local seatOfPlayer: { [Player]: number } = {}
 local playerOfSeat: { [number]: Player } = {}
 local inputBySeat: { [number]: { steer: number, accel: number, brake: number } } = {}
@@ -79,7 +81,8 @@ local function freshRoom(seed: number)
 			state.seats[sid].carId = prefCarByPlayer[player]
 		end
 	end
-	room = { state = state, phase = "countdown", cd = COUNTDOWN_TICKS, summ = 0, seed = seed }
+	room = { state = state, phase = "lobby", lobbyTicks = LOBBY_TICKS, cd = COUNTDOWN_TICKS, summ = 0, seed = seed }
+	readyByPlayer = {}
 	for i = 1, SEATS do
 		inputBySeat[i] = { steer = 0, accel = 0, brake = 0 }
 		forkBySeat[i] = 0
@@ -168,6 +171,16 @@ local function buildViewFor(player: Player)
 		phase = room.phase,
 		countdown = (room.phase == "countdown") and math.ceil(room.cd / 20) or 0,
 		restartIn = (room.phase == "summary") and math.ceil(room.summ / 20) or 0,
+		lobbyIn = (room.phase == "lobby") and math.ceil(room.lobbyTicks / 20) or 0,
+		ready = readyByPlayer[player] == true,
+		readyCount = (function()
+			local n = 0
+			for _ in pairs(readyByPlayer) do
+				n += 1
+			end
+			return n
+		end)(),
+		playerCount = #Players:GetPlayers(),
 		spectating = seatOfPlayer[player] == nil,
 		standings = standings,
 		courseId = roomCourseId,
@@ -216,6 +229,9 @@ inputEvent.OnServerEvent:Connect(function(player, msg)
 	elseif msg.select == "course" then
 		roomCourseId = math.clamp(tonumber(msg.courseId) or COURSE_ID, 1, 4)
 		return
+	elseif msg.select == "ready" then
+		readyByPlayer[player] = true
+		return
 	end
 	local sid = seatOfPlayer[player]
 	if not sid then
@@ -235,6 +251,8 @@ Players.PlayerRemoving:Connect(function(player)
 		playerOfSeat[sid] = nil -- seat reverts to AI
 		seatOfPlayer[player] = nil
 	end
+	readyByPlayer[player] = nil
+	prefCarByPlayer[player] = nil
 end)
 for _, p in ipairs(Players:GetPlayers()) do
 	assignSeat(p)
@@ -245,7 +263,21 @@ RunService.Heartbeat:Connect(function(dt)
 	acc += math.min(dt, 0.25)
 	while acc >= TICK_DT do
 		acc -= TICK_DT
-		if room.phase == "countdown" then
+		if room.phase == "lobby" then
+			room.lobbyTicks -= 1
+			local players = Players:GetPlayers()
+			local allReady = #players > 0
+			for _, p in ipairs(players) do
+				if not readyByPlayer[p] then
+					allReady = false
+					break
+				end
+			end
+			if allReady or room.lobbyTicks <= 0 then
+				room.phase = "countdown"
+				room.cd = COUNTDOWN_TICKS
+			end
+		elseif room.phase == "countdown" then
 			room.cd -= 1
 			if room.cd <= 0 then
 				room.phase = "racing"

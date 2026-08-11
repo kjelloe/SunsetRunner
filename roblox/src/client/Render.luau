@@ -674,7 +674,10 @@ local function renderWorld(rz, laneX, view)
 		goFrames = 45
 	end
 	prevCd = cd
-	if cd > 0 then
+	if view.phase == "lobby" then
+		hud.banner.Text = "GET READY  " .. (view.lobbyIn or 0) .. "s   " .. (view.readyCount or 0) .. "/" .. (view.playerCount or 0) .. " ready"
+		hud.banner.TextColor3 = Color3.fromRGB(120, 240, 120)
+	elseif cd > 0 then
 		hud.banner.Text = tostring(cd)
 		hud.banner.TextColor3 = Color3.fromRGB(255, 220, 74)
 	elseif goFrames > 0 then
