@@ -36,11 +36,19 @@ browser uses).
 Deferred: per-biome side ground (water/sand strips that follow the curve) and
 richer multi-part trees — folded into the phase-3 / refinement backlog.
 
-## Phase 3 — procedural car model (marker-0104) — planned
+## Phase 3 — procedural car model (marker-0104) — DONE
 
-- Replace the box with a low-poly car **Model** (body + cabin + wedge nose + 4
-  wheel cylinders), tinted per car; player, rivals, and traffic reuse it. Camera
-  follows the Model's `PrimaryPart` (small refactor from the bare Part).
+- Low-poly car **rig** (`makeCarRig`): body + darker cabin (rearward) + 4 dark
+  wheel cylinders, each a Part at a fixed **local offset**. `placeCar(rig, cf)`
+  sets every part `CFrame = cf * offset` — no `Model`/pivot magic, so it can't
+  mis-pivot. `setCarShown` toggles a rig's parts.
+- Player + the 8 rival pool now use rigs (rivals keep their name-tag Billboard on
+  the body, colour-cycled). The player body still tints cyan/white for boost/crash.
+  Camera follows `carRig.body`. **Traffic stays as boxes** (obstacles) to keep the
+  part count/perf modest.
+
+Deferred to a refinement pass: wedge nose / headlights, traffic as cars, and
+per-biome car variety.
 
 ## Determinism / parity
 

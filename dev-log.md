@@ -2031,3 +2031,20 @@ derived from the biome ground. Deferred: curve-following per-biome side ground +
 richer multi-part trees. specs/77 (phase 2 done).
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0104 — Roblox art pass phase 3: procedural car models (2026-08-11)
+
+Roblox-only presentation (Render.luau), no engine/JS/Luau change. Phase 3 of 3 (art
+pass complete). Replaces the placeholder boxes with low-poly car RIGS: makeCarRig
+builds body + darker rearward cabin + 4 dark wheel cylinders, each a Part at a fixed
+LOCAL offset; placeCar(rig, cf) sets every part CFrame = cf*offset (no Model/pivot
+magic — can't mis-pivot); setCarShown toggles a rig. Player + the 8 rival pool use
+rigs (rivals keep the name-tag Billboard on the body, colour-cycled; player body
+tints cyan/white for boost/crash). Camera follows carRig.body. Traffic stays as
+boxes (perf). specs/77 (all 3 phases done). Deferred refinements: wedge nose/lights,
+traffic-as-cars, per-biome car variety.
+
+Gate: no leftover bare car./ghosts[] refs; rojo build valid; npm test 316/316; 6
+Luau gates untouched.

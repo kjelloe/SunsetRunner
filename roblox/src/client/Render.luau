@@ -44,12 +44,12 @@ local Render = {}
 local strips: { Part } = {}
 local traffic: { Part } = {}
 local pads: { Part } = {}
-local ghosts: { Part } = {}
+local ghostRigs = {} -- rival car rigs (marker-0104)
 local ghostTags: { TextLabel } = {}
 local dashes: { Part } = {} -- scrolling centre-line dashes (speed cue)
 local props: { Part } = {} -- pooled roadside scenery
 local ground: Part
-local car: Part
+local carRig -- player car rig (body + cabin + 4 wheels)
 
 local DASH_SPACING = ROAD_UNIT * 3 -- one centre dash every 3 road units
 local PROP_SPACING = ROAD_UNIT * 6 -- a roadside prop slot every 6 road units
@@ -98,6 +98,50 @@ local function mkPart(name, size, color, parent, material)
 	p.Material = material or Enum.Material.SmoothPlastic
 	p.Parent = parent
 	return p
+end
+
+-- A procedural low-poly car (marker-0104): body + cabin + 4 wheels, each a Part at
+-- a fixed local offset. No Model/pivot — placeCar just sets every part's CFrame =
+-- base * offset, which is dead-simple and can't mis-pivot. Front is -Z (forward).
+local function makeCarRig(bodyColor: Color3, parent: Instance)
+	local rig = { parts = {}, body = nil :: Part? }
+	local function piece(size, color, offset, shape)
+		local p = Instance.new("Part")
+		p.Anchored = true
+		p.CanCollide = false
+		p.CanQuery = false
+		p.CanTouch = false
+		p.Size = size
+		p.Color = color
+		p.Material = Enum.Material.SmoothPlastic
+		if shape then
+			p.Shape = shape
+		end
+		p.Parent = parent
+		table.insert(rig.parts, { part = p, offset = offset })
+		return p
+	end
+	rig.body = piece(Vector3.new(7, 2.4, 11), bodyColor, CFrame.new(0, 0.2, 0))
+	piece(Vector3.new(5, 1.8, 5), bodyColor:Lerp(Color3.new(0, 0, 0), 0.28), CFrame.new(0, 1.5, 0.8)) -- cabin toward the rear
+	local wc = Color3.fromRGB(28, 28, 32)
+	local wheel = Vector3.new(1.4, 2.6, 2.6)
+	piece(wheel, wc, CFrame.new(-3.1, -1.0, -3.2), Enum.PartType.Cylinder)
+	piece(wheel, wc, CFrame.new(3.1, -1.0, -3.2), Enum.PartType.Cylinder)
+	piece(wheel, wc, CFrame.new(-3.1, -1.0, 3.2), Enum.PartType.Cylinder)
+	piece(wheel, wc, CFrame.new(3.1, -1.0, 3.2), Enum.PartType.Cylinder)
+	return rig
+end
+
+local function placeCar(rig, cf: CFrame)
+	for _, e in ipairs(rig.parts) do
+		e.part.CFrame = cf * e.offset
+	end
+end
+
+local function setCarShown(rig, shown: boolean)
+	for _, e in ipairs(rig.parts) do
+		e.part.Transparency = shown and 0 or 1
+	end
 end
 
 -- Sunset mood (marker-0102): warm dusk lighting + haze, no textures. Global +
@@ -167,15 +211,15 @@ function Render.init()
 	end
 	local RIVAL_COLORS = { Color3.fromRGB(224, 72, 48), Color3.fromRGB(72, 132, 224), Color3.fromRGB(72, 200, 96), Color3.fromRGB(224, 192, 64) }
 	for i = 1, 8 do
-		local gp = mkPart("rival", Vector3.new(7, 3.5, 12), RIVAL_COLORS[(i % 4) + 1], world)
-		gp.Transparency = 1
-		ghosts[i] = gp
+		local rig = makeCarRig(RIVAL_COLORS[(i % 4) + 1], world)
+		setCarShown(rig, false)
+		ghostRigs[i] = rig
 		local bb = Instance.new("BillboardGui")
 		bb.Size = UDim2.new(0, 100, 0, 26)
-		bb.StudsOffset = Vector3.new(0, 3, 0)
+		bb.StudsOffset = Vector3.new(0, 4, 0)
 		bb.AlwaysOnTop = true
-		bb.Adornee = gp
-		bb.Parent = gp
+		bb.Adornee = rig.body
+		bb.Parent = rig.body
 		local tl = Instance.new("TextLabel")
 		tl.BackgroundTransparency = 1
 		tl.Size = UDim2.new(1, 0, 1, 0)
@@ -187,7 +231,7 @@ function Render.init()
 		tl.Parent = bb
 		ghostTags[i] = tl
 	end
-	car = mkPart("car", Vector3.new(7, 3.5, 12), Color3.fromRGB(224, 72, 48), world)
+	carRig = makeCarRig(Color3.fromRGB(224, 72, 48), world)
 
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "SunsetHUD"
@@ -220,7 +264,7 @@ function Render.init()
 	for k = 1, N do
 		strips[k].CFrame = CFrame.new(0, BASE_Y, -(k - 1) * STRIP_LEN)
 	end
-	car.CFrame = CFrame.new(0, BASE_Y + 2.2, 4)
+	placeCar(carRig, CFrame.new(0, BASE_Y + 2.4, 4))
 	local cam = workspace.CurrentCamera
 	cam.CameraType = Enum.CameraType.Scriptable
 	cam.CFrame = CFrame.lookAt(Vector3.new(0, BASE_Y + 7, 17), Vector3.new(0, BASE_Y + 2, -40))
@@ -306,9 +350,9 @@ function Render.update(view)
 	local baseHill = near and near.hill * SY or 0
 	local carX = seat.laneX * SX
 	local boosting = seat.boostTicks > 0
-	car.Color = boosting and Color3.fromRGB(120, 240, 255)
+	carRig.body.Color = boosting and Color3.fromRGB(120, 240, 255)
 		or (seat.crashedTicks > 0 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(224, 72, 48))
-	car.CFrame = CFrame.new(carX, BASE_Y + baseHill + 2.2, 4)
+	placeCar(carRig, CFrame.new(carX, BASE_Y + baseHill + 2.4, 4))
 
 	-- Same-segment traffic ahead.
 	local ti = 0
@@ -330,24 +374,24 @@ function Render.update(view)
 		traffic[i].Transparency = 1
 	end
 
-	-- Rival AI ghosts (same-segment) with a name tag.
+	-- Rival AI ghosts (same-segment) as car rigs with a name tag.
 	local gi = 0
 	for _, g in ipairs(view.ghosts or {}) do
 		local dz = g.roadZ - seat.roadZ
-		if dz >= 0 and gi < #ghosts then
+		if dz >= 0 and gi < #ghostRigs then
 			local k = math.floor(dz / ROAD_UNIT) + 1
 			local s = built[math.min(k, N)]
 			if s then
 				gi += 1
-				local part = ghosts[gi]
-				part.Transparency = 0
-				part.CFrame = CFrame.new((s.curveX + g.laneX) * SX, BASE_Y + s.hill * SY + 2, -dz * SZ)
+				local rig = ghostRigs[gi]
+				setCarShown(rig, true)
+				placeCar(rig, CFrame.new((s.curveX + g.laneX) * SX, BASE_Y + s.hill * SY + 2.4, -dz * SZ))
 				ghostTags[gi].Text = g.name or ("P" .. g.seatId)
 			end
 		end
 	end
-	for i = gi + 1, #ghosts do
-		ghosts[i].Transparency = 1
+	for i = gi + 1, #ghostRigs do
+		setCarShown(ghostRigs[i], false)
 	end
 
 	-- Boost pads on the current segment.
@@ -378,15 +422,15 @@ function Render.update(view)
 	hud.banner.Text = boosting and "BOOST!" or (seat.finishTicks >= 0 and "FINISH!" or (seat.timedOut ~= 0 and "TIME UP" or ""))
 	hud.banner.TextColor3 = boosting and Color3.fromRGB(120, 240, 255) or Color3.fromRGB(255, 220, 74)
 
-	return car.Position
+	return carRig.body.Position
 end
 
--- Chase camera derived from the car Part each RenderStepped (smoother than 20 Hz).
+-- Chase camera derived from the car body each RenderStepped (smoother than 20 Hz).
 function Render.cameraCFrame(): CFrame
-	if not car then
+	if not carRig or not carRig.body then
 		return workspace.CurrentCamera.CFrame
 	end
-	local cp = car.Position
+	local cp = carRig.body.Position
 	local eye = Vector3.new(cp.X * 0.4, cp.Y + 7, cp.Z + 17)
 	local look = Vector3.new(cp.X * 0.15, cp.Y + 2, cp.Z - 40)
 	return CFrame.lookAt(eye, look)

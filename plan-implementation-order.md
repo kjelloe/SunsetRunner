@@ -161,7 +161,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-101 Roblox varied AI field: rivals spread across hard/medium/easy skills so they race apart (server-only, proven ai_driver tiers) (marker-0101)
 - [x] slice-102 Roblox art pass phase 1: sunset lighting/atmosphere/fog + biome-coloured ground (reads GameData.scenery; procedural, no textures) (marker-0102)
 - [x] slice-103 Roblox art pass phase 2: scrolling road bands + centre dashes + roadside props (foliage/rocks), biome-tinted (marker-0103)
-- [ ] slice-104 Roblox art pass phase 3: procedural low-poly car Model (player/rivals/traffic) + camera follows PrimaryPart
+- [x] slice-104 Roblox art pass phase 3: procedural low-poly car rigs (body+cabin+4 wheels) for player + rivals; camera follows the body (marker-0104)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 
