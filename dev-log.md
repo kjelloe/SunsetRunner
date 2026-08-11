@@ -2180,3 +2180,14 @@ pick a colour by identity shifted by the segment's scenerySet, so the field look
 varied within a biome AND changes across biomes. Player stays red (identity).
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0114 — Roblox end-of-race leaderboard (2026-08-11)
+
+Roblox host+client, no engine/JS/Luau change. Server computes standings when the
+shared race ends (computeStandings: finishers by finishTicks asc, then non-finishers
+by progress via a server stageIndexOf map) and sends a formatted standings list
+(rank/name/result/isSelf) in the view during summary. Client shows a RESULTS panel
+listing rank + name + result (finish time or "Stage N"), the viewer's row
+highlighted. Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.

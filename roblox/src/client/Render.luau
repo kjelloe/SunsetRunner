@@ -95,6 +95,7 @@ local boostActive = false
 local DASH_SPACING = ROAD_UNIT * 3 -- one centre dash every 3 road units
 local PROP_SPACING = ROAD_UNIT * 6 -- a roadside prop slot every 6 road units
 local hud: { speed: TextLabel, timer: TextLabel, stage: TextLabel, banner: TextLabel }
+local board: { frame: Frame, rows: { TextLabel } } -- end-of-race leaderboard (marker-0114)
 
 -- Accumulate curve (double integral, like the browser road renderer) + read hill,
 -- walking segments forward from the seat's position. Presentation-only shape.
@@ -359,6 +360,39 @@ function Render.init()
 		banner = label(UDim2.new(0.25, 0, 0.4, 0), UDim2.new(0.5, 0, 0.12, 0), Enum.TextXAlignment.Center),
 	}
 	hud.stage.TextColor3 = Color3.fromRGB(90, 224, 235) -- cyan like the browser
+
+	-- End-of-race leaderboard panel (hidden until the summary phase).
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.new(0.44, 0, 0.6, 0)
+	frame.Position = UDim2.new(0.28, 0, 0.16, 0)
+	frame.BackgroundColor3 = Color3.fromRGB(24, 16, 40)
+	frame.BackgroundTransparency = 0.2
+	frame.BorderSizePixel = 0
+	frame.Visible = false
+	frame.Parent = gui
+	local title = Instance.new("TextLabel")
+	title.BackgroundTransparency = 1
+	title.Size = UDim2.new(1, 0, 0.16, 0)
+	title.Font = Enum.Font.GothamBold
+	title.TextScaled = true
+	title.TextColor3 = Color3.fromRGB(255, 220, 74)
+	title.Text = "RESULTS"
+	title.Parent = frame
+	local rows = {}
+	for i = 1, 6 do
+		local r = Instance.new("TextLabel")
+		r.BackgroundTransparency = 1
+		r.Position = UDim2.new(0.05, 0, 0.16 + (i - 1) * 0.13, 0)
+		r.Size = UDim2.new(0.9, 0, 0.12, 0)
+		r.Font = Enum.Font.GothamBold
+		r.TextScaled = true
+		r.TextXAlignment = Enum.TextXAlignment.Left
+		r.TextColor3 = Color3.fromRGB(230, 230, 240)
+		r.Text = ""
+		r.Parent = frame
+		rows[i] = r
+	end
+	board = { frame = frame, rows = rows }
 
 	-- Lay a straight flat road immediately so SOMETHING is visible before the first
 	-- server view arrives (a straight road that never moves = server not sending;
@@ -641,13 +675,29 @@ local function renderWorld(rz, laneX, view)
 		hud.banner.Text = "GO!"
 		hud.banner.TextColor3 = Color3.fromRGB(120, 240, 120)
 	elseif view.phase == "summary" then
-		hud.banner.Text = (seat.finishTicks >= 0 and "FINISH!" or "TIME UP") .. "   new race in " .. (view.restartIn or 0)
+		hud.banner.Text = "new race in " .. (view.restartIn or 0)
 		hud.banner.TextColor3 = Color3.fromRGB(255, 220, 74)
 	elseif boosting then
 		hud.banner.Text = "BOOST!"
 		hud.banner.TextColor3 = Color3.fromRGB(120, 240, 255)
 	else
 		hud.banner.Text = ""
+	end
+
+	-- End-of-race leaderboard (marker-0114): shown during the summary phase.
+	if view.phase == "summary" and view.standings then
+		board.frame.Visible = true
+		for i, r in ipairs(board.rows) do
+			local e = view.standings[i]
+			if e then
+				r.Text = string.format("%d.  %s", e.rank, e.name) .. "    " .. e.result
+				r.TextColor3 = e.isSelf and Color3.fromRGB(120, 240, 120) or Color3.fromRGB(230, 230, 240)
+			else
+				r.Text = ""
+			end
+		end
+	else
+		board.frame.Visible = false
 	end
 
 	-- (rendered)

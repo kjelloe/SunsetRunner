@@ -80,6 +80,48 @@ end
 
 freshRoom(12345)
 
+-- Stage index per segment (walk the default path from the start) for progress
+-- ranking of non-finishers on the end-of-race leaderboard.
+local stageIndexOf: { [number]: number } = {}
+do
+	local id = road.getCourse(courseSet, COURSE_ID).startSegment
+	local n, guard = 0, 0
+	while id and id ~= -1 and not stageIndexOf[id] and guard < 500 do
+		n += 1
+		stageIndexOf[id] = n
+		id = road.nextSegment(courseSet, id, 0)
+		guard += 1
+	end
+end
+
+local function computeStandings(state)
+	local order = {}
+	for j = 1, #state.seats do
+		table.insert(order, j)
+	end
+	table.sort(order, function(a, b)
+		local sa, sb = state.seats[a], state.seats[b]
+		local finA, finB = sa.finishTicks >= 0, sb.finishTicks >= 0
+		if finA ~= finB then
+			return finA -- finishers rank above non-finishers
+		end
+		if finA and finB then
+			return sa.finishTicks < sb.finishTicks -- earlier finish wins
+		end
+		local pa = (stageIndexOf[sa.segmentId] or 0) * 1e7 + sa.roadZ
+		local pb = (stageIndexOf[sb.segmentId] or 0) * 1e7 + sb.roadZ
+		return pa > pb -- more progress wins
+	end)
+	return order
+end
+
+local function resultStr(seat): string
+	if seat.finishTicks >= 0 then
+		return string.format("%.1fs", seat.finishTicks / 20)
+	end
+	return "Stage " .. (stageIndexOf[seat.segmentId] or 1)
+end
+
 local function nameOfSeat(sid: number): string
 	local p = playerOfSeat[sid]
 	if p then
@@ -106,12 +148,20 @@ local function buildViewFor(player: Player)
 			table.insert(ghosts, { seatId = j, name = nameOfSeat(j), carId = g.carId, roadZ = g.roadZ, laneX = g.laneX })
 		end
 	end
+	local standings = nil
+	if room.phase == "summary" and room.standings then
+		standings = {}
+		for rank, j in ipairs(room.standings) do
+			table.insert(standings, { rank = rank, name = nameOfSeat(j), result = resultStr(state.seats[j]), isSelf = (j == sid) })
+		end
+	end
 	return {
 		tick = state.tick,
 		phase = room.phase,
 		countdown = (room.phase == "countdown") and math.ceil(room.cd / 20) or 0,
 		restartIn = (room.phase == "summary") and math.ceil(room.summ / 20) or 0,
 		spectating = seatOfPlayer[player] == nil,
+		standings = standings,
 		ghosts = ghosts,
 		seat = {
 			segmentId = s.segmentId,
@@ -191,6 +241,7 @@ RunService.Heartbeat:Connect(function(dt)
 			if allDone then
 				room.phase = "summary"
 				room.summ = SUMMARY_TICKS
+				room.standings = computeStandings(st)
 			else
 				for i = 1, #st.seats do
 					local seat = st.seats[i]

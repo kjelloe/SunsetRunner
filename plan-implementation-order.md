@@ -171,6 +171,7 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] slice-111 Roblox mobile touch controls: on-screen steer/gas/brake/fork buttons merged with keyboard (marker-0111)
 - [x] slice-112 Roblox boost VFX: cyan particle trail + camera FOV kick while boosting (marker-0112)
 - [x] slice-113 Roblox per-biome car variety: 8-colour livery palette for rivals + traffic, shifted by biome (marker-0113)
+- [x] slice-114 Roblox end-of-race leaderboard: server standings (finish order/progress) + client RESULTS panel during summary (marker-0114)
 - [ ] mobile render perf profile ON A REAL DEVICE (PLAYTEST.md pass) + remaining low-end wins (draw distance, far fork ribbon)
 
 
