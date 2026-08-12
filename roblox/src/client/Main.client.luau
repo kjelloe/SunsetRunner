@@ -10,6 +10,60 @@ local RunService = game:GetService("RunService")
 
 local Render = require(script.Parent:WaitForChild("Render"))
 
+-- Course data for the top-down track thumbnail (marker-0135).
+local Shared = RS:WaitForChild("Shared")
+local GameData = RS:WaitForChild("GameData")
+local roadData = require(Shared:WaitForChild("road_data"))
+local courseSet = roadData.loadCourseSet(require(GameData:WaitForChild("roads")))
+
+-- Walk the default path of a course accumulating the lateral curve (double integral,
+-- same as the road renderer) to get a top-down (lateral X vs forward Z) polyline,
+-- downsampled to ~70 points and normalised to 0..1.
+local function coursePath(courseId: number)
+	local raw = {}
+	local ok, startId = pcall(function()
+		return roadData.getCourse(courseSet, courseId).startSegment
+	end)
+	if not ok then
+		return raw
+	end
+	local id = startId
+	local curveX, curveDx, dz = 0, 0, 0
+	local guard = 0
+	while id and id ~= -1 and guard < 4000 do
+		local seg = roadData.getSegment(courseSet, id)
+		local cm = #seg.curveProfile
+		for s = 0, seg.stripCount - 1 do
+			local curve = seg.curveProfile[math.floor(s * cm / seg.stripCount) + 1] or 0
+			curveDx += curve
+			curveX += curveDx
+			dz += 1
+			if dz % 30 == 0 then
+				table.insert(raw, { curveX, dz })
+			end
+		end
+		id = roadData.nextSegment(courseSet, id, 0)
+		guard += 1
+	end
+	if #raw < 2 then
+		return raw
+	end
+	local step = math.max(1, math.floor(#raw / 70))
+	local pts, minX, maxX = {}, math.huge, -math.huge
+	for i = 1, #raw, step do
+		table.insert(pts, raw[i])
+		minX = math.min(minX, raw[i][1])
+		maxX = math.max(maxX, raw[i][1])
+	end
+	local spanX = math.max(1, maxX - minX)
+	local spanZ = math.max(1, pts[#pts][2])
+	for _, p in ipairs(pts) do
+		p[1] = (p[1] - minX) / spanX -- 0..1 left/right
+		p[2] = p[2] / spanZ -- 0..1 start..finish
+	end
+	return pts
+end
+
 print("[SunsetRunner] client script running — waiting for RemoteEvents…")
 local inputEvent = RS:WaitForChild("SunsetInput")
 local viewEvent = RS:WaitForChild("SunsetView")
@@ -124,7 +178,7 @@ local nameLbl = txt(panel, UDim2.new(0.15, 0, 0.17, 0), UDim2.new(0.7, 0, 0.1, 0
 local hint = txt(panel, UDim2.new(0.05, 0, 0.9, 0), UDim2.new(0.9, 0, 0.06, 0))
 hint.TextColor3 = Color3.fromRGB(150, 220, 150)
 
--- Track thumbnail: biome colour + a stylised road.
+-- Track thumbnail: biome colour + a TOP-DOWN snapshot of the actual course curve.
 local trackThumb = Instance.new("Frame")
 trackThumb.AnchorPoint = Vector2.new(0.5, 0.5)
 trackThumb.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -132,21 +186,44 @@ trackThumb.Size = UDim2.new(0.52, 0, 0.44, 0)
 trackThumb.BorderSizePixel = 0
 trackThumb.Parent = panel
 corner(trackThumb, 10)
-local roadImg = Instance.new("Frame")
-roadImg.AnchorPoint = Vector2.new(0.5, 1)
-roadImg.Position = UDim2.new(0.5, 0, 1, 0)
-roadImg.Size = UDim2.new(0.34, 0, 0.82, 0)
-roadImg.BackgroundColor3 = Color3.fromRGB(48, 48, 56)
-roadImg.BorderSizePixel = 0
-roadImg.Parent = trackThumb
-for i = 0, 3 do
-	local dash = Instance.new("Frame")
-	dash.AnchorPoint = Vector2.new(0.5, 0)
-	dash.Position = UDim2.new(0.5, 0, i * 0.26 + 0.05, 0)
-	dash.Size = UDim2.new(0.06, 0, 0.12, 0)
-	dash.BackgroundColor3 = Color3.fromRGB(255, 214, 60)
-	dash.BorderSizePixel = 0
-	dash.Parent = roadImg
+local pathHolder = Instance.new("Frame")
+pathHolder.BackgroundTransparency = 1
+pathHolder.Size = UDim2.new(0.86, 0, 0.86, 0)
+pathHolder.Position = UDim2.new(0.07, 0, 0.07, 0)
+pathHolder.Parent = trackThumb
+local pathCourse = -1 -- last course whose path was drawn (rebuild-gated)
+local function drawTrackPath(courseId)
+	if courseId == pathCourse then
+		return
+	end
+	pathCourse = courseId
+	pathHolder:ClearAllChildren()
+	local pts = coursePath(courseId)
+	-- plot forward (Z) UP the thumbnail (finish at top), curve left/right by X
+	for _, p in ipairs(pts) do
+		local dot = Instance.new("Frame")
+		dot.AnchorPoint = Vector2.new(0.5, 0.5)
+		dot.Position = UDim2.new(p[1], 0, 1 - p[2], 0)
+		dot.Size = UDim2.new(0, 7, 0, 7)
+		dot.BackgroundColor3 = Color3.fromRGB(245, 245, 250)
+		dot.BorderSizePixel = 0
+		dot.Parent = pathHolder
+		corner(dot, 4)
+	end
+	if #pts > 0 then -- start (green) and finish (chequered-ish white) markers
+		local function marker(p, col, sz)
+			local m = Instance.new("Frame")
+			m.AnchorPoint = Vector2.new(0.5, 0.5)
+			m.Position = UDim2.new(p[1], 0, 1 - p[2], 0)
+			m.Size = UDim2.new(0, sz, 0, sz)
+			m.BackgroundColor3 = col
+			m.BorderSizePixel = 0
+			m.Parent = pathHolder
+			corner(m, 3)
+		end
+		marker(pts[1], Color3.fromRGB(80, 220, 100), 12)
+		marker(pts[#pts], Color3.fromRGB(255, 220, 74), 12)
+	end
 end
 
 -- Car preview: a rotating 3D car in a ViewportFrame, tinted to the selected colour.
@@ -236,6 +313,7 @@ local function refreshSelect()
 		nameLbl.Text = COURSE_NAMES[selCourse] or ("COURSE " .. selCourse)
 		trackThumb.Visible, vp.Visible = true, false
 		trackThumb.BackgroundColor3 = COURSE_COLORS[selCourse] or Color3.fromRGB(60, 60, 80)
+		drawTrackPath(selCourse)
 		backBtn.Visible = false
 		nextBtn.Text = "CAR ►"
 	elseif step == "car" then
