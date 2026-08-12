@@ -2332,3 +2332,47 @@ field size; client HUD shows "P n/6" (gold when leading) and a top progress bar 
 fills with stages cleared. Both hidden outside racing/race-over.
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+## marker-0126 — Roblox dusk clouds (2026-08-12)
+
+Roblox presentation only. A few flat, warm, semi-transparent cloud Parts high across
+the sky backdrop (off-centre from the sun) for horizon depth. Static.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0127 — Roblox whole-shell car tint (2026-08-12)
+
+Roblox presentation only. The sculpted rig bakes hood/haunches at creation colour but
+render only recoloured the hull -> traffic/rival cars had a mismatched (yellow/base)
+hood. Added tintCar() over rig.bodyParts, used for player/traffic/rival so each car is
+one colour.
+
+Gate: rojo build valid; 6 Luau gates untouched.
+
+---
+
+## marker-0128 — Roblox playtest: seats, trees, sunset width (2026-08-12)
+
+Roblox presentation/host only. (1) Human seats fill from the CENTRE lane outwards
+alternating L/R (SEAT_ORDER by |laneX|) instead of player 1 far-left. (2) Fuller tree
+canopies (palm 52 / fir 46-tall / bush 34) + slimmer 1-stud trunks + bigger palm
+fronds. (3) Sunset now spans full width: cut atmosphere haze (Density .28->.1, Haze
+1.5->.3) + pushed fog back (End 2200->3600) so the backdrop stays saturated to the
+screen edges instead of washing grey-blue; thickened the full-width warm glow bands.
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+---
+
+## marker-0129 — Roblox pre-race selection screen (2026-08-12)
+
+Roblox presentation only. Replaced the always-on top-left cycle UI with a CENTRED
+lobby-only panel: step 1 SELECT TRACK (biome thumbnail + stylised road), step 2 SELECT
+CAR (rotating 3D car in a ViewportFrame tinted to the pick), each with title + name +
+arrows. NEXT track->car, START readies up, BACK returns to track. Shown only in the
+lobby, hidden once ready/racing, resets to track step next race. Spectate button
+reparented; readyBtn removed.
+
+Gate: rojo build valid; 6 Luau gates untouched.

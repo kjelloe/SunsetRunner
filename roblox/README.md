@@ -74,7 +74,12 @@ horizon z-fighting, detailed/varied cars (wedge hood/boot, lights, spoiler, hubc
 per-biome terrain materials + textured verges, and per-player time-up scoring
 (instant score panel + SPECTATE the leader; stages-only reward); 0123 full-width
 sunset horizon glow, sculpted higher-poly sports cars (3 variants), and grace-stop
-(when only AI remain, end within 5 s and mark those cars STOPPED).
+(when only AI remain, end within 5 s and mark those cars STOPPED); 0124 whole-car
+tint + spectate name; 0125 race HUD (position + progress bar); 0126 dusk clouds;
+0127 tint the whole car shell (fix two-tone traffic/rivals); 0128 centre-out human
+seats + fuller trees + wider/saturated sunset (less atmosphere haze); 0129 pre-race
+selection screen (centred, lobby-only: pick TRACK then CAR with previews + arrows,
+START to ready-up, hidden during the race).
 
 ## Not done yet (backlog)
 
