@@ -203,7 +203,11 @@ local rightBtn = button(panel, UDim2.new(0.88, 0, 0.45, 0), UDim2.new(0.1, 0, 0.
 local backBtn = button(panel, UDim2.new(0.05, 0, 0.79, 0), UDim2.new(0.28, 0, 0.08, 0), Color3.fromRGB(70, 56, 90), "◄ TRACK")
 local nextBtn = button(panel, UDim2.new(0.67, 0, 0.79, 0), UDim2.new(0.28, 0, 0.08, 0), Color3.fromRGB(60, 150, 80), "CAR ►")
 
+-- Three steps: TRACK -> CAR -> READY (a race-start screen where all humans press
+-- READY). Arrows only on the two pick steps.
 local function refreshSelect()
+	local arrows = step ~= "ready"
+	leftBtn.Visible, rightBtn.Visible = arrows, arrows
 	if step == "course" then
 		title.Text = "SELECT TRACK"
 		nameLbl.Text = COURSE_NAMES[selCourse] or ("COURSE " .. selCourse)
@@ -211,7 +215,7 @@ local function refreshSelect()
 		trackThumb.BackgroundColor3 = COURSE_COLORS[selCourse] or Color3.fromRGB(60, 60, 80)
 		backBtn.Visible = false
 		nextBtn.Text = "CAR ►"
-	else
+	elseif step == "car" then
 		title.Text = "SELECT CAR"
 		nameLbl.Text = CAR_NAMES[selCar] or ("CAR " .. selCar)
 		trackThumb.Visible, vp.Visible = false, true
@@ -219,14 +223,22 @@ local function refreshSelect()
 			bp.Color = CAR_COLORS[selCar] or Color3.fromRGB(200, 200, 200)
 		end
 		backBtn.Visible = true
-		nextBtn.Text = "START ✔"
+		backBtn.Text = "◄ TRACK"
+		nextBtn.Text = "CONFIRM ►"
+	else -- ready
+		title.Text = "READY TO RACE?"
+		nameLbl.Text = "TRACK  " .. (COURSE_NAMES[selCourse] or "?") .. "     CAR  " .. (CAR_NAMES[selCar] or "?")
+		trackThumb.Visible, vp.Visible = false, true -- keep the chosen car on show
+		backBtn.Visible = true
+		backBtn.Text = "◄ CAR"
+		nextBtn.Text = "READY ✔"
 	end
 end
 local function cycle(dir)
 	if step == "course" then
 		selCourse = ((selCourse - 1 + dir) % 4 + 4) % 4 + 1
 		inputEvent:FireServer({ select = "course", courseId = selCourse })
-	else
+	elseif step == "car" then
 		selCar = ((selCar - 1 + dir) % 4 + 4) % 4 + 1
 		inputEvent:FireServer({ select = "car", carId = selCar })
 	end
@@ -239,16 +251,18 @@ rightBtn.MouseButton1Click:Connect(function()
 	cycle(1)
 end)
 backBtn.MouseButton1Click:Connect(function()
-	step = "course"
+	step = (step == "ready") and "car" or "course"
 	refreshSelect()
 end)
 nextBtn.MouseButton1Click:Connect(function()
 	if step == "course" then
 		step = "car"
-		refreshSelect()
+	elseif step == "car" then
+		step = "ready"
 	else
-		inputEvent:FireServer({ select = "ready" }) -- lock in + ready up; panel hides on view.ready
+		inputEvent:FireServer({ select = "ready" }) -- all humans ready -> server starts
 	end
+	refreshSelect()
 end)
 refreshSelect()
 
