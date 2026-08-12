@@ -2396,3 +2396,26 @@ test 316/316; 6 Luau gates untouched.
 - 0134 accurate PRE-RACE preview car (ViewportFrame mirrors the in-race sculpted rig).
 - 0135 top-down TRACK THUMBNAIL: walk the default path accumulating lateral curve
   (double integral) -> normalised polyline plotted as dots + start/finish markers.
+
+## marker-0136 — Roblox: car detail + decorative oncoming traffic (2026-08-12)
+
+Roblox presentation only. (1) Car detail: wing mirrors, hood vent, door creases, twin
+exhaust tips on the sculpted rig (mirrored in the pre-race preview). (2) Oncoming:
+engine traffic is SAME-direction (you overtake) so it faces away (reverted the
+misleading left-lane facing); added a VISUAL-ONLY oncoming stream in the opposing
+(left) lane — a pool of varied vehicles advanced toward the player in Render.step,
+respawned far ahead once passed, facing the camera. Not collidable (engine untouched);
+the real avoidable traffic stays the engine's.
+
+Gate: rojo build valid; 6 Luau gates untouched.
+
+---
+
+## marker-0137 — Roblox: checkpoint/finish gantries + crash shake (2026-08-12)
+
+Roblox presentation only. (1) Over-road gantries (posts + beam + lit sign) at upcoming
+segment boundaries: green CHECKPOINT where seg.checkpointTicks>0, white FINISH where
+nextSegment==-1; pool of 3, placed by scanning built strips. (2) Decaying crash camera
+shake on the crash edge (same trigger as the crash SFX).
+
+Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.

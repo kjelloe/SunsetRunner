@@ -84,7 +84,9 @@ selected colour) + colour flicker (stable by identity) + wider bolder sunset; 01
 TRACK->CAR->READY race-start flow; 0132 billboards fixed (pole behind board) + text
 (fake ads + "GO <player>"); 0133 varied traffic (sedan/estate/fast/bus/lorry/bike)
 with lane-based facing (left=oncoming); 0134 accurate pre-race car preview; 0135
-top-down course-curve track thumbnail.
+top-down course-curve track thumbnail; 0136 more car detail (mirrors/vents/exhausts)
++ decorative oncoming-traffic stream (visual-only, left lane); 0137 over-road
+CHECKPOINT/FINISH gantries + crash camera shake.
 
 ## Not done yet (backlog)
 
