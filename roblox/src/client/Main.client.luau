@@ -291,6 +291,11 @@ ppart(Vector3.new(5.2, 0.45, 0.3), Color3.fromRGB(235, 42, 42), CFrame.new(0, PR
 ppart(Vector3.new(6.0, 0.28, 1.5), trim, CFrame.new(0, PRIDE + 1.6, PL * 0.45)) -- wing
 ppart(Vector3.new(0.4, 1.1, 0.5), Color3.fromRGB(28, 28, 32), CFrame.new(-2.4, PRIDE + 0.9, PL * 0.45))
 ppart(Vector3.new(0.4, 1.1, 0.5), Color3.fromRGB(28, 28, 32), CFrame.new(2.4, PRIDE + 0.9, PL * 0.45))
+ppart(Vector3.new(0.5, 0.4, 1.0), trim, CFrame.new(-3.0, PRIDE + 1.15, 0.4 - 2.3)) -- wing mirrors
+ppart(Vector3.new(0.5, 0.4, 1.0), trim, CFrame.new(3.0, PRIDE + 1.15, 0.4 - 2.3))
+ppart(Vector3.new(1.6, 0.14, 2.4), Color3.fromRGB(28, 28, 32), CFrame.new(0, PRIDE + 1.0, -PL * 0.26)) -- hood vent
+ppart(Vector3.new(0.7, 0.5, 0.5), Color3.fromRGB(70, 70, 78), CFrame.new(-1.3, PRIDE - 0.7, PL * 0.5 + 0.1), Enum.PartType.Cylinder) -- exhausts
+ppart(Vector3.new(0.7, 0.5, 0.5), Color3.fromRGB(70, 70, 78), CFrame.new(1.3, PRIDE - 0.7, PL * 0.5 + 0.1), Enum.PartType.Cylinder)
 for _, wx in ipairs({ -3.05, 3.05 }) do
 	for _, wz in ipairs({ -PL * 0.3, PL * 0.3 }) do
 		ppart(Vector3.new(1.5, 2.7, 2.7), Color3.fromRGB(22, 22, 26), CFrame.new(wx, PRIDE - 0.85, wz), Enum.PartType.Cylinder)

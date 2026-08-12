@@ -101,6 +101,13 @@ local rumbleR: { Part } = {} -- red/white kerb, right edge
 local sideL: { Part } = {} -- per-biome side ground (water/sand), left
 local sideR: { Part } = {} -- per-biome side ground, right
 local vehPool: { [string]: { any } } = {} -- traffic rigs by vehicle type (marker-0133)
+-- Decorative ONCOMING stream (marker-0136): visual-only cars in the opposing (left)
+-- lane that rush toward the player. Not collidable — the engine traffic above is the
+-- real, same-direction, avoidable traffic. { rig } pool + { roadZ, laneX, init } state.
+local oncPool: { any } = {}
+local oncState: { { roadZ: number, laneX: number, init: boolean } } = {}
+local ONC_N = 8
+local ONC_SPEED = 15000 -- extra closing speed (road units / sec) on top of the treadmill
 local signs = {} -- roadside billboards { post, panel, label }
 local signMyName = "" -- local player's display name (for "GO <name>" boards)
 local SIGN_ADS = { "SUNSET COLA", "NEON TYRES", "TURBO FUEL", "RETRO RADIO", "VOLT ENERGY", "CHROME WHEELS" }
@@ -254,6 +261,14 @@ local function makeCarRig(bodyColor: Color3, parent: Instance, variant: number?)
 	box(Vector3.new(6.0, 0.28, 1.5), trim, CFrame.new(0, rideY + wingH, L * 0.45))
 	box(Vector3.new(0.4, wingH - 0.5, 0.5), Color3.fromRGB(28, 28, 32), CFrame.new(-2.4, rideY + wingH * 0.55, L * 0.45))
 	box(Vector3.new(0.4, wingH - 0.5, 0.5), Color3.fromRGB(28, 28, 32), CFrame.new(2.4, rideY + wingH * 0.55, L * 0.45))
+	-- Detail accents: wing mirrors, hood vents, door line, twin exhaust tips.
+	box(Vector3.new(0.5, 0.4, 1.0), trim, CFrame.new(-3.0, rideY + 1.15, roofZ - 2.3)) -- mirrors
+	box(Vector3.new(0.5, 0.4, 1.0), trim, CFrame.new(3.0, rideY + 1.15, roofZ - 2.3))
+	box(Vector3.new(1.6, 0.14, 2.4), Color3.fromRGB(28, 28, 32), CFrame.new(0, rideY + 1.0, -L * 0.26)) -- hood vent
+	box(Vector3.new(3.6, 0.14, 0.14), trim, CFrame.new(-3.12, rideY + 0.15, 0.4)) -- door crease
+	box(Vector3.new(3.6, 0.14, 0.14), trim, CFrame.new(3.12, rideY + 0.15, 0.4))
+	cyl(Vector3.new(0.7, 0.5, 0.5), Color3.fromRGB(70, 70, 78), CFrame.new(-1.3, rideY - 0.7, L * 0.5 + 0.1)) -- exhaust
+	cyl(Vector3.new(0.7, 0.5, 0.5), Color3.fromRGB(70, 70, 78), CFrame.new(1.3, rideY - 0.7, L * 0.5 + 0.1))
 	return rig
 end
 
@@ -559,6 +574,14 @@ function Render.init()
 			setCarShown(rig, false)
 			vehPool[vtype][i] = rig
 		end
+	end
+	-- Decorative oncoming cars (varied types), hidden until placed each frame.
+	local oncTypes = { "sedan", "estate", "fast", "sedan", "bus", "estate", "sedan", "lorry" }
+	for i = 1, ONC_N do
+		local rig = makeVehicleRig(oncTypes[i] or "sedan", world)
+		setCarShown(rig, false)
+		oncPool[i] = rig
+		oncState[i] = { roadZ = 0, laneX = -200, init = false }
 	end
 	local myName = game:GetService("Players").LocalPlayer.DisplayName
 	for i = 1, 4 do
@@ -963,14 +986,41 @@ local function renderWorld(rz, laneX, view)
 				local rig = pool[idx]
 				setCarShown(rig, true)
 				tintCar(rig, carColor(t.id or idx, 0)) -- stable colour by identity
-				local facing = (t.laneX < 0) and math.pi or 0 -- left lane = oncoming
-				placeCar(rig, CFrame.new((s.curveX + t.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - e.dz * SZ) * CFrame.Angles(0, facing, 0))
+				-- Engine traffic is SAME-direction (you overtake) -> faces away (taillights).
+				placeCar(rig, CFrame.new((s.curveX + t.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - e.dz * SZ))
 			end
 		end
 	end
 	for vtype, pool in pairs(vehPool) do
 		for i = (vehUsed[vtype] or 0) + 1, #pool do
 			setCarShown(pool[i], false)
+		end
+	end
+
+	-- Decorative oncoming cars (left lane, facing the camera). Purely visual: their
+	-- roadZ is advanced toward the player in Render.step; here we respawn far ahead
+	-- once they pass and place them along the road curve.
+	for i = 1, ONC_N do
+		local o = oncState[i]
+		local dz = o.roadZ - rz
+		if (not o.init) or dz < -1600 then
+			o.roadZ = rz + drawDz + math.random(0, 4000) -- staggered far ahead
+			o.laneX = -math.random(150, 360) -- opposing (left) lane
+			o.init = true
+			dz = o.roadZ - rz
+		end
+		local rig = oncPool[i]
+		if dz >= 0 and dz <= drawDz then
+			local s = built[math.min(math.floor(dz / ROAD_UNIT) + 1, N)]
+			if s then
+				setCarShown(rig, true)
+				tintCar(rig, carColor(i + 5, 0))
+				placeCar(rig, CFrame.new((s.curveX + o.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - dz * SZ) * CFrame.Angles(0, math.pi, 0))
+			else
+				setCarShown(rig, false)
+			end
+		else
+			setCarShown(rig, false)
 		end
 	end
 
@@ -1159,6 +1209,12 @@ function Render.step(dt: number)
 		renderRoadZ += seat.speed * 20 * dt -- engine advances roadZ by speed each tick
 	end
 	renderLaneX += (seat.laneX - renderLaneX) * math.min(1, dt * 12)
+	-- Advance decorative oncoming cars toward the player (only during the race).
+	if latest.phase == "racing" then
+		for i = 1, ONC_N do
+			oncState[i].roadZ -= ONC_SPEED * dt
+		end
+	end
 	renderWorld(renderRoadZ, renderLaneX, latest)
 end
 
