@@ -39,6 +39,20 @@ local LOBBY_TICKS = 300 -- 15 s ready-up window (players can start sooner)
 local COUNTDOWN_TICKS = 60 -- 3 s
 local SUMMARY_TICKS = 100 -- 5 s finish/summary hold
 local GRACE_TICKS = 100 -- once every human is done, end within 5 s (AI still racing = STOPPED)
+-- Seats spread across lanes as laneX(i) = (i - (SEATS+1)/2) * 180. Humans should
+-- fill from the CENTRE outwards, alternating left/right — so build a seat-fill order
+-- sorted by |laneX| (centre first), ties left-before-right.
+local SEAT_ORDER = {}
+for i = 1, SEATS do
+	SEAT_ORDER[i] = i
+end
+table.sort(SEAT_ORDER, function(a, b)
+	local da, db = math.abs(a - (SEATS + 1) / 2), math.abs(b - (SEATS + 1) / 2)
+	if da ~= db then
+		return da < db
+	end
+	return a < b
+end)
 local AI_NAMES = { "Max", "Zoe", "Kai", "Ava", "Leo", "Mia" }
 local AI_SKILLS = { "hard", "medium", "hard", "medium", "easy", "medium" }
 
@@ -305,7 +319,7 @@ local function buildViewFor(player: Player)
 end
 
 local function assignSeat(player: Player)
-	for i = 1, SEATS do
+	for _, i in ipairs(SEAT_ORDER) do -- centre-out, alternating left/right
 		if not playerOfSeat[i] then
 			playerOfSeat[i] = player
 			seatOfPlayer[player] = i

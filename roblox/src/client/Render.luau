@@ -287,17 +287,17 @@ local function setupLighting()
 	L.Ambient = Color3.fromRGB(66, 52, 66)
 	L.OutdoorAmbient = Color3.fromRGB(130, 96, 92)
 	L.FogColor = Color3.fromRGB(214, 108, 96)
-	L.FogStart = 900 -- light haze only; the road's end is faded manually (far strips),
-	L.FogEnd = 2200 -- so the gradient sky backdrop stays visible at distance
+	L.FogStart = 1400 -- light haze only; the road's end is faded manually (far strips),
+	L.FogEnd = 3600 -- pushed back so the sunset backdrop stays SATURATED to the screen edges
 	L.EnvironmentDiffuseScale = 0.25
 	L.EnvironmentSpecularScale = 0.2
 	local atmo = L:FindFirstChildOfClass("Atmosphere") or Instance.new("Atmosphere")
-	atmo.Density = 0.28
+	atmo.Density = 0.1 -- low: high haze was washing the horizon edges to grey-blue
 	atmo.Offset = 0.2
-	atmo.Color = Color3.fromRGB(200, 140, 120)
-	atmo.Decay = Color3.fromRGB(180, 70, 90)
-	atmo.Glare = 0.2
-	atmo.Haze = 1.5
+	atmo.Color = Color3.fromRGB(220, 150, 120)
+	atmo.Decay = Color3.fromRGB(190, 80, 100)
+	atmo.Glare = 0.15
+	atmo.Haze = 0.3
 	atmo.Parent = L
 	local cc = L:FindFirstChildOfClass("ColorCorrectionEffect") or Instance.new("ColorCorrectionEffect")
 	cc.TintColor = Color3.fromRGB(255, 238, 228)
@@ -334,9 +334,10 @@ local function makeSky(parent, baseY)
 	-- of the wall, so the sunset colour reaches both screen edges.
 	local SUN_Y = baseY + 96
 	for _, g in ipairs({
-		{ 300, 60, Color3.fromRGB(255, 128, 74), 0.32 }, -- {height, yOff, color, transparency}
-		{ 360, 210, Color3.fromRGB(210, 78, 124), 0.5 }, -- magenta above
-		{ 460, 470, Color3.fromRGB(120, 60, 140), 0.66 }, -- purple higher still
+		{ 340, 40, Color3.fromRGB(255, 132, 78), 0.15 }, -- {height, yOff, color, transparency}
+		{ 300, 250, Color3.fromRGB(226, 86, 120), 0.28 }, -- magenta above
+		{ 380, 470, Color3.fromRGB(150, 66, 140), 0.45 }, -- purple
+		{ 520, 760, Color3.fromRGB(74, 48, 120), 0.6 }, -- indigo, blends up into the sky
 	}) do
 		local band = Instance.new("Part")
 		band.Anchored, band.CanCollide, band.CanQuery, band.CanTouch = true, false, false, false
@@ -705,16 +706,17 @@ local function renderWorld(rz, laneX, view)
 					rig.canopy.Size = Vector3.new(11, 7, 11)
 					rig.canopy.CFrame = CFrame.new(x, baseY + 3, z)
 				else
+					-- Much fuller canopies + slimmer trunks (playtest: trees looked sparse).
 					local trunkH, canopySize, canopyY
 					if isPalm then
-						trunkH, canopySize, canopyY = 24, Vector3.new(30, 9, 30), 26 -- tall trunk + wide fronds
+						trunkH, canopySize, canopyY = 26, Vector3.new(52, 16, 52), 30 -- tall trunk + wide fronds
 					elseif isFir then
-						trunkH, canopySize, canopyY = 9, Vector3.new(16, 26, 16), 16 -- short trunk + tall conical foliage
+						trunkH, canopySize, canopyY = 10, Vector3.new(30, 46, 30), 24 -- short trunk + tall conical foliage
 					else
-						trunkH, canopySize, canopyY = 7, Vector3.new(17, 17, 17), 11 -- bush
+						trunkH, canopySize, canopyY = 8, Vector3.new(34, 30, 34), 16 -- bush
 					end
 					rig.trunk.Transparency = 0
-					rig.trunk.Size = Vector3.new(2, trunkH, 2)
+					rig.trunk.Size = Vector3.new(1, trunkH, 1) -- slimmer stem
 					rig.trunk.CFrame = CFrame.new(x, baseY + trunkH / 2, z)
 					rig.canopy.Transparency = 0
 					rig.canopy.Color = isFir and Color3.fromRGB(40, 96, 54) or foliage
@@ -724,8 +726,8 @@ local function renderWorld(rz, laneX, view)
 					if isPalm then
 						rig.frond.Transparency = 0
 						rig.frond.Color = Color3.fromRGB(52, 146, 66)
-						rig.frond.Size = Vector3.new(22, 7, 22)
-						rig.frond.CFrame = CFrame.new(x, baseY + canopyY + 4, z)
+						rig.frond.Size = Vector3.new(42, 12, 42)
+						rig.frond.CFrame = CFrame.new(x, baseY + canopyY + 6, z)
 					else
 						rig.frond.Transparency = 1
 					end
