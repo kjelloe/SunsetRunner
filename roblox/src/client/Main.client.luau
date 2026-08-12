@@ -168,10 +168,14 @@ vp.CurrentCamera = vpCam
 local vpOrbit = 0
 local carModel = Instance.new("Model")
 carModel.Parent = vp
+-- The preview mirrors the in-race sculpted supercar (makeCarRig variant 3) so what
+-- you pick is what you drive. L/rideY match that rig.
 local previewBody = {}
-local function ppart(size, color, cf, shape, isBody)
+local PL, PRIDE = 12.0, -0.15
+local function ppart(size, color, cf, shape, isBody, material)
 	local p = Instance.new("Part")
 	p.Size, p.Color, p.CFrame, p.Anchored, p.CanCollide = size, color, cf, true, false
+	p.Material = material or Enum.Material.SmoothPlastic
 	if shape then
 		p.Shape = shape
 	end
@@ -181,20 +185,39 @@ local function ppart(size, color, cf, shape, isBody)
 	end
 	return p
 end
-ppart(Vector3.new(6, 1.4, 12), CAR_COLORS[1], CFrame.new(0, 0, 0), nil, true) -- hull
-ppart(Vector3.new(4.2, 1.3, 4.2), Color3.fromRGB(28, 28, 34), CFrame.new(0, 1.1, 0.8)) -- cabin
-ppart(Vector3.new(4, 0.18, 3), Color3.fromRGB(150, 195, 225), CFrame.new(0, 1.35, -1.2) * CFrame.Angles(math.rad(-32), 0, 0)) -- screen
-do
-	local hoodW = Instance.new("WedgePart")
-	hoodW.Size, hoodW.Anchored, hoodW.CanCollide = Vector3.new(5.4, 1, 4), true, false
-	hoodW.CFrame = CFrame.new(0, 0.85, -4)
-	hoodW.Parent = carModel
-	table.insert(previewBody, hoodW)
+local function pwedge(size, cf, isBody)
+	local p = Instance.new("WedgePart")
+	p.Size, p.Anchored, p.CanCollide, p.CFrame = size, true, false, cf
+	p.Color = CAR_COLORS[1]
+	p.Parent = carModel
+	if isBody then
+		table.insert(previewBody, p)
+	end
+	return p
 end
-ppart(Vector3.new(5.8, 0.26, 1.4), Color3.fromRGB(30, 30, 34), CFrame.new(0, 1.35, 5)) -- wing
-for _, wx in ipairs({ -3, 3 }) do
-	for _, wz in ipairs({ -3.4, 3.4 }) do
-		ppart(Vector3.new(1.4, 2.6, 2.6), Color3.fromRGB(22, 22, 26), CFrame.new(wx, -0.9, wz), Enum.PartType.Cylinder)
+local trim = Color3.fromRGB(30, 30, 36)
+local glassC = Color3.fromRGB(150, 195, 225)
+ppart(Vector3.new(6.2, 1.5, PL), CAR_COLORS[1], CFrame.new(0, PRIDE, 0), nil, true) -- hull
+ppart(Vector3.new(4.3, 1.15, 4.4), trim, CFrame.new(0, PRIDE + 1.15, 0.4)) -- cabin
+pwedge(Vector3.new(5.7, 1.0, PL * 0.34), CFrame.new(0, PRIDE + 0.85, -PL * 0.28), true) -- hood
+pwedge(Vector3.new(4.3, 1.15, PL * 0.3), CFrame.new(0, PRIDE + 1.1, 0.4 + PL * 0.24) * CFrame.Angles(0, math.rad(180), 0)) -- fastback
+ppart(Vector3.new(4.0, 0.18, 2.7), glassC, CFrame.new(0, PRIDE + 1.55, -1.8) * CFrame.Angles(math.rad(-32), 0, 0)) -- screen
+ppart(Vector3.new(6.3, 0.5, PL * 0.9), trim, CFrame.new(0, PRIDE - 0.55, 0)) -- belt
+ppart(Vector3.new(0.4, 0.5, PL * 0.7), Color3.fromRGB(24, 24, 28), CFrame.new(-3.05, PRIDE - 0.5, 0.3)) -- skirt
+ppart(Vector3.new(0.4, 0.5, PL * 0.7), Color3.fromRGB(24, 24, 28), CFrame.new(3.05, PRIDE - 0.5, 0.3))
+pwedge(Vector3.new(1.3, 0.9, 3.2), CFrame.new(-2.7, PRIDE + 0.35, PL * 0.22) * CFrame.Angles(0, math.rad(180), 0), true) -- haunch
+pwedge(Vector3.new(1.3, 0.9, 3.2), CFrame.new(2.7, PRIDE + 0.35, PL * 0.22) * CFrame.Angles(0, math.rad(180), 0), true)
+ppart(Vector3.new(6, 0.3, 1.1), Color3.fromRGB(28, 28, 32), CFrame.new(0, PRIDE - 0.75, -PL * 0.5 + 0.4)) -- splitter
+ppart(Vector3.new(1.3, 0.45, 0.35), Color3.fromRGB(255, 248, 220), CFrame.new(-1.9, PRIDE + 0.15, -PL * 0.5 + 0.2), nil, false, Enum.Material.Neon) -- headlights
+ppart(Vector3.new(1.3, 0.45, 0.35), Color3.fromRGB(255, 248, 220), CFrame.new(1.9, PRIDE + 0.15, -PL * 0.5 + 0.2), nil, false, Enum.Material.Neon)
+ppart(Vector3.new(5.2, 0.45, 0.3), Color3.fromRGB(235, 42, 42), CFrame.new(0, PRIDE + 0.35, PL * 0.5 - 0.2), nil, false, Enum.Material.Neon) -- tail bar
+ppart(Vector3.new(6.0, 0.28, 1.5), trim, CFrame.new(0, PRIDE + 1.6, PL * 0.45)) -- wing
+ppart(Vector3.new(0.4, 1.1, 0.5), Color3.fromRGB(28, 28, 32), CFrame.new(-2.4, PRIDE + 0.9, PL * 0.45))
+ppart(Vector3.new(0.4, 1.1, 0.5), Color3.fromRGB(28, 28, 32), CFrame.new(2.4, PRIDE + 0.9, PL * 0.45))
+for _, wx in ipairs({ -3.05, 3.05 }) do
+	for _, wz in ipairs({ -PL * 0.3, PL * 0.3 }) do
+		ppart(Vector3.new(1.5, 2.7, 2.7), Color3.fromRGB(22, 22, 26), CFrame.new(wx, PRIDE - 0.85, wz), Enum.PartType.Cylinder)
+		ppart(Vector3.new(1.55, 1.2, 1.2), Color3.fromRGB(180, 182, 190), CFrame.new(wx, PRIDE - 0.85, wz), Enum.PartType.Cylinder)
 	end
 end
 
