@@ -101,7 +101,9 @@ local rumbleR: { Part } = {} -- red/white kerb, right edge
 local sideL: { Part } = {} -- per-biome side ground (water/sand), left
 local sideR: { Part } = {} -- per-biome side ground, right
 local traffic = {} -- traffic car rigs (marker-0107)
-local signs = {} -- roadside billboards { post, panel }
+local signs = {} -- roadside billboards { post, panel, label }
+local signMyName = "" -- local player's display name (for "GO <name>" boards)
+local SIGN_ADS = { "SUNSET COLA", "NEON TYRES", "TURBO FUEL", "RETRO RADIO", "VOLT ENERGY", "CHROME WHEELS" }
 local pads: { Part } = {}
 local ghostRigs = {} -- rival car rigs (marker-0104)
 local ghostTags: { TextLabel } = {}
@@ -444,13 +446,30 @@ function Render.init()
 		setCarShown(rig, false)
 		traffic[i] = rig
 	end
+	local myName = game:GetService("Players").LocalPlayer.DisplayName
 	for i = 1, 4 do
-		local post = mkPart("post", Vector3.new(1.6, 26, 1.6), Color3.fromRGB(120, 96, 70), world, Enum.Material.Wood)
-		local panel = mkPart("panel", Vector3.new(28, 16, 1), Color3.fromRGB(210, 210, 220), world)
+		local post = mkPart("post", Vector3.new(1.4, 20, 1.4), Color3.fromRGB(110, 88, 66), world, Enum.Material.Wood)
+		local panel = mkPart("panel", Vector3.new(30, 16, 1), Color3.fromRGB(210, 210, 220), world)
 		post.Transparency = 1
 		panel.Transparency = 1
-		signs[i] = { post = post, panel = panel }
+		-- Text on the board face toward the camera (+Z = Back face).
+		local sg = Instance.new("SurfaceGui")
+		sg.Face = Enum.NormalId.Back
+		sg.CanvasSize = Vector2.new(600, 320)
+		sg.Adornee = panel
+		sg.Parent = panel
+		local lbl = Instance.new("TextLabel")
+		lbl.BackgroundTransparency = 1
+		lbl.Size = UDim2.new(0.9, 0, 0.8, 0)
+		lbl.Position = UDim2.new(0.05, 0, 0.1, 0)
+		lbl.Font = Enum.Font.GothamBold
+		lbl.TextScaled = true
+		lbl.TextColor3 = Color3.fromRGB(30, 20, 40)
+		lbl.Text = ""
+		lbl.Parent = sg
+		signs[i] = { post = post, panel = panel, label = lbl }
 	end
+	signMyName = myName
 	for i = 1, 8 do
 		local p = mkPart("pad", Vector3.new(roadW * 0.5, 0.4, 6), Color3.fromRGB(40, 224, 255), world, Enum.Material.Neon)
 		p.Transparency = 1
@@ -765,11 +784,22 @@ local function renderWorld(rz, laneX, view)
 				local x = s.curveX * SX + side * (roadHalfStuds + 60)
 				local y = BASE_Y + s.hill * SY
 				local z = ZSHIFT - d * SZ
+				-- Post BEHIND the board (z - 1.6) and BELOW it, so it never shows through.
 				sg.post.Transparency = 0
-				sg.post.CFrame = CFrame.new(x, y + 13, z)
+				sg.post.CFrame = CFrame.new(x, y + 10, z - 1.6)
 				sg.panel.Transparency = 0
-				sg.panel.Color = (slot % 3 == 0) and Color3.fromRGB(214, 84, 92) or Color3.fromRGB(198, 204, 220)
-				sg.panel.CFrame = CFrame.new(x, y + 24, z)
+				local goBoard = slot % 3 == 0
+				sg.panel.Color = goBoard and Color3.fromRGB(70, 190, 90) or Color3.fromRGB(236, 232, 214)
+				sg.panel.CFrame = CFrame.new(x, y + 27, z)
+				if sg.label then
+					if goBoard and signMyName ~= "" then
+						sg.label.Text = "GO " .. string.upper(signMyName) .. "!"
+						sg.label.TextColor3 = Color3.fromRGB(255, 255, 255)
+					else
+						sg.label.Text = SIGN_ADS[(slot % #SIGN_ADS) + 1]
+						sg.label.TextColor3 = Color3.fromRGB(40, 26, 52)
+					end
+				end
 			else
 				sg.post.Transparency, sg.panel.Transparency = 1, 1
 			end
