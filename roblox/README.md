@@ -79,7 +79,12 @@ tint + spectate name; 0125 race HUD (position + progress bar); 0126 dusk clouds;
 0127 tint the whole car shell (fix two-tone traffic/rivals); 0128 centre-out human
 seats + fuller trees + wider/saturated sunset (less atmosphere haze); 0129 pre-race
 selection screen (centred, lobby-only: pick TRACK then CAR with previews + arrows,
-START to ready-up, hidden during the race).
+START to ready-up, hidden during the race); 0130 fix green-car bug (player uses the
+selected colour) + colour flicker (stable by identity) + wider bolder sunset; 0131
+TRACK->CAR->READY race-start flow; 0132 billboards fixed (pole behind board) + text
+(fake ads + "GO <player>"); 0133 varied traffic (sedan/estate/fast/bus/lorry/bike)
+with lane-based facing (left=oncoming); 0134 accurate pre-race car preview; 0135
+top-down course-curve track thumbnail.
 
 ## Not done yet (backlog)
 

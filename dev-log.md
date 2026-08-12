@@ -2376,3 +2376,23 @@ lobby, hidden once ready/racing, resets to track step next race. Spectate button
 reparented; readyBtn removed.
 
 Gate: rojo build valid; 6 Luau gates untouched.
+
+## marker-0130..0135 — Roblox playtest round (2026-08-12)
+
+Roblox presentation/host only; engine untouched; rojo build valid each step; npm
+test 316/316; 6 Luau gates untouched.
+
+- 0130 fix GREEN-CAR bug (player car tinted by PLAYER_CAR_COLORS[view.car] not
+  hard-coded red) + colour FLICKER (traffic/rival colour keyed on identity only, no
+  longer shifts with the player's biome) + WIDER sunset (taller warm bands, 24000-wide
+  backdrop, wider warm glow).
+- 0131 selection FLOW now TRACK -> CAR -> READY (a race-start step where all humans
+  press READY); BACK steps back; arrows only on the pick steps.
+- 0132 BILLBOARDS: post moved BEHIND (z-1.6) + below the board (no more pole through
+  the face); SurfaceGui text with cycling fake ads + a green "GO <PLAYER>!" board.
+- 0133 varied TRAFFIC vehicles: makeVehicleRig sedan/estate/fast/bus/lorry/bike,
+  pooled per type, assigned by kind+id; left-lane traffic faces the camera (ONCOMING),
+  right-lane faces away (overtake). Cosmetic (engine traffic unchanged).
+- 0134 accurate PRE-RACE preview car (ViewportFrame mirrors the in-race sculpted rig).
+- 0135 top-down TRACK THUMBNAIL: walk the default path accumulating lateral curve
+  (double integral) -> normalised polyline plotted as dots + start/finish markers.
