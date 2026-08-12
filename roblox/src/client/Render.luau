@@ -77,6 +77,12 @@ local function carColor(id: number, scenerySet: number): Color3
 	return CAR_PALETTE[((id + scenerySet) % #CAR_PALETTE) + 1]
 end
 
+-- Player car colours by selected car id (must match Main's CAR_COLORS 1..4).
+local PLAYER_CAR_COLORS = {
+	Color3.fromRGB(224, 72, 48), Color3.fromRGB(72, 132, 224),
+	Color3.fromRGB(72, 200, 96), Color3.fromRGB(240, 196, 64),
+}
+
 -- Engine-units -> studs.
 local SX = 14 / 256 -- lateral (one lane = 14 studs)
 local SZ = 9 / 256 -- forward depth per road unit
@@ -309,11 +315,16 @@ end
 -- Procedural OutRun sky (marker-0105): a static stack of big coloured Parts far
 -- ahead. The camera barely moves (treadmill), so a fixed backdrop reads as the
 -- sky in the forward view; the ground plane occludes its lower half at the horizon.
+-- Bold OutRun sunset gradient. Tall, warm bands dominate so the sunset fills the
+-- whole forward view (indigo only at the very top); very wide so it spans the
+-- screen at any FOV. {color, yCentre, height}
+local SKY_W = 24000
 local SKY_BANDS = {
-	{ Color3.fromRGB(43, 26, 84), 1600, 2400 }, -- indigo (top): {color, yCentre, height}
-	{ Color3.fromRGB(90, 42, 110), 620, 500 }, -- purple
-	{ Color3.fromRGB(178, 58, 110), 300, 300 }, -- magenta
-	{ Color3.fromRGB(255, 106, 74), 20, 340 }, -- orange (horizon; extends below to meet the ground)
+	{ Color3.fromRGB(255, 146, 70), 40, 520 }, -- orange horizon (tall)
+	{ Color3.fromRGB(234, 84, 92), 420, 380 }, -- coral / red
+	{ Color3.fromRGB(188, 60, 118), 760, 360 }, -- magenta
+	{ Color3.fromRGB(110, 50, 130), 1120, 480 }, -- purple
+	{ Color3.fromRGB(48, 32, 92), 2000, 1800 }, -- indigo (top only)
 }
 local SKY_Z = -1500 -- backdrop wall depth (kept inside fog so it hazes into the horizon)
 local function makeSky(parent, baseY)
@@ -324,25 +335,23 @@ local function makeSky(parent, baseY)
 		p.CanQuery = false
 		p.CanTouch = false
 		p.Material = Enum.Material.SmoothPlastic
-		p.Size = Vector3.new(9000, b[3], 20)
+		p.Size = Vector3.new(SKY_W, b[3], 20)
 		p.Color = b[1]
 		p.CFrame = CFrame.new(0, baseY + b[2], SKY_Z)
 		p.Parent = parent
 	end
-	-- Full-width warm horizon glow: the coloured band must span the WHOLE horizon,
-	-- not a central patch. These are wide (9000) semi-transparent neon bands in front
-	-- of the wall, so the sunset colour reaches both screen edges.
-	local SUN_Y = baseY + 96
+	-- Full-width warm neon glow in front of the wall, so the sunset around the sun
+	-- reaches both screen edges (not a central patch).
+	local SUN_Y = baseY + 110
 	for _, g in ipairs({
-		{ 340, 40, Color3.fromRGB(255, 132, 78), 0.15 }, -- {height, yOff, color, transparency}
-		{ 300, 250, Color3.fromRGB(226, 86, 120), 0.28 }, -- magenta above
-		{ 380, 470, Color3.fromRGB(150, 66, 140), 0.45 }, -- purple
-		{ 520, 760, Color3.fromRGB(74, 48, 120), 0.6 }, -- indigo, blends up into the sky
+		{ 520, 90, Color3.fromRGB(255, 140, 80), 0.2 }, -- {height, yOff, color, transparency}
+		{ 420, 380, Color3.fromRGB(228, 84, 110), 0.4 }, -- magenta above
+		{ 520, 720, Color3.fromRGB(120, 58, 140), 0.6 }, -- purple, blends up
 	}) do
 		local band = Instance.new("Part")
 		band.Anchored, band.CanCollide, band.CanQuery, band.CanTouch = true, false, false, false
 		band.Material = Enum.Material.Neon
-		band.Size = Vector3.new(9000, g[1], 2)
+		band.Size = Vector3.new(SKY_W, g[1], 2)
 		band.Color = g[3]
 		band.Transparency = g[4]
 		band.CFrame = CFrame.new(0, baseY + g[2], SKY_Z + 4)
@@ -773,8 +782,10 @@ local function renderWorld(rz, laneX, view)
 	local baseHill = near and near.hill * SY or 0
 	local carX = laneX * SX
 	local boosting = seat.boostTicks > 0
+	local baseCol = PLAYER_CAR_COLORS[view.car or 1] or Color3.fromRGB(224, 72, 48)
+	-- Steady base = your SELECTED car colour; only boost (cyan) / crash (white) change it.
 	local carCol = boosting and Color3.fromRGB(120, 240, 255)
-		or (seat.crashedTicks > 0 and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(224, 72, 48))
+		or (seat.crashedTicks > 0 and Color3.fromRGB(255, 255, 255) or baseCol)
 	tintCar(carRig, carCol) -- whole shell (hull, hood, haunches) together
 	boostActive = boosting
 	if boostEmitter then
@@ -808,7 +819,7 @@ local function renderWorld(rz, laneX, view)
 			local t = e.t
 			setCarShown(rig, true)
 			setCarStyle(rig, trafficStyleKey(t.kind))
-			tintCar(rig, carColor(t.id or ti, scenerySet))
+			tintCar(rig, carColor(t.id or ti, 0)) -- colour by identity only (no biome flicker)
 			placeCar(rig, CFrame.new((s.curveX + t.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - e.dz * SZ))
 		end
 	end
@@ -827,8 +838,7 @@ local function renderWorld(rz, laneX, view)
 				gi += 1
 				local rig = ghostRigs[gi]
 				setCarShown(rig, true)
-				setCarStyle(rig, RIVAL_STYLES[((g.seatId + scenerySet) % 3) + 1]) -- shape varies by seat + biome
-				tintCar(rig, carColor(g.seatId + 3, scenerySet)) -- distinct from the player (red)
+				tintCar(rig, carColor(g.seatId + 3, 0)) -- stable colour by seat (no biome flicker)
 				placeCar(rig, CFrame.new((s.curveX + g.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - dz * SZ))
 				ghostTags[gi].Text = g.name or ("P" .. g.seatId)
 			end
