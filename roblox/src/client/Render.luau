@@ -109,6 +109,7 @@ local oncState: { { roadZ: number, laneX: number, init: boolean } } = {}
 local ONC_N = 8
 local ONC_SPEED = 15000 -- extra closing speed (road units / sec) on top of the treadmill
 local signs = {} -- roadside billboards { post, panel, label }
+local gantries = {} -- over-road CHECKPOINT / FINISH arches { postL, postR, beam, sign, label }
 local signMyName = "" -- local player's display name (for "GO <name>" boards)
 local SIGN_ADS = { "SUNSET COLA", "NEON TYRES", "TURBO FUEL", "RETRO RADIO", "VOLT ENERGY", "CHROME WHEELS" }
 local pads: { Part } = {}
@@ -120,6 +121,7 @@ local ground: Part
 local carRig -- player car rig (body + cabin + 4 wheels)
 local boostEmitter: ParticleEmitter -- cyan trail while boosting (marker-0112)
 local boostActive = false
+local camShake = 0 -- decaying crash shake magnitude (marker-0137)
 
 -- Audio (marker-0118): bundled rbxasset sounds (no marketplace assets). One ping is
 -- re-pitched for checkpoint/countdown/GO/finish; distinct sounds for crash/boost.
@@ -612,6 +614,30 @@ function Render.init()
 		p.Transparency = 1
 		pads[i] = p
 	end
+	-- Over-road CHECKPOINT / FINISH gantries (pool of 3; few visible at once).
+	for i = 1, 3 do
+		local postL = mkPart("gpostL", Vector3.new(2, 34, 2), Color3.fromRGB(70, 72, 84), world, Enum.Material.Metal)
+		local postR = mkPart("gpostR", Vector3.new(2, 34, 2), Color3.fromRGB(70, 72, 84), world, Enum.Material.Metal)
+		local beam = mkPart("gbeam", Vector3.new(roadW + 26, 5, 3), Color3.fromRGB(44, 46, 58), world, Enum.Material.Metal)
+		local sign = mkPart("gsign", Vector3.new(roadW + 12, 7, 1), Color3.fromRGB(30, 180, 90), world)
+		local sg = Instance.new("SurfaceGui")
+		sg.Face = Enum.NormalId.Back
+		sg.CanvasSize = Vector2.new(900, 140)
+		sg.Adornee = sign
+		sg.Parent = sign
+		local lbl = Instance.new("TextLabel")
+		lbl.BackgroundTransparency = 1
+		lbl.Size = UDim2.new(1, 0, 1, 0)
+		lbl.Font = Enum.Font.GothamBlack
+		lbl.TextScaled = true
+		lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+		lbl.Text = "CHECKPOINT"
+		lbl.Parent = sg
+		for _, p in ipairs({ postL, postR, beam, sign }) do
+			p.Transparency = 1
+		end
+		gantries[i] = { postL = postL, postR = postR, beam = beam, sign = sign, label = lbl }
+	end
 	for i = 1, 28 do
 		local d = mkPart("dash", Vector3.new(2.6, 0.4, 11), Color3.fromRGB(255, 214, 60), world) -- bold yellow centre line
 		d.Transparency = 1
@@ -945,6 +971,36 @@ local function renderWorld(rz, laneX, view)
 		end
 	end
 
+	-- Over-road CHECKPOINT / FINISH gantries at upcoming segment boundaries.
+	local gi2 = 0
+	local prevSeg = built[1] and built[1].seg or nil
+	for k = 2, N do
+		local s = built[k]
+		if s and s.seg ~= prevSeg then
+			prevSeg = s.seg
+			local isCp = (s.seg.checkpointTicks or 0) > 0
+			local isFinish = road.nextSegment(courseSet, s.seg.id, seat.forkChoice or 0) == -1
+			if (isCp or isFinish) and gi2 < #gantries then
+				gi2 += 1
+				local g = gantries[gi2]
+				local x, y, z = s.curveX * SX, BASE_Y + s.hill * SY, ZSHIFT - s.dz * SZ
+				local topY = y + 30
+				g.postL.Transparency, g.postR.Transparency, g.beam.Transparency, g.sign.Transparency = 0, 0, 0, 0
+				g.postL.CFrame = CFrame.new(x - roadHalfStuds - 5, y + 17, z)
+				g.postR.CFrame = CFrame.new(x + roadHalfStuds + 5, y + 17, z)
+				g.beam.CFrame = CFrame.new(x, topY, z)
+				g.sign.CFrame = CFrame.new(x, topY - 4, z + 0.6)
+				g.sign.Color = isFinish and Color3.fromRGB(238, 238, 244) or Color3.fromRGB(30, 180, 90)
+				g.label.Text = isFinish and "FINISH" or "CHECKPOINT"
+				g.label.TextColor3 = isFinish and Color3.fromRGB(20, 20, 24) or Color3.fromRGB(255, 255, 255)
+			end
+		end
+	end
+	for i = gi2 + 1, #gantries do
+		local g = gantries[i]
+		g.postL.Transparency, g.postR.Transparency, g.beam.Transparency, g.sign.Transparency = 1, 1, 1, 1
+	end
+
 	local near = built[1]
 	local baseHill = near and near.hill * SY or 0
 	local carX = laneX * SX
@@ -1095,6 +1151,7 @@ local function renderWorld(rz, laneX, view)
 	local racing = view.phase == "racing"
 	if racing and seat.crashedTicks > 0 and prevCrashS == 0 then
 		sfxCrash:Play()
+		camShake = 1 -- kick the camera on a fresh crash
 	end
 	prevCrashS = seat.crashedTicks
 	if racing and seat.boostTicks > 0 and prevBoostS == 0 then
@@ -1226,6 +1283,14 @@ function Render.cameraCFrame(): CFrame
 	local cp = carRig.body.Position
 	local eye = Vector3.new(cp.X * 0.4, cp.Y + 7, cp.Z + 17)
 	local look = Vector3.new(cp.X * 0.15, cp.Y + 2, cp.Z - 40)
+	-- Decaying crash shake.
+	if camShake > 0.02 then
+		local m = camShake * 3.5
+		eye += Vector3.new((math.random() - 0.5) * m, (math.random() - 0.5) * m, 0)
+		camShake *= 0.86
+	else
+		camShake = 0
+	end
 	-- FOV kick while boosting adds to the sense of speed.
 	local cam = workspace.CurrentCamera
 	cam.FieldOfView += ((boostActive and 82 or 70) - cam.FieldOfView) * 0.12
