@@ -100,7 +100,7 @@ local rumbleL: { Part } = {} -- red/white kerb, left edge
 local rumbleR: { Part } = {} -- red/white kerb, right edge
 local sideL: { Part } = {} -- per-biome side ground (water/sand), left
 local sideR: { Part } = {} -- per-biome side ground, right
-local traffic = {} -- traffic car rigs (marker-0107)
+local vehPool: { [string]: { any } } = {} -- traffic rigs by vehicle type (marker-0133)
 local signs = {} -- roadside billboards { post, panel, label }
 local signMyName = "" -- local player's display name (for "GO <name>" boards)
 local SIGN_ADS = { "SUNSET COLA", "NEON TYRES", "TURBO FUEL", "RETRO RADIO", "VOLT ENERGY", "CHROME WHEELS" }
@@ -285,6 +285,116 @@ local function trafficStyleKey(_kind: number)
 	return 1
 end
 
+-- Varied TRAFFIC vehicles (marker-0133): sedan / estate / fast / bus / lorry / bike,
+-- each a distinct silhouette. Shared rig scaffold produces the same table shape as
+-- makeCarRig (parts/bodyParts) so placeCar/setCarShown/tintCar all work unchanged.
+local function rigBuilder(parent)
+	local rig = { parts = {}, body = nil :: Part?, bodyParts = {} }
+	local function add(p, offset, shownT, isBody)
+		p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch = true, false, false, false
+		p.TopSurface, p.BottomSurface = Enum.SurfaceType.Smooth, Enum.SurfaceType.Smooth
+		p.Parent = parent
+		p.Transparency = shownT or 0
+		table.insert(rig.parts, { part = p, offset = offset, t = shownT or 0 })
+		if isBody then
+			table.insert(rig.bodyParts, p)
+		end
+		return p
+	end
+	local function box(size, color, offset, material, shownT, isBody)
+		local p = Instance.new("Part")
+		p.Size, p.Color, p.Material = size, color, material or Enum.Material.SmoothPlastic
+		return add(p, offset, shownT, isBody)
+	end
+	local function cyl(size, color, offset)
+		local p = Instance.new("Part")
+		p.Shape = Enum.PartType.Cylinder
+		p.Size, p.Color, p.Material = size, color, Enum.Material.SmoothPlastic
+		return add(p, offset)
+	end
+	local function wedge(size, color, offset, isBody)
+		local p = Instance.new("WedgePart")
+		p.Size, p.Color, p.Material = size, color, Enum.Material.SmoothPlastic
+		return add(p, offset, nil, isBody)
+	end
+	return rig, box, cyl, wedge
+end
+
+local WHEEL_C = Color3.fromRGB(24, 24, 28)
+local GLASS_C = Color3.fromRGB(140, 175, 205)
+local function makeVehicleRig(vtype: string, parent: Instance)
+	local rig, box, cyl, wedge = rigBuilder(parent)
+	local base = Color3.fromRGB(200, 200, 210)
+	local function shadow(len)
+		local p = box(Vector3.new(7, 0.2, len), Color3.fromRGB(16, 10, 18), CFrame.new(0, -1.9, 0), Enum.Material.SmoothPlastic, 0.55)
+		return p
+	end
+	local function wheelSet(list, wheel)
+		for _, w in ipairs(list) do
+			cyl(wheel, WHEEL_C, CFrame.new(w[1], w[2], w[3]))
+		end
+	end
+	if vtype == "bus" then
+		shadow(24)
+		rig.body = box(Vector3.new(7.4, 5, 22), base, CFrame.new(0, 0.6, 0), nil, nil, true)
+		box(Vector3.new(7.5, 1.6, 20), GLASS_C, CFrame.new(0, 2.2, 0), Enum.Material.Glass, 0.2)
+		box(Vector3.new(5.4, 1, 3), Color3.fromRGB(255, 246, 214), CFrame.new(0, 0.4, -11), Enum.Material.Neon)
+		box(Vector3.new(6.4, 0.7, 0.4), Color3.fromRGB(235, 42, 42), CFrame.new(0, 0.6, 11), Enum.Material.Neon)
+		wheelSet({ { -3.2, -1.7, -7 }, { 3.2, -1.7, -7 }, { -3.2, -1.7, 7 }, { 3.2, -1.7, 7 } }, Vector3.new(1.6, 3.2, 3.2))
+	elseif vtype == "lorry" then
+		shadow(21)
+		box(Vector3.new(6.6, 4.2, 6), base, CFrame.new(0, 0.4, -6), nil, nil, true) -- cab
+		box(Vector3.new(5.6, 1.2, 0.4), GLASS_C, CFrame.new(0, 1.6, -9), Enum.Material.Glass, 0.2)
+		rig.body = box(Vector3.new(7, 4.8, 13), Color3.fromRGB(160, 160, 170), CFrame.new(0, 0.7, 3.2), nil, nil, true) -- box trailer
+		wheelSet({ { -3.1, -1.6, -6 }, { 3.1, -1.6, -6 }, { -3.2, -1.6, 3 }, { 3.2, -1.6, 3 }, { -3.2, -1.6, 8 }, { 3.2, -1.6, 8 } }, Vector3.new(1.5, 3, 3))
+	elseif vtype == "bike" then
+		shadow(7)
+		rig.body = box(Vector3.new(1.6, 1.6, 6.5), base, CFrame.new(0, 0, 0), nil, nil, true)
+		box(Vector3.new(1.8, 2.6, 2), Color3.fromRGB(38, 38, 46), CFrame.new(0, 1.4, 0.6)) -- rider
+		box(Vector3.new(2.2, 0.5, 0.6), Color3.fromRGB(30, 30, 34), CFrame.new(0, 0.9, -2.6)) -- handlebars
+		cyl(Vector3.new(0.7, 3, 3), WHEEL_C, CFrame.new(0, -0.7, -2.8))
+		cyl(Vector3.new(0.7, 3, 3), WHEEL_C, CFrame.new(0, -0.7, 2.8))
+	elseif vtype == "estate" then
+		shadow(13)
+		rig.body = box(Vector3.new(6, 2, 12), base, CFrame.new(0, 0, 0), nil, nil, true)
+		box(Vector3.new(5, 2, 7), base, CFrame.new(0, 1.7, 1.6), nil, nil, true) -- long wagon roof
+		box(Vector3.new(4.6, 1.5, 4.6), GLASS_C, CFrame.new(0, 1.7, 0.4), Enum.Material.Glass, 0.2)
+		box(Vector3.new(1.1, 0.5, 0.3), Color3.fromRGB(255, 246, 214), CFrame.new(-1.9, 0.2, -6), Enum.Material.Neon)
+		box(Vector3.new(1.1, 0.5, 0.3), Color3.fromRGB(255, 246, 214), CFrame.new(1.9, 0.2, -6), Enum.Material.Neon)
+		wheelSet({ { -3, -1, -3.8 }, { 3, -1, -3.8 }, { -3, -1, 3.8 }, { 3, -1, 3.8 } }, Vector3.new(1.3, 2.5, 2.5))
+	elseif vtype == "fast" then
+		shadow(12)
+		rig.body = box(Vector3.new(6, 1.5, 12), base, CFrame.new(0, -0.1, 0), nil, nil, true)
+		box(Vector3.new(4.2, 1.2, 4.2), Color3.fromRGB(30, 30, 36), CFrame.new(0, 1, 0.8))
+		wedge(Vector3.new(5.4, 1, 4), base, CFrame.new(0, 0.8, -4), true)
+		box(Vector3.new(5.8, 0.26, 1.4), Color3.fromRGB(30, 30, 34), CFrame.new(0, 1.3, 5)) -- wing
+		box(Vector3.new(5.2, 0.45, 0.3), Color3.fromRGB(235, 42, 42), CFrame.new(0, 0.35, 5.9), Enum.Material.Neon)
+		wheelSet({ { -3, -0.9, -3.4 }, { 3, -0.9, -3.4 }, { -3, -0.9, 3.4 }, { 3, -0.9, 3.4 } }, Vector3.new(1.4, 2.6, 2.6))
+	else -- sedan
+		shadow(11)
+		rig.body = box(Vector3.new(6, 2, 11), base, CFrame.new(0, 0, 0), nil, nil, true)
+		box(Vector3.new(4.8, 1.8, 5.2), base, CFrame.new(0, 1.6, 0.6), nil, nil, true) -- roof
+		box(Vector3.new(4.4, 1.4, 4.4), GLASS_C, CFrame.new(0, 1.6, 0.2), Enum.Material.Glass, 0.2)
+		box(Vector3.new(1.1, 0.5, 0.3), Color3.fromRGB(255, 246, 214), CFrame.new(-1.9, 0.2, -5.5), Enum.Material.Neon)
+		box(Vector3.new(1.1, 0.5, 0.3), Color3.fromRGB(255, 246, 214), CFrame.new(1.9, 0.2, -5.5), Enum.Material.Neon)
+		box(Vector3.new(5, 0.4, 0.3), Color3.fromRGB(235, 42, 42), CFrame.new(0, 0.35, 5.5), Enum.Material.Neon)
+		wheelSet({ { -3, -1, -3.4 }, { 3, -1, -3.4 }, { -3, -1, 3.4 }, { 3, -1, 3.4 } }, Vector3.new(1.3, 2.5, 2.5))
+	end
+	return rig
+end
+
+local function trafficType(kind: number, id: number?): string
+	if kind == 2 then
+		return "lorry"
+	elseif kind == 3 then
+		return "bus"
+	elseif kind == 4 then
+		return "bike"
+	end
+	local m = (id or 0) % 3 -- vary plain "car" kind into three body types
+	return (m == 0 and "sedan") or (m == 1 and "estate") or "fast"
+end
+
 -- Sunset mood (marker-0102): warm dusk lighting + haze, no textures. Global +
 -- one-time; fog fades the end of the treadmill draw distance into the horizon.
 local function setupLighting()
@@ -441,10 +551,14 @@ function Render.init()
 		sideL[k].Transparency = 1
 		sideR[k].Transparency = 1
 	end
-	for i = 1, 14 do
-		local rig = makeCarRig(Color3.fromRGB(224, 192, 64), world, (i % 3) + 1)
-		setCarShown(rig, false)
-		traffic[i] = rig
+	-- Traffic rigs pooled per vehicle type (varied shapes; assigned by kind + id).
+	for vtype, n in pairs({ sedan = 4, estate = 2, fast = 3, bus = 2, lorry = 2, bike = 2 }) do
+		vehPool[vtype] = {}
+		for i = 1, n do
+			local rig = makeVehicleRig(vtype, world)
+			setCarShown(rig, false)
+			vehPool[vtype][i] = rig
+		end
 	end
 	local myName = game:GetService("Players").LocalPlayer.DisplayName
 	for i = 1, 4 do
@@ -823,10 +937,9 @@ local function renderWorld(rz, laneX, view)
 	end
 	placeCar(carRig, CFrame.new(carX, BASE_Y + baseHill + 1.6, 4))
 
-	-- Same-segment traffic ahead.
-	-- Sort traffic NEAREST-first and render only the closest #traffic within the
-	-- draw distance — otherwise the pool can render an arbitrary far subset and the
-	-- car you're about to hit is invisible (you "just stop").
+	-- Same-segment traffic ahead, NEAREST-first, each drawn with a rig of the right
+	-- vehicle type (sedan/estate/fast/bus/lorry/bike) from that type's pool. Left-lane
+	-- traffic faces the camera (ONCOMING); right-lane faces away (you overtake).
 	local nearTraffic = {}
 	for _, t in ipairs(view.traffic or {}) do
 		local dz = t.roadZ - rz
@@ -837,24 +950,28 @@ local function renderWorld(rz, laneX, view)
 	table.sort(nearTraffic, function(a, b)
 		return a.dz < b.dz
 	end)
-	local ti = 0
+	local vehUsed = {}
 	for _, e in ipairs(nearTraffic) do
-		if ti >= #traffic then
-			break
-		end
-		local s = built[math.min(math.floor(e.dz / ROAD_UNIT) + 1, N)]
-		if s then
-			ti += 1
-			local rig = traffic[ti]
-			local t = e.t
-			setCarShown(rig, true)
-			setCarStyle(rig, trafficStyleKey(t.kind))
-			tintCar(rig, carColor(t.id or ti, 0)) -- colour by identity only (no biome flicker)
-			placeCar(rig, CFrame.new((s.curveX + t.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - e.dz * SZ))
+		local t = e.t
+		local vtype = trafficType(t.kind, t.id)
+		local pool = vehPool[vtype]
+		local idx = (vehUsed[vtype] or 0) + 1
+		if pool and idx <= #pool then
+			local s = built[math.min(math.floor(e.dz / ROAD_UNIT) + 1, N)]
+			if s then
+				vehUsed[vtype] = idx
+				local rig = pool[idx]
+				setCarShown(rig, true)
+				tintCar(rig, carColor(t.id or idx, 0)) -- stable colour by identity
+				local facing = (t.laneX < 0) and math.pi or 0 -- left lane = oncoming
+				placeCar(rig, CFrame.new((s.curveX + t.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - e.dz * SZ) * CFrame.Angles(0, facing, 0))
+			end
 		end
 	end
-	for i = ti + 1, #traffic do
-		setCarShown(traffic[i], false)
+	for vtype, pool in pairs(vehPool) do
+		for i = (vehUsed[vtype] or 0) + 1, #pool do
+			setCarShown(pool[i], false)
+		end
 	end
 
 	-- Rival AI ghosts (same-segment) as car rigs with a name tag.
