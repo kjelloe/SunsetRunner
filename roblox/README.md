@@ -86,7 +86,9 @@ TRACK->CAR->READY race-start flow; 0132 billboards fixed (pole behind board) + t
 with lane-based facing (left=oncoming); 0134 accurate pre-race car preview; 0135
 top-down course-curve track thumbnail; 0136 more car detail (mirrors/vents/exhausts)
 + decorative oncoming-traffic stream (visual-only, left lane); 0137 over-road
-CHECKPOINT/FINISH gantries + crash camera shake.
+CHECKPOINT/FINISH gantries + crash camera shake; 0138 fix sunset width (tile the
+backdrop past Roblox's 2048 part-size cap); 0139 selection labels CONFIRM TRACK ->
+CONFIRM CAR -> RACE LINEUP/READY; 0140 fix sunset flicker (z-stagger overlapping bands).
 
 ## Not done yet (backlog)
 

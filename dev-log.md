@@ -2419,3 +2419,15 @@ nextSegment==-1; pool of 3, placed by scanning built strips. (2) Decaying crash 
 shake on the crash edge (same trigger as the crash SFX).
 
 Gate: rojo build valid; npm test 316/316; 6 Luau gates untouched.
+
+## marker-0138..0140 — Roblox sunset width/flicker + selection labels (2026-08-13)
+
+Roblox presentation only; rojo build valid each step; 6 Luau gates untouched.
+
+- 0138 FIX SUNSET WIDTH: root cause was Roblox clamping Part.Size to 2048 studs/axis,
+  so the 9000/24000-wide backdrop was capped at 2048 and showed as a central rectangle.
+  Backdrop bands + neon glow now TILED across five 2000-wide parts (10000 total). Layers
+  z-separated (bands 0 / clouds +6 / glow +12 / sun +20 / cuts +24).
+- 0139 selection labels: CONFIRM TRACK -> CONFIRM CAR -> RACE LINEUP (READY button).
+- 0140 FIX SUNSET FLICKER: sky bands overlap in Y but sat at one depth -> overlap strips
+  z-fought; stagger each band 0.6 studs further back.
