@@ -320,7 +320,7 @@ local function refreshSelect()
 		trackThumb.BackgroundColor3 = COURSE_COLORS[selCourse] or Color3.fromRGB(60, 60, 80)
 		drawTrackPath(selCourse)
 		backBtn.Visible = false
-		nextBtn.Text = "CAR ►"
+		nextBtn.Text = "CONFIRM TRACK ►"
 	elseif step == "car" then
 		title.Text = "SELECT CAR"
 		nameLbl.Text = CAR_NAMES[selCar] or ("CAR " .. selCar)
@@ -330,9 +330,9 @@ local function refreshSelect()
 		end
 		backBtn.Visible = true
 		backBtn.Text = "◄ TRACK"
-		nextBtn.Text = "CONFIRM ►"
-	else -- ready
-		title.Text = "READY TO RACE?"
+		nextBtn.Text = "CONFIRM CAR ►"
+	else -- ready / race lineup
+		title.Text = "RACE LINEUP"
 		nameLbl.Text = "TRACK  " .. (COURSE_NAMES[selCourse] or "?") .. "     CAR  " .. (CAR_NAMES[selCar] or "?")
 		trackThumb.Visible, vp.Visible = false, true -- keep the chosen car on show
 		backBtn.Visible = true
