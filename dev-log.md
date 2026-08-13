@@ -2431,3 +2431,22 @@ Roblox presentation only; rojo build valid each step; 6 Luau gates untouched.
 - 0139 selection labels: CONFIRM TRACK -> CONFIRM CAR -> RACE LINEUP (READY button).
 - 0140 FIX SUNSET FLICKER: sky bands overlap in Y but sat at one depth -> overlap strips
   z-fought; stagger each band 0.6 studs further back.
+
+## marker-0141 — Roblox car-select preview framing (2026-08-13)
+
+Roblox presentation only. The ViewportFrame preview car was tiny at the default 70°
+FOV; set the viewport camera to FieldOfView 40 and pull the orbit in (r 17->15, lower
+eye) so the car fills the panel.
+
+Gate: rojo build valid; 6 Luau gates untouched.
+
+---
+
+## docs — roblox-howto-and-gotchas.md (2026-08-13)
+
+Added `roblox/roblox-howto-and-gotchas.md`: a Roblox-specific implementation guide
+distilled from the whole host build — the 2048 Part.Size clamp (the sunset-width bug),
+coplanar z-fight flicker, Rojo sync/reconnect + require() resolution, the determinism
+boundary, treadmill/pooling patterns, WedgePart/Cylinder orientation, Neon/Atmosphere/
+Fog behaviour, ViewportFrame/SurfaceGui/BillboardGui setup, input/camera, RemoteEvents
+(the nil-field trap), DataStore pcall/API-access, audio, and misc. Also specs/78.

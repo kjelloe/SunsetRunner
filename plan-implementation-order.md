@@ -193,11 +193,17 @@ Not scheduled; pick when ready. Ordered by rough impact.
   lineage, then `./docs/ssh-deploy.sh`.
 - [x] **Cap DPR on mobile** — DONE (marker-0092). computeBufferSize clamps
   effective DPR<=2; perf:mobile confirmed 4x 62->100fps, 6x 38->64fps. specs/68.
-- [~] **Roblox build** — playable host + AI opponents DONE (marker-0098/0100): 20Hz
-  authoritative server + 3D-Parts renderer + input + chase camera + HUD + 4 named
-  AI rivals (ai_driver Luau-twinned, ai_1a gate). Remaining: multiplayer/ghosts of
-  REAL players, race framing (countdown/lobby/summary), art pass (car model,
-  textures, skybox, boost VFX), mobile controls, AI difficulty select, interpolation.
+- [~] **Roblox build** — playable host DONE and feature-complete for a shared-race
+  game (markers 0098–0141). Host + 3D-Parts renderer, real-player multiplayer +
+  AI rivals, lobby→countdown→race→summary framing, interpolation, full art pass
+  (tiled sunset + sun, sculpted sports cars, per-biome terrain, trees, billboards
+  with text, checkpoint/finish gantries, crash shake), mobile controls, boost VFX,
+  varied traffic + decorative oncoming stream, points + results + all-time boards,
+  centred pre-race TRACK→CAR→READY selection with top-down track thumbnail. Engine
+  untouched throughout (6 lune gates + 316 JS tests green). See specs/74/76/77/78 and
+  roblox/roblox-howto-and-gotchas.md. Remaining: verify bundled SoundIds live;
+  optional collidable oncoming (engine change), race minimap, engine-hum audio,
+  OrderedDataStore board; screenshot-guided car/sun fine-tuning; publish to Roblox.
 - [x] **More gameplay** — DONE: crash feel (0093), near-miss feel (0094),
   music-select (0095), AI difficulty tiers (0096), boost pads / power-ups (0097).
   Future variety (consumable pickups, shields, slow traps, pads on courses 1-3)
