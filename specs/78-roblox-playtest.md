@@ -71,6 +71,13 @@ etc.).
   car speed (bundled placeholder `ENGINE_SOUND_ID` — swap for a real engine loop).
 - **0144** — **race minimap**: top-left top-down of the course curve + a live player dot
   (by segmentId + roadZ; stage-fraction fallback on fork branches).
+- **0145** — playtest fixes: (1) softer **pastel sunset** — the haze layer was glaring
+  Neon, now faint SmoothPlastic pastel; softer sun/cut tones. (2) player car holds its
+  **selected colour** steadily (dropped the boost-cyan / crash-white full recolour that
+  flipped between two colours on boost-pad courses; boost shows via trail + FOV, crash =
+  brief light flash). (3) **road no longer gaps** — `buildStrips` hit a fork/`next == -1`
+  and returned a SHORT strip array so the road vanished and cars drove on the terrain;
+  now it freezes the curve and lays straight strips to the horizon.
 
 ## Not done / deferred
 - Collidable **oncoming** traffic (engine change; repins goldens) — cosmetic for now.

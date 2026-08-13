@@ -90,7 +90,10 @@ CHECKPOINT/FINISH gantries + crash camera shake; 0138 fix sunset width (tile the
 backdrop past Roblox's 2048 part-size cap); 0139 selection labels CONFIRM TRACK ->
 CONFIRM CAR -> RACE LINEUP/READY; 0140 fix sunset flicker (z-stagger overlapping bands); 0141 car-select preview framing
 (fills the panel); 0142 all-time board via OrderedDataStore (true global top-10); 0143
-engine-hum audio (speed-reactive loop); 0144 race minimap (top-down course + player dot).
+engine-hum audio (speed-reactive loop); 0144 race minimap (top-down course + player dot);
+0145 playtest fixes — softer pastel sunset (no neon glare), steady selected car colour
+(no boost/crash recolour flip), and no road gap at a fork/stage-end (buildStrips now
+continues straight instead of returning a short strip array).
 
 ## Not done yet (backlog)
 
