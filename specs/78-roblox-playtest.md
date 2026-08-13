@@ -63,8 +63,17 @@ etc.).
   dots + start/finish markers).
 - **0134/0141** — the preview car mirrors the in-race rig and fills the frame.
 
+## Later additions (markers 0142–0144)
+- **0142** — all-time board upgraded to **OrderedDataStore** (`GetSortedAsync` gives a
+  true server-wide top-10; names via `GetNameFromUserIdAsync`, cached). Plain store
+  still carries personal points; pcall-guarded in-session fallback.
+- **0143** — **engine-hum** audio: a looping Sound with PlaybackSpeed + Volume tracking
+  car speed (bundled placeholder `ENGINE_SOUND_ID` — swap for a real engine loop).
+- **0144** — **race minimap**: top-left top-down of the course curve + a live player dot
+  (by segmentId + roadZ; stage-fraction fallback on fork branches).
+
 ## Not done / deferred
 - Collidable **oncoming** traffic (engine change; repins goldens) — cosmetic for now.
-- Verify bundled **SoundIds** in a live client.
-- Optional: race **minimap**, near-miss whoosh, engine-hum audio, OrderedDataStore.
+- Verify bundled **SoundIds** in a live client (incl. the engine-loop placeholder).
 - Screenshot-guided fine-tuning of the car silhouette / sun size.
+- Optional: near-miss whoosh; publish to Roblox.

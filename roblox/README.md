@@ -88,7 +88,9 @@ top-down course-curve track thumbnail; 0136 more car detail (mirrors/vents/exhau
 + decorative oncoming-traffic stream (visual-only, left lane); 0137 over-road
 CHECKPOINT/FINISH gantries + crash camera shake; 0138 fix sunset width (tile the
 backdrop past Roblox's 2048 part-size cap); 0139 selection labels CONFIRM TRACK ->
-CONFIRM CAR -> RACE LINEUP/READY; 0140 fix sunset flicker (z-stagger overlapping bands).
+CONFIRM CAR -> RACE LINEUP/READY; 0140 fix sunset flicker (z-stagger overlapping bands); 0141 car-select preview framing
+(fills the panel); 0142 all-time board via OrderedDataStore (true global top-10); 0143
+engine-hum audio (speed-reactive loop); 0144 race minimap (top-down course + player dot).
 
 ## Not done yet (backlog)
 

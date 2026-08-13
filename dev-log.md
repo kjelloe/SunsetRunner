@@ -2450,3 +2450,18 @@ coplanar z-fight flicker, Rojo sync/reconnect + require() resolution, the determ
 boundary, treadmill/pooling patterns, WedgePart/Cylinder orientation, Neon/Atmosphere/
 Fog behaviour, ViewportFrame/SurfaceGui/BillboardGui setup, input/camera, RemoteEvents
 (the nil-field trap), DataStore pcall/API-access, audio, and misc. Also specs/78.
+
+## marker-0142..0144 — Roblox: OrderedDataStore board + engine hum + minimap (2026-08-13)
+
+Roblox presentation/host only; engine untouched; rojo build valid; npm test 316/316.
+
+- 0142 all-time board via OrderedDataStore: userId->points via GetSortedAsync gives a
+  TRUE server-wide top-10 (the old "top" key only reflected players this server saw);
+  names resolved with GetNameFromUserIdAsync (cached). Plain store still carries
+  personal points. pcall-guarded -> in-session fallback; warmed at boot + on bank.
+- 0143 engine-hum audio: a looping Sound whose PlaybackSpeed + Volume rise with speed
+  (extra pitch on boost), smoothed, silent off-track. BUNDLED placeholder SoundId
+  (ENGINE_SOUND_ID) -> swap for a proper engine-loop asset for a nicer tone.
+- 0144 race minimap: top-left panel draws the course top-down (double-integral curve
+  walk + per-segment start-strip offsets) with a live player dot placed by segmentId +
+  roadZ (stage-fraction fallback on fork branches). Rebuilt on course change; on-track only.
