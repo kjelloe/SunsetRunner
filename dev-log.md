@@ -2465,3 +2465,16 @@ Roblox presentation/host only; engine untouched; rojo build valid; npm test 316/
 - 0144 race minimap: top-left panel draws the course top-down (double-integral curve
   walk + per-segment start-strip offsets) with a live player dot placed by segmentId +
   roadZ (stage-fraction fallback on fork branches). Rebuilt on course change; on-track only.
+
+## marker-0145 — Roblox playtest fixes: sunset softness, car colour, road gap (2026-08-14)
+
+Roblox presentation only; engine untouched; rojo build valid; npm test 316/316.
+
+1. Sunset haze softened (playtest "CGA glare"): pastel SKY_BANDS + the glow layer
+   switched from glaring Neon to faint SmoothPlastic pastel; softer sun/cut tones.
+2. Player car holds its SELECTED colour steadily — dropped the boost-cyan / crash-white
+   full recolour (it flipped between two colours on boost-pad-heavy course 4). Boost
+   still shows via the particle trail + FOV kick; a crash is a brief light flash only.
+3. FIX road vanishing in a turn near a stage end: buildStrips hit a fork/next of -1 and
+   returned a SHORT strip array -> the road disappeared and cars appeared to drive on
+   the terrain. Now it freezes the curve and lays straight strips to the horizon.
