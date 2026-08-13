@@ -126,7 +126,11 @@ local camShake = 0 -- decaying crash shake magnitude (marker-0137)
 -- Audio (marker-0118): bundled rbxasset sounds (no marketplace assets). One ping is
 -- re-pitched for checkpoint/countdown/GO/finish; distinct sounds for crash/boost.
 local SoundService = game:GetService("SoundService")
-local sfxPing, sfxCrash, sfxBoost
+local sfxPing, sfxCrash, sfxBoost, sfxEngine
+-- Engine loop (marker-0143): PlaybackSpeed/Volume track the car's speed. This is a
+-- BUNDLED placeholder that loops into a speed-reactive drone — swap ENGINE_SOUND_ID
+-- for a proper engine-loop asset for a nicer tone.
+local ENGINE_SOUND_ID = "rbxasset://sounds/electronicpingshort.wav"
 local prevCrashS, prevBoostS, prevTimerS, prevFinishS, prevCdBeep = 0, 0, -1, -1, 0
 
 local DASH_SPACING = ROAD_UNIT * 3 -- one centre dash every 3 road units
@@ -542,6 +546,10 @@ function Render.init()
 	sfxPing = mkSound("rbxasset://sounds/electronicpingshort.wav", 0.5)
 	sfxCrash = mkSound("rbxasset://sounds/uuhhh.mp3", 0.55)
 	sfxBoost = mkSound("rbxasset://sounds/action_jump.mp3", 0.5)
+	sfxEngine = mkSound(ENGINE_SOUND_ID, 0) -- looping engine drone (volume ramps in-race)
+	sfxEngine.Looped = true
+	sfxEngine.PlaybackSpeed = 0.5
+	sfxEngine:Play()
 	local world = Instance.new("Folder")
 	world.Name = "SunsetWorld"
 	world.Parent = workspace
@@ -1146,6 +1154,13 @@ local function renderWorld(rz, laneX, view)
 	-- Audio edges (marker-0118): only during racing (so a fresh-race timer reset
 	-- can't fire a false checkpoint); countdown beeps + a GO chime.
 	local racing = view.phase == "racing"
+	-- Engine drone (marker-0143): pitch + volume rise with speed; silent off-track.
+	if sfxEngine then
+		local sf = math.clamp(seat.speed / 2400, 0, 1.25)
+		sfxEngine.PlaybackSpeed = 0.5 + sf * 1.6 + (boosting and 0.3 or 0)
+		local target = (racing and seat.finishTicks < 0 and seat.timedOut == 0) and (0.1 + sf * 0.22) or 0
+		sfxEngine.Volume += (target - sfxEngine.Volume) * 0.2 -- smooth ramp
+	end
 	if racing and seat.crashedTicks > 0 and prevCrashS == 0 then
 		sfxCrash:Play()
 		camShake = 1 -- kick the camera on a fresh crash
