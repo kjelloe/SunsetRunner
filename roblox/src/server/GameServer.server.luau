@@ -71,22 +71,23 @@ local readyByPlayer: { [Player]: boolean } = {} -- ready-up lobby (marker-0116)
 local pointsByPlayer: { [Player]: number } = {} -- carried across races (marker-0119)
 local spectateByPlayer: { [Player]: boolean } = {} -- watching the leader after your own race ends
 
--- All-time leaderboard (marker-0120), persisted via DataStore. All calls are
--- pcall-guarded so it degrades to in-session-only if the API is unavailable
--- (e.g. Studio without "Enable Studio Access to API Services").
+-- All-time leaderboard (marker-0120, upgraded to OrderedDataStore marker-0142).
+-- The ORDERED store gives a true server-wide ranking via GetSortedAsync (the old
+-- "top" key only reflected players THIS server had seen). A plain store still holds
+-- each player's carried points (p_<uid>). All calls pcall-guarded so it degrades to
+-- an in-session board if the API is unavailable (Studio without API access).
 local store = nil
+local orderedStore = nil
 pcall(function()
 	store = DataStoreService:GetDataStore("SunsetAllTime_v1")
 end)
+pcall(function()
+	orderedStore = DataStoreService:GetOrderedDataStore("SunsetRanks_v1")
+end)
 local allTimeBoard = {} -- { { name, points }, ... } desc, top 10
-if store then
-	pcall(function()
-		local t = store:GetAsync("top")
-		if type(t) == "table" then
-			allTimeBoard = t
-		end
-	end)
-end
+local nameCache: { [number]: string } = {} -- userId -> display name (avoid repeat lookups)
+
+-- In-session fallback board (used when the ordered store is unavailable).
 local function updateBoard(name: string, points: number)
 	if points <= 0 then
 		return
@@ -108,24 +109,57 @@ local function updateBoard(name: string, points: number)
 	while #allTimeBoard > 10 do
 		table.remove(allTimeBoard)
 	end
-	if store then
-		pcall(function()
-			store:SetAsync("top", allTimeBoard)
-		end)
+end
+
+-- Pull the true global top-10 from the ordered store (async; call via task.spawn).
+local function refreshBoard()
+	if not orderedStore then
+		return
+	end
+	local ok, pages = pcall(function()
+		return orderedStore:GetSortedAsync(false, 10) -- descending, top 10
+	end)
+	if not ok or not pages then
+		return
+	end
+	local board = {}
+	for _, entry in ipairs(pages:GetCurrentPage()) do
+		local uid = tonumber(entry.key)
+		local nm = uid and nameCache[uid] or nil
+		if not nm and uid then
+			local ok2, res = pcall(function()
+				return Players:GetNameFromUserIdAsync(uid)
+			end)
+			nm = (ok2 and res) or ("Player " .. tostring(uid))
+			nameCache[uid] = nm
+		end
+		table.insert(board, { name = nm or "Player", points = entry.value })
+	end
+	if #board > 0 then
+		allTimeBoard = board
 	end
 end
+
 local function persistPlayer(player: Player)
 	local pts = pointsByPlayer[player]
 	if not pts then
 		return
 	end
-	updateBoard(player.DisplayName, pts)
+	updateBoard(player.DisplayName, pts) -- keep the in-session board warm
+	nameCache[player.UserId] = player.DisplayName
 	if store then
 		pcall(function()
 			store:SetAsync("p_" .. player.UserId, pts)
 		end)
 	end
+	if orderedStore then
+		pcall(function()
+			orderedStore:SetAsync(tostring(player.UserId), pts)
+		end)
+		task.spawn(refreshBoard)
+	end
 end
+task.spawn(refreshBoard) -- warm the global board at boot
 local seatOfPlayer: { [Player]: number } = {}
 local playerOfSeat: { [number]: Player } = {}
 local inputBySeat: { [number]: { steer: number, accel: number, brake: number } } = {}
