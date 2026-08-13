@@ -61,6 +61,49 @@ rebuildStageMap(4)
 local lastStage = 1
 local prevCd, goFrames = 0, 0 -- countdown -> GO! edge (marker-0109)
 
+-- Race minimap (marker-0144): walk the default path accumulating the lateral curve
+-- (double integral) into a normalised top-down polyline, plus each segment's start
+-- strip offset so the player dot can be placed by segmentId + roadZ.
+local function computeMinimap(courseId: number)
+	local raw, segStart = {}, {}
+	local ok, startId = pcall(function()
+		return road.getCourse(courseSet, courseId).startSegment
+	end)
+	if not ok then
+		return { pts = {}, segStart = {}, total = 1 }
+	end
+	local id, curveX, curveDx, strip, guard = startId, 0, 0, 0, 0
+	while id and id ~= -1 and guard < 4000 do
+		if segStart[id] == nil then
+			segStart[id] = strip
+		end
+		local seg = road.getSegment(courseSet, id)
+		local cm = #seg.curveProfile
+		for s = 0, seg.stripCount - 1 do
+			local curve = seg.curveProfile[math.floor(s * cm / seg.stripCount) + 1] or 0
+			curveDx += curve
+			curveX += curveDx
+			strip += 1
+			if strip % 30 == 0 then
+				table.insert(raw, { curveX, strip })
+			end
+		end
+		id = road.nextSegment(courseSet, id, 0)
+		guard += 1
+	end
+	local total = math.max(1, strip)
+	local minX, maxX = math.huge, -math.huge
+	for _, p in ipairs(raw) do
+		minX, maxX = math.min(minX, p[1]), math.max(maxX, p[1])
+	end
+	local spanX = math.max(1, maxX - minX)
+	local pts = {}
+	for _, p in ipairs(raw) do
+		table.insert(pts, { (p[1] - minX) / spanX, p[2] / total })
+	end
+	return { pts = pts, segStart = segStart, total = total }
+end
+
 -- Car livery palette (marker-0113): rivals + traffic pick a colour by identity,
 -- shifted by the biome so the field looks varied AND different across biomes.
 local CAR_PALETTE = {
@@ -137,6 +180,28 @@ local DASH_SPACING = ROAD_UNIT * 3 -- one centre dash every 3 road units
 local PROP_SPACING = ROAD_UNIT * 6 -- a roadside prop slot every 6 road units
 local hud: { speed: TextLabel, timer: TextLabel, stage: TextLabel, score: TextLabel, banner: TextLabel, pos: TextLabel, prog: Frame }
 local board: { frame: Frame, title: TextLabel, rows: { TextLabel } } -- leaderboard panel
+local mmFrame, mmHolder, mmDot -- race minimap panel / path-dot holder / player dot
+local mmCourse = -1 -- last course whose minimap path was drawn (rebuild-gated)
+local mmData = nil -- { pts, segStart, total }
+local mmPathDots = {} -- pooled path dot Frames (destroyed/rebuilt on course change)
+local function rebuildMinimap(courseId: number)
+	mmCourse = courseId
+	mmData = computeMinimap(courseId)
+	for _, d in ipairs(mmPathDots) do
+		d:Destroy()
+	end
+	mmPathDots = {}
+	for _, p in ipairs(mmData.pts) do
+		local dot = Instance.new("Frame")
+		dot.AnchorPoint = Vector2.new(0.5, 0.5)
+		dot.Position = UDim2.new(p[1], 0, 1 - p[2], 0) -- finish at top
+		dot.Size = UDim2.new(0, 4, 0, 4)
+		dot.BackgroundColor3 = Color3.fromRGB(230, 230, 245)
+		dot.BorderSizePixel = 0
+		dot.Parent = mmHolder
+		table.insert(mmPathDots, dot)
+	end
+end
 
 -- Accumulate curve (double integral, like the browser road renderer) + read hill,
 -- walking segments forward from the seat's position. Presentation-only shape.
@@ -773,6 +838,34 @@ function Render.init()
 	end
 	board = { frame = frame, title = title, rows = rows }
 
+	-- Race minimap panel (top-left): a top-down of the course + a live player dot.
+	mmFrame = Instance.new("Frame")
+	mmFrame.Position = UDim2.new(0.02, 0, 0.04, 0)
+	mmFrame.Size = UDim2.new(0.12, 0, 0.28, 0)
+	mmFrame.BackgroundColor3 = Color3.fromRGB(18, 14, 30)
+	mmFrame.BackgroundTransparency = 0.4
+	mmFrame.BorderSizePixel = 0
+	mmFrame.Visible = false
+	mmFrame.Parent = gui
+	local mc = Instance.new("UICorner")
+	mc.CornerRadius = UDim.new(0, 6)
+	mc.Parent = mmFrame
+	mmHolder = Instance.new("Frame")
+	mmHolder.BackgroundTransparency = 1
+	mmHolder.Position = UDim2.new(0.1, 0, 0.08, 0)
+	mmHolder.Size = UDim2.new(0.8, 0, 0.84, 0)
+	mmHolder.Parent = mmFrame
+	mmDot = Instance.new("Frame")
+	mmDot.AnchorPoint = Vector2.new(0.5, 0.5)
+	mmDot.Size = UDim2.new(0, 9, 0, 9)
+	mmDot.BackgroundColor3 = Color3.fromRGB(120, 240, 255)
+	mmDot.BorderSizePixel = 0
+	mmDot.ZIndex = 3
+	mmDot.Parent = mmHolder
+	local mdc = Instance.new("UICorner")
+	mdc.CornerRadius = UDim.new(1, 0)
+	mdc.Parent = mmDot
+
 	-- Lay a straight flat road immediately so SOMETHING is visible before the first
 	-- server view arrives (a straight road that never moves = server not sending;
 	-- an empty world = this script never ran).
@@ -1143,6 +1236,20 @@ local function renderWorld(rz, laneX, view)
 	local onTrack = view.phase == "racing" or view.raceOver
 	hud.pos.Visible = onTrack
 	hud.prog.Parent.Visible = onTrack
+	-- Minimap: rebuild on course change; place the player dot by progress along the path.
+	if view.courseId and view.courseId ~= mmCourse then
+		rebuildMinimap(view.courseId)
+	end
+	if mmData and #mmData.pts > 0 then
+		local ss = mmData.segStart[seat.segmentId]
+		local frac = ss and ((ss + rz / ROAD_UNIT) / mmData.total)
+			or ((STAGE_TOTAL > 0) and ((lastStage - 1) / STAGE_TOTAL) or 0)
+		frac = math.clamp(frac, 0, 1)
+		local idx = math.clamp(math.floor(frac * (#mmData.pts - 1)) + 1, 1, #mmData.pts)
+		local p = mmData.pts[idx]
+		mmDot.Position = UDim2.new(p[1], 0, 1 - p[2], 0)
+	end
+	mmFrame.Visible = onTrack
 	-- Race framing (marker-0109): countdown 3-2-1, a brief GO!, then the finish/
 	-- time-up summary with a "new race in Ns" line.
 	local cd = view.countdown or 0
