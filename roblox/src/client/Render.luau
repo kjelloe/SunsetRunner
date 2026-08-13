@@ -472,8 +472,10 @@ local function makeSky(parent, baseY)
 			p.Parent = parent
 		end
 	end
-	for _, b in ipairs(SKY_BANDS) do
-		tiled(b[2], b[3], b[1], Enum.Material.SmoothPlastic, 0, 0)
+	-- Each band a touch further back than the last: the bands overlap in Y, so at the
+	-- same depth their overlaps z-fight (that was the flicker) — a small z-stagger fixes it.
+	for i, b in ipairs(SKY_BANDS) do
+		tiled(b[2], b[3], b[1], Enum.Material.SmoothPlastic, 0, -(i - 1) * 0.6)
 	end
 	-- Warm neon glow layer in front of the wall so the sunset around the sun is punchy.
 	local SUN_Y = baseY + 110
