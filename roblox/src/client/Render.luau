@@ -213,17 +213,28 @@ local function buildStrips(segmentId: number, roadZ: number, count: number, fork
 	local segId, seg = segmentId, road.getSegment(courseSet, segmentId)
 	local stripIdx = math.floor(roadZ / ROAD_UNIT)
 	local curveX, curveDx = 0, 0
+	local ended = false -- past the course/branch end: keep the road going straight
 	for k = 1, count do
-		while stripIdx >= seg.stripCount do
+		while (not ended) and stripIdx >= seg.stripCount do
 			local nxt = road.nextSegment(courseSet, segId, forkChoice or 0)
 			if nxt == -1 then
-				return out
+				-- Branch/course ends within view. DON'T return a short array (that left a
+				-- gap where the road vanished and cars appeared to drive on the terrain) —
+				-- freeze the curve and keep laying straight strips to the horizon.
+				ended, curveDx = true, 0
+				break
 			end
 			segId, seg, stripIdx = nxt, road.getSegment(courseSet, nxt), 0
 		end
-		local cm, hm = #seg.curveProfile, #seg.hillProfile
-		local curve = seg.curveProfile[math.floor(stripIdx * cm / seg.stripCount) + 1] or 0
-		local hill = seg.hillProfile[math.floor(stripIdx * hm / seg.stripCount) + 1] or 0
+		local curve, hill
+		if ended then
+			curve = 0
+			hill = seg.hillProfile[#seg.hillProfile] or 0
+		else
+			local cm, hm = #seg.curveProfile, #seg.hillProfile
+			curve = seg.curveProfile[math.floor(stripIdx * cm / seg.stripCount) + 1] or 0
+			hill = seg.hillProfile[math.floor(stripIdx * hm / seg.stripCount) + 1] or 0
+		end
 		curveDx += curve
 		curveX += curveDx
 		out[k] = { curveX = curveX, hill = hill, dz = (k - 1) * ROAD_UNIT, seg = seg }
@@ -518,12 +529,13 @@ end
 -- ROBLOX CAPS PART SIZE AT 2048 studs/axis, so a single wide part is clamped and
 -- shows as a central rectangle — the backdrop is TILED across several 2000-wide
 -- parts to actually span the screen. Layers are z-separated to avoid flicker.
+-- Softer, pastel sunset (playtest: the saturated neon bands read as harsh/"CGA").
 local SKY_BANDS = {
-	{ Color3.fromRGB(255, 146, 70), 40, 520 }, -- orange horizon (tall)
-	{ Color3.fromRGB(234, 84, 92), 420, 380 }, -- coral / red
-	{ Color3.fromRGB(188, 60, 118), 760, 360 }, -- magenta
-	{ Color3.fromRGB(110, 50, 130), 1120, 480 }, -- purple
-	{ Color3.fromRGB(48, 32, 92), 2000, 1800 }, -- indigo (top only)
+	{ Color3.fromRGB(255, 182, 128), 40, 520 }, -- soft peach horizon
+	{ Color3.fromRGB(240, 146, 138), 420, 380 }, -- soft coral
+	{ Color3.fromRGB(206, 126, 156), 760, 360 }, -- soft rose
+	{ Color3.fromRGB(150, 110, 160), 1120, 480 }, -- soft mauve
+	{ Color3.fromRGB(78, 64, 120), 2000, 1800 }, -- soft indigo (top only)
 }
 local SKY_Z = -1500 -- backdrop depth (behind the ground far edge so they never intersect)
 local SKY_TILES = { -4000, -2000, 0, 2000, 4000 } -- 5 × 2000-wide tiles = 10000 wide
@@ -546,22 +558,24 @@ local function makeSky(parent, baseY)
 	for i, b in ipairs(SKY_BANDS) do
 		tiled(b[2], b[3], b[1], Enum.Material.SmoothPlastic, 0, -(i - 1) * 0.6)
 	end
-	-- Warm neon glow layer in front of the wall so the sunset around the sun is punchy.
+	-- Soft haze layer in front of the wall — SmoothPlastic (NOT neon, which glared) +
+	-- pastel + faint, so it gently blends the sunset instead of a harsh glow.
 	local SUN_Y = baseY + 110
 	for _, g in ipairs({
-		{ 520, 90, Color3.fromRGB(255, 140, 80), 0.2 }, -- {height, yOff, color, transparency}
-		{ 420, 380, Color3.fromRGB(228, 84, 110), 0.4 }, -- magenta above
-		{ 520, 720, Color3.fromRGB(120, 58, 140), 0.6 }, -- purple, blends up
+		{ 520, 90, Color3.fromRGB(255, 208, 172), 0.55 }, -- {height, yOff, color, transparency}
+		{ 420, 380, Color3.fromRGB(238, 172, 178), 0.7 }, -- soft rose
+		{ 520, 720, Color3.fromRGB(176, 150, 188), 0.82 }, -- soft lilac
 	}) do
-		tiled(g[2], g[1], g[3], Enum.Material.Neon, g[4], 12)
+		tiled(g[2], g[1], g[3], Enum.Material.SmoothPlastic, g[4], 12)
 	end
-	-- The setting sun: a neon disc, dark horizontal cuts across its lower half.
+	-- The setting sun: a neon disc (still glows, but a warmer/softer tone), with faint
+	-- horizontal cuts across its lower half.
 	local D = 360
 	local sun = Instance.new("Part")
 	sun.Anchored, sun.CanCollide, sun.CanQuery, sun.CanTouch = true, false, false, false
 	sun.Shape = Enum.PartType.Cylinder
 	sun.Material = Enum.Material.Neon
-	sun.Color = Color3.fromRGB(255, 168, 78)
+	sun.Color = Color3.fromRGB(255, 210, 150)
 	sun.Size = Vector3.new(5, D, D)
 	sun.CFrame = CFrame.new(0, SUN_Y, SKY_Z + 20) * CFrame.Angles(0, math.rad(90), 0)
 	sun.Parent = parent
@@ -569,7 +583,7 @@ local function makeSky(parent, baseY)
 		local cut = Instance.new("Part")
 		cut.Anchored, cut.CanCollide, cut.CanQuery, cut.CanTouch = true, false, false, false
 		cut.Material = Enum.Material.SmoothPlastic
-		cut.Color = Color3.fromRGB(150, 46, 96)
+		cut.Color = Color3.fromRGB(214, 150, 150)
 		cut.Size = Vector3.new(D, 5 + i * 1.4, 2)
 		cut.CFrame = CFrame.new(0, SUN_Y - 30 - i * 22, SKY_Z + 24)
 		cut.Parent = parent
@@ -1104,9 +1118,10 @@ local function renderWorld(rz, laneX, view)
 	local carX = laneX * SX
 	local boosting = seat.boostTicks > 0
 	local baseCol = PLAYER_CAR_COLORS[view.car or 1] or Color3.fromRGB(224, 72, 48)
-	-- Steady base = your SELECTED car colour; only boost (cyan) / crash (white) change it.
-	local carCol = boosting and Color3.fromRGB(120, 240, 255)
-		or (seat.crashedTicks > 0 and Color3.fromRGB(255, 255, 255) or baseCol)
+	-- Keep the car its SELECTED colour steadily (players found the boost/crash recolour
+	-- distracting — it flipped between two colours on boost-pad-heavy courses). Boost is
+	-- shown by the particle trail + FOV kick; a crash gives just a brief light flash.
+	local carCol = (seat.crashedTicks > 0) and baseCol:Lerp(Color3.new(1, 1, 1), 0.65) or baseCol
 	tintCar(carRig, carCol) -- whole shell (hull, hood, haunches) together
 	boostActive = boosting
 	if boostEmitter then
