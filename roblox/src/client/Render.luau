@@ -445,9 +445,10 @@ end
 -- ahead. The camera barely moves (treadmill), so a fixed backdrop reads as the
 -- sky in the forward view; the ground plane occludes its lower half at the horizon.
 -- Bold OutRun sunset gradient. Tall, warm bands dominate so the sunset fills the
--- whole forward view (indigo only at the very top); very wide so it spans the
--- screen at any FOV. {color, yCentre, height}
-local SKY_W = 24000
+-- whole forward view (indigo only at the very top). {color, yCentre, height}
+-- ROBLOX CAPS PART SIZE AT 2048 studs/axis, so a single wide part is clamped and
+-- shows as a central rectangle — the backdrop is TILED across several 2000-wide
+-- parts to actually span the screen. Layers are z-separated to avoid flicker.
 local SKY_BANDS = {
 	{ Color3.fromRGB(255, 146, 70), 40, 520 }, -- orange horizon (tall)
 	{ Color3.fromRGB(234, 84, 92), 420, 380 }, -- coral / red
@@ -455,40 +456,35 @@ local SKY_BANDS = {
 	{ Color3.fromRGB(110, 50, 130), 1120, 480 }, -- purple
 	{ Color3.fromRGB(48, 32, 92), 2000, 1800 }, -- indigo (top only)
 }
-local SKY_Z = -1500 -- backdrop wall depth (kept inside fog so it hazes into the horizon)
+local SKY_Z = -1500 -- backdrop depth (behind the ground far edge so they never intersect)
+local SKY_TILES = { -4000, -2000, 0, 2000, 4000 } -- 5 × 2000-wide tiles = 10000 wide
+local TILE_W = 2000
 local function makeSky(parent, baseY)
-	for _, b in ipairs(SKY_BANDS) do
-		local p = Instance.new("Part")
-		p.Anchored = true
-		p.CanCollide = false
-		p.CanQuery = false
-		p.CanTouch = false
-		p.Material = Enum.Material.SmoothPlastic
-		p.Size = Vector3.new(SKY_W, b[3], 20)
-		p.Color = b[1]
-		p.CFrame = CFrame.new(0, baseY + b[2], SKY_Z)
-		p.Parent = parent
+	local function tiled(yc, h, color, material, transp, zoff)
+		for _, tx in ipairs(SKY_TILES) do
+			local p = Instance.new("Part")
+			p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch = true, false, false, false
+			p.Material = material
+			p.Size = Vector3.new(TILE_W, h, 20)
+			p.Color = color
+			p.Transparency = transp or 0
+			p.CFrame = CFrame.new(tx, baseY + yc, SKY_Z + (zoff or 0))
+			p.Parent = parent
+		end
 	end
-	-- Full-width warm neon glow in front of the wall, so the sunset around the sun
-	-- reaches both screen edges (not a central patch).
+	for _, b in ipairs(SKY_BANDS) do
+		tiled(b[2], b[3], b[1], Enum.Material.SmoothPlastic, 0, 0)
+	end
+	-- Warm neon glow layer in front of the wall so the sunset around the sun is punchy.
 	local SUN_Y = baseY + 110
 	for _, g in ipairs({
 		{ 520, 90, Color3.fromRGB(255, 140, 80), 0.2 }, -- {height, yOff, color, transparency}
 		{ 420, 380, Color3.fromRGB(228, 84, 110), 0.4 }, -- magenta above
 		{ 520, 720, Color3.fromRGB(120, 58, 140), 0.6 }, -- purple, blends up
 	}) do
-		local band = Instance.new("Part")
-		band.Anchored, band.CanCollide, band.CanQuery, band.CanTouch = true, false, false, false
-		band.Material = Enum.Material.Neon
-		band.Size = Vector3.new(SKY_W, g[1], 2)
-		band.Color = g[3]
-		band.Transparency = g[4]
-		band.CFrame = CFrame.new(0, baseY + g[2], SKY_Z + 4)
-		band.Parent = parent
+		tiled(g[2], g[1], g[3], Enum.Material.Neon, g[4], 12)
 	end
-	-- The setting sun: a big neon disc on the horizon, with dark horizontal cuts
-	-- across its lower half (classic OutRun look). Sits just in front of the glow so
-	-- it never z-fights; its lower half dips below the ground horizon.
+	-- The setting sun: a neon disc, dark horizontal cuts across its lower half.
 	local D = 360
 	local sun = Instance.new("Part")
 	sun.Anchored, sun.CanCollide, sun.CanQuery, sun.CanTouch = true, false, false, false
@@ -496,16 +492,15 @@ local function makeSky(parent, baseY)
 	sun.Material = Enum.Material.Neon
 	sun.Color = Color3.fromRGB(255, 168, 78)
 	sun.Size = Vector3.new(5, D, D)
-	sun.CFrame = CFrame.new(0, SUN_Y, SKY_Z + 8) * CFrame.Angles(0, math.rad(90), 0)
+	sun.CFrame = CFrame.new(0, SUN_Y, SKY_Z + 20) * CFrame.Angles(0, math.rad(90), 0)
 	sun.Parent = parent
-	-- Horizontal cut lines across the lower half (they read as sky showing through).
 	for i = 0, 5 do
 		local cut = Instance.new("Part")
 		cut.Anchored, cut.CanCollide, cut.CanQuery, cut.CanTouch = true, false, false, false
 		cut.Material = Enum.Material.SmoothPlastic
 		cut.Color = Color3.fromRGB(150, 46, 96)
 		cut.Size = Vector3.new(D, 5 + i * 1.4, 2)
-		cut.CFrame = CFrame.new(0, SUN_Y - 30 - i * 22, SKY_Z + 10)
+		cut.CFrame = CFrame.new(0, SUN_Y - 30 - i * 22, SKY_Z + 24)
 		cut.Parent = parent
 	end
 	-- A few soft dusk clouds high across the sky for depth (flat, warm, off-centre so
@@ -521,7 +516,7 @@ local function makeSky(parent, baseY)
 		cl.Color = Color3.fromRGB(226, 150, 150)
 		cl.Transparency = c[4]
 		cl.Size = Vector3.new(c[3], 120, 2)
-		cl.CFrame = CFrame.new(c[1], baseY + c[2], SKY_Z + 2)
+		cl.CFrame = CFrame.new(c[1], baseY + c[2], SKY_Z + 6)
 		cl.Parent = parent
 	end
 end
