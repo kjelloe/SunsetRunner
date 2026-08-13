@@ -240,6 +240,7 @@ vp.LightDirection = Vector3.new(-0.4, -1, -0.6)
 vp.Parent = panel
 corner(vp, 10)
 local vpCam = Instance.new("Camera")
+vpCam.FieldOfView = 40 -- narrower = the car fills the frame (was tiny at default 70)
 vpCam.Parent = vp
 vp.CurrentCamera = vpCam
 local vpOrbit = 0
@@ -433,10 +434,10 @@ end)
 RunService.RenderStepped:Connect(function(dt)
 	Render.step(dt) -- interpolate + render at ~60 fps from the 20 Hz views
 	workspace.CurrentCamera.CFrame = Render.cameraCFrame()
-	if vp.Visible then -- orbit the car preview
+	if vp.Visible then -- orbit the car preview (close + narrow FOV so it fills the frame)
 		vpOrbit += dt * 0.7
-		local r = 17
-		vpCam.CFrame = CFrame.lookAt(Vector3.new(math.sin(vpOrbit) * r, 6, math.cos(vpOrbit) * r), Vector3.new(0, 0.4, 0))
+		local r = 15
+		vpCam.CFrame = CFrame.lookAt(Vector3.new(math.sin(vpOrbit) * r, 4.5, math.cos(vpOrbit) * r), Vector3.new(0, 0.3, 0))
 	end
 end)
 
