@@ -2536,3 +2536,11 @@ Roblox host+client. On crossing a checkpoint, a board shows who leads + seconds 
 Server records each seat's checkpoint-arrival tick (engine checkpoint events) and builds a
 ranked gap list on the player's own crossing (gap=(arrival-leader)/20s), sent ~5 s in the
 view. Client shows a CHECKPOINT board during racing (LEADER / +X.Xs).
+
+## marker-0154 — Roblox: sky-follow (fix every-race sunset warm-up) (2026-08-15)
+
+The sunset faded in ~2 s at every race start (edge backdrop tiles lazy-rendered; a render
+hitch cleared it for the session — signature of Roblox lazy-deferring large static distant
+parts). Now every sky part is repositioned each frame to track the view (offset by look.X),
+so Roblox keeps them in the active render set (no lazy defer). Bonus: the sunset tracks the
+heading. Presentation only.
