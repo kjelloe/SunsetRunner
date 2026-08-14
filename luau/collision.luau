@@ -6,7 +6,7 @@
 local fixed = require("./fixedmath")
 
 local CAR_LENGTH = 512
-local CAR_WIDTH = 200
+local CAR_WIDTH = 140
 local BUMP_SLOW = 200
 local BUMP_PUSH = 64
 local TRAFFIC_CRASH_DEN = 3

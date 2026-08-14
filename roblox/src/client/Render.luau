@@ -127,7 +127,7 @@ local PLAYER_CAR_COLORS = {
 }
 
 -- Engine-units -> studs.
-local CAR_WIDEN = 1.5 -- widen cars in X so the visible car ~ the collision footprint
+local CAR_WIDEN = 1.16 -- widen cars in X toward the collision footprint (slimmed per playtest)
 local SX = 14 / 256 -- lateral (one lane = 14 studs)
 local SZ = 9 / 256 -- forward depth per road unit
 local SY = 0.7 -- hill height

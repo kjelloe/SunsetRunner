@@ -250,7 +250,7 @@ carModel.Parent = vp
 -- you pick is what you drive. L/rideY match that rig.
 local previewBody = {}
 local PL, PRIDE = 12.0, -0.15
-local PBW = 1.5 -- widen in X to match the in-race car (marker-0149)
+local PBW = 1.16 -- widen in X to match the in-race car (marker-0151)
 local function ppart(size, color, cf, shape, isBody, material)
 	local p = Instance.new("Part")
 	size = Vector3.new(size.X * PBW, size.Y, size.Z)

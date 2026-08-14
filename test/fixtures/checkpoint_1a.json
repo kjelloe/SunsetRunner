@@ -1,5 +1,5 @@
 {
-  "note": "checkpoint_1a milestone fixture. Last repinned: more/varied traffic: density 6 + bus/motorcycle kinds (marker-0072)",
+  "note": "checkpoint_1a milestone fixture. Last repinned: CAR_WIDTH 200->140 (slimmer hitbox per playtest)",
   "scenario": {
     "name": "checkpoint_1a",
     "seed": 12345,
@@ -25,10 +25,10 @@
     "hashes": {
       "10": "43cacc76c5df0021",
       "100": "a71f21531491f33c",
-      "215": "438557be84df8f03"
+      "215": "0b5b2adb339ba755"
     },
-    "finalHash": "2fc22acd892b310d",
-    "finishTick": 450,
+    "finalHash": "ed6b3a860eef6d4f",
+    "finishTick": 395,
     "census": [
       {
         "type": "checkpoint",
@@ -40,23 +40,15 @@
       },
       {
         "type": "collision",
-        "tick": 176
+        "tick": 182
       },
       {
         "type": "collision",
-        "tick": 240
-      },
-      {
-        "type": "collision",
-        "tick": 370
-      },
-      {
-        "type": "collision",
-        "tick": 425
+        "tick": 259
       },
       {
         "type": "finish",
-        "tick": 450
+        "tick": 395
       }
     ]
   }

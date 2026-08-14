@@ -1,20 +1,20 @@
 {
-  "note": "single-car physics golden. REPINNED at marker-0036 (course 1 restructured with hills + a fork; default-left path). Seed 12345, sunset_coast, red_sprint, accel from tick 1.",
-  "seed": 12345,
-  "courseId": 1,
-  "carId": 1,
-  "accelRun": {
-    "hashAtTick10": "43cacc76c5df0021",
-    "hashAtTick100": "a71f21531491f33c",
-    "finishTick": 450,
-    "hashAtTick500": "df45ddf3f1511fb7",
-    "checkpointTick": 108,
-    "checkpointBonus": 600,
-    "finalTimerTicks": 1822,
-    "initialTrafficCount": 6
-  },
-  "timeout": {
-    "startTimeTicks": 30,
-    "timeoutTick": 30
-  }
+ "note": "single-car physics golden. REPINNED at marker-0036 (course 1 restructured with hills + a fork; default-left path). Seed 12345, sunset_coast, red_sprint, accel from tick 1. Re-pinned for CAR_WIDTH 200->140 (slimmer hitbox).",
+ "seed": 12345,
+ "courseId": 1,
+ "carId": 1,
+ "accelRun": {
+  "hashAtTick10": "43cacc76c5df0021",
+  "hashAtTick100": "a71f21531491f33c",
+  "finishTick": 395,
+  "hashAtTick500": "3b1c1589dbe16519",
+  "checkpointTick": 108,
+  "checkpointBonus": 600,
+  "finalTimerTicks": 1706,
+  "initialTrafficCount": 6
+ },
+ "timeout": {
+  "startTimeTicks": 30,
+  "timeoutTick": 30
+ }
 }

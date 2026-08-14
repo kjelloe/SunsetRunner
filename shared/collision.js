@@ -7,7 +7,7 @@
 import { absI32 } from "./fixedmath.js";
 
 export const CAR_LENGTH = 512; // roadZ proximity (2 road units) for a bump
-export const CAR_WIDTH = 200;  // laneX proximity — narrower than a lane (256)
+export const CAR_WIDTH = 140;  // laneX proximity for a crash (slimmed from 200 per playtest — narrower cars)
 
 export const BUMP_SLOW = 200;  // speed shed by each car in a rival bump
 export const BUMP_PUSH = 64;   // lateral shove applied to each car, apart
