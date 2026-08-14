@@ -2495,3 +2495,20 @@ sprite kinds (bus/truck/estate/sport) + id-based car variants.
 Roblox presentation only; rojo build ok. (1) ONC_N 8->4 (oncoming halved). (2) car-colour
 flicker: crash tint was sustained over the 30-tick stun -> now a brief decaying white
 flash on the impact edge only; base stays the selected colour.
+
+## marker-0148 — Browser: no start-line checkpoint board + arcade initials (2026-08-15)
+
+Browser presentation; npm test 317/317; browser smoke OK. (1) The checkpoint-standings
+board fired for the checkpoint segment you START in (a stage-1 board before anyone had
+raced) — prime selfLastCp to the spawn segment on the first update so only real crossings
+fire (+updated fade test, +suppression test). (2) Arcade HIGH-SCORE initials: on a solo
+race end that makes the top-10, an old-school 5-slot A-Z entry (◄►move ▲▼letter ENTER ok,
+no typing) over the frozen scene, recorded under those initials. New client/initials_entry.js
++ input.js up/down menu-nav + main.js solo high-score routing.
+
+## marker-0149 — Roblox: widen cars to the crash box (2026-08-15)
+
+Roblox render only; rojo build ok. Crash triggers at CAR_WIDTH=200 (~11 studs) but cars
+were ~6 wide -> crashed with a visible gap. Scale every car part's width + lateral offset
+by CAR_WIDEN=1.5 in the shared add() of makeCarRig/makeVehicleRig + the preview, so the
+visible car ~ the collision footprint. Engine/collision untouched.
