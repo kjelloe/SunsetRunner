@@ -2478,3 +2478,20 @@ Roblox presentation only; engine untouched; rojo build valid; npm test 316/316.
 3. FIX road vanishing in a turn near a stage end: buildStrips hit a fork/next of -1 and
    returned a SHORT strip array -> the road disappeared and cars appeared to drive on
    the terrain. Now it freezes the curve and lays straight strips to the horizon.
+
+## marker-0146 — Browser traffic: varied shapes, sizes, sheen not box (2026-08-14)
+
+Browser (Canvas) presentation only; engine untouched; npm test 316/316; browser smoke OK.
+From browser playtest: (1) traffic was too large + all one "car" shape — the scale
+normalised away sprite size and every kind used kind="car". New client-side trafficSprite
+factory (kept OUT of the manifest, so no content-hash change): distinct shapes sedan/
+estate/sport/lorry(truck)/bus/motorbike, sized per-type as a fraction of the road
+half-width. Rival scale 0.62->0.36. (2) rival crash "white box" was a white bounding
+RECT -> now a white SHEEN redrawn over the car's shape. (3) varied traffic via new
+sprite kinds (bus/truck/estate/sport) + id-based car variants.
+
+## marker-0147 — Roblox: halve oncoming stream + car-colour flicker (2026-08-14)
+
+Roblox presentation only; rojo build ok. (1) ONC_N 8->4 (oncoming halved). (2) car-colour
+flicker: crash tint was sustained over the 30-tick stun -> now a brief decaying white
+flash on the impact edge only; base stays the selected colour.
