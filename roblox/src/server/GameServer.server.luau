@@ -85,6 +85,8 @@ pcall(function()
 	orderedStore = DataStoreService:GetOrderedDataStore("SunsetRanks_v1")
 end)
 local allTimeBoard = {} -- { { name, points }, ... } desc, top 10
+local cpArrival = {} -- [checkpointSegId] = { [seatId] = arrivalTick } (marker-0153)
+local cpBoard: { [Player]: { entries: any, expire: number } } = {} -- per-player checkpoint board
 local nameCache: { [number]: string } = {} -- userId -> display name (avoid repeat lookups)
 
 -- In-session fallback board (used when the ordered store is unavailable).
@@ -192,6 +194,8 @@ local function freshRoom(seed: number)
 	room = { state = state, phase = "lobby", lobbyTicks = LOBBY_TICKS, cd = COUNTDOWN_TICKS, summ = 0, seed = seed, stopped = {}, graceTicks = nil }
 	readyByPlayer = {}
 	spectateByPlayer = {}
+	cpArrival = {}
+	cpBoard = {}
 	for i = 1, SEATS do
 		inputBySeat[i] = { steer = 0, accel = 0, brake = 0 }
 		forkBySeat[i] = 0
@@ -335,6 +339,7 @@ local function buildViewFor(player: Player)
 		car = s.carId,
 		points = pointsByPlayer[player] or 0,
 		allTime = ((room.phase == "lobby" or room.phase == "summary") and allTimeBoard) or nil,
+		checkpointBoard = (cpBoard[player] and state.tick < cpBoard[player].expire) and cpBoard[player].entries or nil,
 		traffic = traffic,
 		ghosts = ghosts,
 		seat = {
@@ -516,11 +521,32 @@ RunService.Heartbeat:Connect(function(dt)
 				end
 				st = reducer.apply(st, { type = "advance_tick" }, ctx)
 				-- Reward players ONLY for stages completed: +100 per checkpoint passed.
-				-- No finish bonus, no collision penalty (carried across races).
+				-- Also record each seat's checkpoint arrival tick + build a race-list board
+				-- (rank + seconds behind the leader) for a player the moment THEY cross.
 				for _, e in ipairs(st.events) do
-					local p = playerOfSeat[e.seatId]
-					if p and e.type == "checkpoint" then
-						pointsByPlayer[p] = (pointsByPlayer[p] or 0) + 100
+					if e.type == "checkpoint" then
+						local cpSeg = st.seats[e.seatId].segmentId
+						cpArrival[cpSeg] = cpArrival[cpSeg] or {}
+						if cpArrival[cpSeg][e.seatId] == nil then
+							cpArrival[cpSeg][e.seatId] = st.tick
+						end
+						local p = playerOfSeat[e.seatId]
+						if p then
+							pointsByPlayer[p] = (pointsByPlayer[p] or 0) + 100
+							local order = {}
+							for sid, tick in pairs(cpArrival[cpSeg]) do
+								table.insert(order, { sid = sid, tick = tick })
+							end
+							table.sort(order, function(a, b)
+								return a.tick < b.tick
+							end)
+							local lead = order[1].tick
+							local entries = {}
+							for rank, o in ipairs(order) do
+								table.insert(entries, { rank = rank, name = nameOfSeat(o.sid), gap = (o.tick - lead) / 20, isSelf = (o.sid == e.seatId) })
+							end
+							cpBoard[p] = { entries = entries, expire = st.tick + 100 } -- ~5 s
+						end
 					end
 				end
 				room.state = st

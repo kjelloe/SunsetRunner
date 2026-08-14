@@ -1406,6 +1406,20 @@ local function renderWorld(rz, laneX, view)
 				r.Text = ""
 			end
 		end
+	elseif view.phase == "racing" and view.checkpointBoard then
+		-- Checkpoint race list: rank + seconds behind the leader (shows ~5 s on crossing).
+		board.frame.Visible = true
+		board.title.Text = "CHECKPOINT"
+		for i, r in ipairs(board.rows) do
+			local e = view.checkpointBoard[i]
+			if e then
+				local gap = (e.gap and e.gap > 0.05) and string.format("+%.1fs", e.gap) or "LEADER"
+				r.Text = string.format("%d.  %s    %s", e.rank, e.name, gap)
+				r.TextColor3 = e.isSelf and Color3.fromRGB(120, 240, 120) or Color3.fromRGB(230, 230, 240)
+			else
+				r.Text = ""
+			end
+		end
 	else
 		board.frame.Visible = false
 	end
