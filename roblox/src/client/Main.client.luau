@@ -250,8 +250,12 @@ carModel.Parent = vp
 -- you pick is what you drive. L/rideY match that rig.
 local previewBody = {}
 local PL, PRIDE = 12.0, -0.15
+local PBW = 1.5 -- widen in X to match the in-race car (marker-0149)
 local function ppart(size, color, cf, shape, isBody, material)
 	local p = Instance.new("Part")
+	size = Vector3.new(size.X * PBW, size.Y, size.Z)
+	local pos = cf.Position
+	cf = CFrame.new(pos.X * PBW, pos.Y, pos.Z) * cf.Rotation
 	p.Size, p.Color, p.CFrame, p.Anchored, p.CanCollide = size, color, cf, true, false
 	p.Material = material or Enum.Material.SmoothPlastic
 	if shape then
@@ -265,6 +269,9 @@ local function ppart(size, color, cf, shape, isBody, material)
 end
 local function pwedge(size, cf, isBody)
 	local p = Instance.new("WedgePart")
+	size = Vector3.new(size.X * PBW, size.Y, size.Z)
+	local pos = cf.Position
+	cf = CFrame.new(pos.X * PBW, pos.Y, pos.Z) * cf.Rotation
 	p.Size, p.Anchored, p.CanCollide, p.CFrame = size, true, false, cf
 	p.Color = CAR_COLORS[1]
 	p.Parent = carModel

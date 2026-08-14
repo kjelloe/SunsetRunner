@@ -127,6 +127,7 @@ local PLAYER_CAR_COLORS = {
 }
 
 -- Engine-units -> studs.
+local CAR_WIDEN = 1.5 -- widen cars in X so the visible car ~ the collision footprint
 local SX = 14 / 256 -- lateral (one lane = 14 studs)
 local SZ = 9 / 256 -- forward depth per road unit
 local SY = 0.7 -- hill height
@@ -275,6 +276,12 @@ local function makeCarRig(bodyColor: Color3, parent: Instance, variant: number?)
 	local trim = bodyColor:Lerp(Color3.new(0, 0, 0), 0.35)
 	local glass = Color3.fromRGB(120, 165, 200)
 	local function add(p, offset, shownT)
+		-- Widen the whole car in X (marker-0149): the crash box is CAR_WIDTH≈11 studs
+		-- but the car was drawn ~6 wide, so you crashed with a visible gap. Scale each
+		-- part's width AND lateral offset so the visible car ≈ the collision footprint.
+		p.Size = Vector3.new(p.Size.X * CAR_WIDEN, p.Size.Y, p.Size.Z)
+		local pos = offset.Position
+		offset = CFrame.new(pos.X * CAR_WIDEN, pos.Y, pos.Z) * offset.Rotation
 		p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch = true, false, false, false
 		p.TopSurface, p.BottomSurface = Enum.SurfaceType.Smooth, Enum.SurfaceType.Smooth
 		p.Parent = parent
@@ -390,6 +397,9 @@ end
 local function rigBuilder(parent)
 	local rig = { parts = {}, body = nil :: Part?, bodyParts = {} }
 	local function add(p, offset, shownT, isBody)
+		p.Size = Vector3.new(p.Size.X * CAR_WIDEN, p.Size.Y, p.Size.Z) -- match collision width
+		local pos = offset.Position
+		offset = CFrame.new(pos.X * CAR_WIDEN, pos.Y, pos.Z) * offset.Rotation
 		p.Anchored, p.CanCollide, p.CanQuery, p.CanTouch = true, false, false, false
 		p.TopSurface, p.BottomSurface = Enum.SurfaceType.Smooth, Enum.SurfaceType.Smooth
 		p.Parent = parent
