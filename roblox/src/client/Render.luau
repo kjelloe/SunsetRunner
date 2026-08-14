@@ -149,7 +149,7 @@ local vehPool: { [string]: { any } } = {} -- traffic rigs by vehicle type (marke
 -- real, same-direction, avoidable traffic. { rig } pool + { roadZ, laneX, init } state.
 local oncPool: { any } = {}
 local oncState: { { roadZ: number, laneX: number, init: boolean } } = {}
-local ONC_N = 8
+local ONC_N = 4 -- oncoming cars on screen at once (halved from 8 per playtest)
 local ONC_SPEED = 15000 -- extra closing speed (road units / sec) on top of the treadmill
 local signs = {} -- roadside billboards { post, panel, label }
 local gantries = {} -- over-road CHECKPOINT / FINISH arches { postL, postR, beam, sign, label }
@@ -165,6 +165,8 @@ local carRig -- player car rig (body + cabin + 4 wheels)
 local boostEmitter: ParticleEmitter -- cyan trail while boosting (marker-0112)
 local boostActive = false
 local camShake = 0 -- decaying crash shake magnitude (marker-0137)
+local crashFlash = 0 -- decaying white flash on crash (brief, not sustained over the stun)
+local prevCrashTint = 0 -- crash-edge detector for the flash
 
 -- Audio (marker-0118): bundled rbxasset sounds (no marketplace assets). One ping is
 -- re-pitched for checkpoint/countdown/GO/finish; distinct sounds for crash/boost.
@@ -1118,10 +1120,15 @@ local function renderWorld(rz, laneX, view)
 	local carX = laneX * SX
 	local boosting = seat.boostTicks > 0
 	local baseCol = PLAYER_CAR_COLORS[view.car or 1] or Color3.fromRGB(224, 72, 48)
-	-- Keep the car its SELECTED colour steadily (players found the boost/crash recolour
-	-- distracting — it flipped between two colours on boost-pad-heavy courses). Boost is
-	-- shown by the particle trail + FOV kick; a crash gives just a brief light flash.
-	local carCol = (seat.crashedTicks > 0) and baseCol:Lerp(Color3.new(1, 1, 1), 0.65) or baseCol
+	-- Keep the car its SELECTED colour. A crash gives a BRIEF decaying white flash on the
+	-- impact EDGE only — sustaining it over the 30-tick stun read as the colour flickering
+	-- between two shades. Boost shows via the trail + FOV kick.
+	if seat.crashedTicks > 0 and prevCrashTint == 0 then
+		crashFlash = 1
+	end
+	prevCrashTint = seat.crashedTicks
+	crashFlash = math.max(0, crashFlash - 0.08)
+	local carCol = (crashFlash > 0.03) and baseCol:Lerp(Color3.new(1, 1, 1), crashFlash * 0.6) or baseCol
 	tintCar(carRig, carCol) -- whole shell (hull, hood, haunches) together
 	boostActive = boosting
 	if boostEmitter then
