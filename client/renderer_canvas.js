@@ -335,12 +335,15 @@ function drawPlayerCar(g, view, seat, camX, assets) {
   const o = onRoad(view, camX, TUNING.playerNearZ, seat.laneX);
   const cy = view.h - 22; // pinned near the bottom of the screen
   if (assets) {
-    drawSprite(g, assets.sprites.player_car, o.x, cy, view.w * 0.0028);
+    // Tint the player car to the SELECTED car's colour (was a fixed red sprite that
+    // ignored the car-select choice), same identity colours as the rivals.
+    const sprite = rivalCarSprite(seat.carId, assets.sprites.player_car);
+    drawSprite(g, sprite, o.x, cy, view.w * 0.0028);
     return;
   }
   const carW = Math.floor(view.w * 0.17);
   const carH = Math.floor(carW * 0.5);
-  g.fillStyle = "#d02b2b";
+  g.fillStyle = carColor(seat.carId);
   g.fillRect(Math.round(o.x - carW / 2), cy - carH, carW, carH);
 }
 
