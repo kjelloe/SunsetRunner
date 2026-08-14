@@ -49,6 +49,101 @@ export function drawSprite(g, sprite, cx, cyBottom, scale) {
     g.fillStyle = "#ffdd55";
     g.fillRect(x + w * 0.08, y + h * 0.5, w * 0.1, h * 0.12);
     g.fillRect(x + w * 0.82, y + h * 0.5, w * 0.1, h * 0.12);
+  } else if (sprite.kind === "sport") {
+    // low, sleek coupe with a rear spoiler (rivals + fast traffic)
+    g.fillStyle = "rgba(0,0,0,0.28)";
+    g.beginPath();
+    g.ellipse(cx, cyBottom - h * 0.05, w * 0.52, h * 0.13, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = p[2];
+    g.fillRect(x + w * 0.05, y + h * 0.74, w * 0.17, h * 0.24);
+    g.fillRect(x + w * 0.78, y + h * 0.74, w * 0.17, h * 0.24);
+    const grd = g.createLinearGradient(x, y, x, y + h);
+    grd.addColorStop(0, p[0]);
+    grd.addColorStop(1, p[1]);
+    g.fillStyle = grd;
+    roundRect(g, x, y + h * 0.34, w, h * 0.5, h * 0.2);
+    g.fill();
+    g.fillStyle = p[1];
+    roundRect(g, x + w * 0.24, y + h * 0.12, w * 0.52, h * 0.32, h * 0.12);
+    g.fill();
+    g.fillStyle = "rgba(180,220,255,0.85)";
+    roundRect(g, x + w * 0.3, y + h * 0.16, w * 0.4, h * 0.18, h * 0.07);
+    g.fill();
+    g.fillStyle = p[1]; // spoiler
+    g.fillRect(x + w * 0.04, y + h * 0.3, w * 0.92, h * 0.06);
+    g.fillStyle = "#ff5a5a";
+    g.fillRect(x + w * 0.08, y + h * 0.56, w * 0.14, h * 0.1);
+    g.fillRect(x + w * 0.78, y + h * 0.56, w * 0.14, h * 0.1);
+  } else if (sprite.kind === "estate") {
+    // wagon: the roof runs almost to the tail
+    g.fillStyle = "rgba(0,0,0,0.28)";
+    g.beginPath();
+    g.ellipse(cx, cyBottom - h * 0.06, w * 0.52, h * 0.14, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = p[2];
+    g.fillRect(x + w * 0.06, y + h * 0.72, w * 0.16, h * 0.26);
+    g.fillRect(x + w * 0.78, y + h * 0.72, w * 0.16, h * 0.26);
+    const grd = g.createLinearGradient(x, y, x, y + h);
+    grd.addColorStop(0, p[0]);
+    grd.addColorStop(1, p[1]);
+    g.fillStyle = grd;
+    roundRect(g, x, y + h * 0.16, w, h * 0.64, h * 0.16);
+    g.fill();
+    g.fillStyle = p[1];
+    roundRect(g, x + w * 0.12, y, w * 0.76, h * 0.42, h * 0.12);
+    g.fill();
+    g.fillStyle = "rgba(180,220,255,0.85)";
+    roundRect(g, x + w * 0.18, y + h * 0.05, w * 0.64, h * 0.22, h * 0.06);
+    g.fill();
+    g.fillStyle = "#ffdd55";
+    g.fillRect(x + w * 0.08, y + h * 0.52, w * 0.1, h * 0.12);
+    g.fillRect(x + w * 0.82, y + h * 0.52, w * 0.1, h * 0.12);
+  } else if (sprite.kind === "truck") {
+    // rear view of a box lorry: tall box + rear doors + tail lights
+    g.fillStyle = "rgba(0,0,0,0.28)";
+    g.beginPath();
+    g.ellipse(cx, cyBottom - h * 0.05, w * 0.52, h * 0.12, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = p[2];
+    g.fillRect(x + w * 0.08, y + h * 0.82, w * 0.16, h * 0.18);
+    g.fillRect(x + w * 0.76, y + h * 0.82, w * 0.16, h * 0.18);
+    const grd = g.createLinearGradient(x, y, x, y + h);
+    grd.addColorStop(0, p[0]);
+    grd.addColorStop(1, p[1]);
+    g.fillStyle = grd;
+    roundRect(g, x + w * 0.02, y, w * 0.96, h * 0.86, h * 0.06);
+    g.fill();
+    g.strokeStyle = p[1]; // rear-door split
+    g.lineWidth = Math.max(1, w * 0.03);
+    g.beginPath();
+    g.moveTo(cx, y + h * 0.08);
+    g.lineTo(cx, y + h * 0.78);
+    g.stroke();
+    g.fillStyle = "#ff9955";
+    g.fillRect(x + w * 0.06, y + h * 0.7, w * 0.12, h * 0.1);
+    g.fillRect(x + w * 0.82, y + h * 0.7, w * 0.12, h * 0.1);
+  } else if (sprite.kind === "bus") {
+    // tall long coach with a window strip
+    g.fillStyle = "rgba(0,0,0,0.28)";
+    g.beginPath();
+    g.ellipse(cx, cyBottom - h * 0.05, w * 0.52, h * 0.12, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = p[2];
+    g.fillRect(x + w * 0.1, y + h * 0.82, w * 0.15, h * 0.18);
+    g.fillRect(x + w * 0.75, y + h * 0.82, w * 0.15, h * 0.18);
+    const grd = g.createLinearGradient(x, y, x, y + h);
+    grd.addColorStop(0, p[0]);
+    grd.addColorStop(1, p[1]);
+    g.fillStyle = grd;
+    roundRect(g, x, y, w, h * 0.86, h * 0.1);
+    g.fill();
+    g.fillStyle = "rgba(180,220,255,0.85)"; // window band
+    roundRect(g, x + w * 0.08, y + h * 0.12, w * 0.84, h * 0.3, h * 0.05);
+    g.fill();
+    g.fillStyle = "#ffdd55";
+    g.fillRect(x + w * 0.08, y + h * 0.62, w * 0.1, h * 0.14);
+    g.fillRect(x + w * 0.82, y + h * 0.62, w * 0.1, h * 0.14);
   } else if (sprite.kind === "palm") {
     g.fillStyle = p[0];
     g.fillRect(cx - w * 0.06, y + h * 0.32, w * 0.12, h * 0.68); // trunk

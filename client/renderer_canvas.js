@@ -171,6 +171,35 @@ function drawBoostEffect(g, view, seat) {
   g.restore();
 }
 
+// Client-defined traffic sprites — varied shapes + per-type on-screen size, kept OUT
+// of the asset manifest so the content hash is unaffected. kind 1 car (->sedan/estate/
+// sport by id), 2 lorry, 3 bus, 4 motorbike. `frac` = fraction of the road half-width,
+// so bigger vehicles read bigger AND everything is smaller than the old flat 0.55.
+const TRAFFIC_VARIANTS = {
+  1: [
+    { kind: "car", w: 48, h: 28, frac: 0.3 },
+    { kind: "estate", w: 50, h: 30, frac: 0.32 },
+    { kind: "sport", w: 50, h: 26, frac: 0.3 },
+  ],
+  2: [{ kind: "truck", w: 54, h: 44, frac: 0.42 }],
+  3: [{ kind: "bus", w: 60, h: 46, frac: 0.5 }],
+  4: [{ kind: "moto", w: 26, h: 30, frac: 0.2 }],
+};
+const TRAFFIC_COLORS = ["#3a6ea5", "#e0c040", "#5aa05a", "#c85a8a", "#c8823a", "#8a8a9a"];
+const TRAFFIC_CACHE = new Map();
+function trafficSprite(kind, id) {
+  const seed = (((id | 0) % 6) + 6) % 6;
+  const key = kind + ":" + seed;
+  let sprite = TRAFFIC_CACHE.get(key);
+  if (sprite) return sprite;
+  const variants = TRAFFIC_VARIANTS[kind] || TRAFFIC_VARIANTS[1];
+  const base = variants[seed % variants.length];
+  const c = TRAFFIC_COLORS[seed];
+  sprite = { w: base.w, h: base.h, kind: base.kind, frac: base.frac, palette: [c, darken(c, 0.42), "#141414"] };
+  TRAFFIC_CACHE.set(key, sprite);
+  return sprite;
+}
+
 function drawTraffic(g, view, state, camX, assets, strips) {
   const seat = state.seats[0];
   const ahead = state.traffic
@@ -181,14 +210,8 @@ function drawTraffic(g, view, state, camX, assets, strips) {
     if (dz < ROAD_UNIT) continue;
     const s = sampleStrip(strips, dz);
     const o = onRoad(view, camX, dz, t.laneX, s.curveX, s.hillY);
-    if (assets) {
-      const sprite = assets.sprites[TRAFFIC_SPRITE[t.kind] || "traffic_sedan"];
-      drawSprite(g, sprite, o.x, o.y, spriteScale(o.half, sprite, 0.55));
-    } else {
-      const w = Math.max(4, o.half * 0.5);
-      g.fillStyle = t.kind === 2 ? "#3a6ea5" : "#e0c040";
-      g.fillRect(o.x - w / 2, o.y - w * 0.6, w, w * 0.6);
-    }
+    const sprite = trafficSprite(t.kind, t.id ?? 0);
+    drawSprite(g, sprite, o.x, o.y, spriteScale(o.half, sprite, sprite.frac));
   }
 }
 
@@ -256,13 +279,14 @@ function drawGhosts(g, view, state, camX, strips, assets) {
     let h;
     if (assets) {
       const sprite = rivalCarSprite(r.carId, assets.sprites.player_car);
-      const scale = spriteScale(o.half, sprite, 0.62);
+      const scale = spriteScale(o.half, sprite, 0.36); // was 0.62 — rivals were too big
       h = sprite.h * scale;
       drawSprite(g, sprite, o.x, o.y, scale); // bottom-anchored at the road point
-      if (r.collisionActive) { // crash flash
+      if (r.collisionActive) {
+        // Crash SHEEN over the car's SHAPE (redraw white), not a bounding-box rect.
+        const flash = { ...sprite, palette: ["#ffffff", "#ededed", "#d8d8d8"] };
         g.globalAlpha = 0.5;
-        g.fillStyle = "#ffffff";
-        g.fillRect(o.x - (sprite.w * scale) / 2, o.y - h, sprite.w * scale, h);
+        drawSprite(g, flash, o.x, o.y, scale);
         g.globalAlpha = 1;
       }
     } else {
