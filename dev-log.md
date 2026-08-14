@@ -2512,3 +2512,27 @@ Roblox render only; rojo build ok. Crash triggers at CAR_WIDTH=200 (~11 studs) b
 were ~6 wide -> crashed with a visible gap. Scale every car part's width + lateral offset
 by CAR_WIDEN=1.5 in the shared add() of makeCarRig/makeVehicleRig + the preview, so the
 visible car ~ the collision footprint. Engine/collision untouched.
+
+## marker-0151 — slim crash hitbox (CAR_WIDTH 200->140) + narrow Roblox cars (2026-08-15)
+
+Engine + Roblox. Playtest: widened Roblox cars (0149) too wide; user OK'd a slimmer
+hitbox for both platforms. CAR_WIDTH 200->140 (shared/collision.js + luau twin) -> crash
+box ~7.7 studs; Roblox CAR_WIDEN 1.5->1.16 (+ preview PBW) -> cars ~7.2 studs. CONSCIOUS
+REPIN (only traffic-collision goldens moved): checkpoint_1a finalHash ed6b3a860eef6d4f;
+physics_1a accel hashAtTick500 3b1c1589dbe16519, finishTick 450->395 (slimmer = fewer
+crashes). collision/fork/boost/AI goldens UNCHANGED. npm test 317/317; 6 lune gates OK.
+
+## marker-0152 — Roblox: hide lingering SurfaceGui text, smooth rivals, camera pans (2026-08-15)
+
+Roblox render. (1) SurfaceGui text renders even on a transparent part -> hidden gantry/
+billboard text hung (the "CHECKPOINT at the start"); toggle labels' Visible with the part.
+(2) rivals "jigged" at the start (placed from 20 Hz view while the world scrolls at 60 fps)
+-> ease each rival's rendered dz/laneX (snap on big jump). (3) road left the frame in a
+sharp corner (camera looked straight) -> pan the camera toward the road's curve-ahead.
+
+## marker-0153 — Roblox: checkpoint race list (2026-08-15)
+
+Roblox host+client. On crossing a checkpoint, a board shows who leads + seconds behind.
+Server records each seat's checkpoint-arrival tick (engine checkpoint events) and builds a
+ranked gap list on the player's own crossing (gap=(arrival-leader)/20s), sent ~5 s in the
+view. Client shows a CHECKPOINT board during racing (LEADER / +X.Xs).
