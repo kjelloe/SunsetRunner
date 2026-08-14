@@ -166,6 +166,9 @@ local carRig -- player car rig (body + cabin + 4 wheels)
 local boostEmitter: ParticleEmitter -- cyan trail while boosting (marker-0112)
 local boostActive = false
 local camShake = 0 -- decaying crash shake magnitude (marker-0137)
+local ghostSmoothZ, ghostSmoothX = {}, {} -- per-seat smoothed rival position (anti-jitter)
+local roadCurveAhead = 0 -- road's lateral offset a bit ahead (for camera pan into corners)
+local camPanX = 0 -- eased camera pan
 local crashFlash = 0 -- decaying white flash on crash (brief, not sustained over the stun)
 local prevCrashTint = 0 -- crash-edge detector for the flash
 
@@ -914,6 +917,10 @@ local function renderWorld(rz, laneX, view)
 		rebuildStageMap(view.courseId)
 	end
 	local built = buildStrips(seat.segmentId, rz, N, seat.forkChoice)
+	-- Road's lateral position a bit ahead — the camera pans toward it so the road
+	-- doesn't leave the frame in a sharp corner (it did: "only terrain for a whole
+	-- left corner"). Eased in cameraCFrame.
+	roadCurveAhead = (built[28] and built[28].curveX) or (built[#built] and built[#built].curveX) or 0
 
 	-- Recolour the ground to the current segment's biome (grass/sand/snow/etc),
 	-- brightened toward the browser's vibrant flat look.
@@ -1086,12 +1093,15 @@ local function renderWorld(rz, laneX, view)
 						sg.label.Text = SIGN_ADS[(slot % #SIGN_ADS) + 1]
 						sg.label.TextColor3 = Color3.fromRGB(40, 26, 52)
 					end
+					sg.label.Visible = true
 				end
 			else
 				sg.post.Transparency, sg.panel.Transparency = 1, 1
+				if sg.label then sg.label.Visible = false end
 			end
 		else
 			sg.post.Transparency, sg.panel.Transparency = 1, 1
+			if sg.label then sg.label.Visible = false end
 		end
 	end
 
@@ -1117,12 +1127,14 @@ local function renderWorld(rz, laneX, view)
 				g.sign.Color = isFinish and Color3.fromRGB(238, 238, 244) or Color3.fromRGB(30, 180, 90)
 				g.label.Text = isFinish and "FINISH" or "CHECKPOINT"
 				g.label.TextColor3 = isFinish and Color3.fromRGB(20, 20, 24) or Color3.fromRGB(255, 255, 255)
+				g.label.Visible = true
 			end
 		end
 	end
 	for i = gi2 + 1, #gantries do
 		local g = gantries[i]
 		g.postL.Transparency, g.postR.Transparency, g.beam.Transparency, g.sign.Transparency = 1, 1, 1, 1
+		g.label.Visible = false -- SurfaceGui text renders even on a transparent part; hide it too
 	end
 
 	local near = built[1]
@@ -1210,10 +1222,26 @@ local function renderWorld(rz, laneX, view)
 		end
 	end
 
-	-- Rival AI ghosts (same-segment) as car rigs with a name tag.
+	-- Rival AI ghosts (same-segment) as car rigs with a name tag. SMOOTHED: the view
+	-- arrives at 20 Hz but the world scrolls at ~60 fps, so raw rival positions sawtooth
+	-- ("jigging"), worst when close + accelerating. Ease the rendered dz/laneX toward
+	-- the target, snapping on a big jump (segment reset / out-of-view -> in-view).
 	local gi = 0
 	for _, g in ipairs(view.ghosts or {}) do
-		local dz = g.roadZ - rz
+		local targetDz = g.roadZ - rz
+		local sm = ghostSmoothZ[g.seatId]
+		if not sm or math.abs(targetDz - sm) > 2000 then
+			sm = targetDz
+		end
+		sm += (targetDz - sm) * 0.3
+		ghostSmoothZ[g.seatId] = sm
+		local smX = ghostSmoothX[g.seatId]
+		if not smX or math.abs(g.laneX - smX) > 400 then
+			smX = g.laneX
+		end
+		smX += (g.laneX - smX) * 0.3
+		ghostSmoothX[g.seatId] = smX
+		local dz = sm
 		if dz >= 0 and gi < #ghostRigs then
 			local k = math.floor(dz / ROAD_UNIT) + 1
 			local s = built[math.min(k, N)]
@@ -1222,7 +1250,7 @@ local function renderWorld(rz, laneX, view)
 				local rig = ghostRigs[gi]
 				setCarShown(rig, true)
 				tintCar(rig, carColor(g.seatId + 3, 0)) -- stable colour by seat (no biome flicker)
-				placeCar(rig, CFrame.new((s.curveX + g.laneX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - dz * SZ))
+				placeCar(rig, CFrame.new((s.curveX + smX) * SX, BASE_Y + s.hill * SY + 1.6, ZSHIFT - dz * SZ))
 				ghostTags[gi].Text = g.name or ("P" .. g.seatId)
 			end
 		end
@@ -1432,8 +1460,10 @@ function Render.cameraCFrame(): CFrame
 		return workspace.CurrentCamera.CFrame
 	end
 	local cp = carRig.body.Position
-	local eye = Vector3.new(cp.X * 0.4, cp.Y + 7, cp.Z + 17)
-	local look = Vector3.new(cp.X * 0.15, cp.Y + 2, cp.Z - 40)
+	-- Pan toward the road ahead so a sharp corner never leaves the frame.
+	camPanX += (roadCurveAhead * SX * 0.55 - camPanX) * 0.08
+	local eye = Vector3.new(cp.X * 0.4 + camPanX * 0.25, cp.Y + 7, cp.Z + 17)
+	local look = Vector3.new(cp.X * 0.15 + camPanX, cp.Y + 2, cp.Z - 40)
 	-- Decaying crash shake.
 	if camShake > 0.02 then
 		local m = camShake * 3.5
