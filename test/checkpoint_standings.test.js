@@ -27,11 +27,19 @@ test("board fires when self crosses; gaps are arrival-time behind the leader", (
 
 test("board fades out and expires by ~5s", () => {
   const cs = createCheckpointStandings(courseSet);
-  cs.update(0, [self(5)]);
+  cs.update(0, [self(4)]);                          // start outside the checkpoint
+  cs.update(0, [self(5)]);                          // then cross in -> board fires
   assert.equal(cs.active(1000).alpha, 1);          // solid before the fade window
   const mid = cs.active(4500).alpha;               // fading in the last second
   assert.ok(mid > 0 && mid < 1, `fading alpha ${mid}`);
   assert.equal(cs.active(5000), null);             // expired
+});
+
+test("no board for the checkpoint you START inside (a stage-1 board makes no sense)", () => {
+  const cs = createCheckpointStandings(courseSet);
+  cs.update(0, [self(5)]);                          // spawned already in the checkpoint
+  assert.equal(cs.active(0), null);                // suppressed
+  assert.equal(cs.active(100), null);              // still nothing a moment later
 });
 
 test("a non-checkpoint segment never records or fires", () => {

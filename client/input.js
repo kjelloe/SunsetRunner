@@ -24,6 +24,8 @@ export function installKeyboard(target) {
       if (e.code === "KeyM") musicQueue.push(true);
       if (e.code === "ArrowLeft" || e.code === "KeyA") menuQueue.push("left");
       else if (e.code === "ArrowRight" || e.code === "KeyD") menuQueue.push("right");
+      else if (e.code === "ArrowUp" || e.code === "KeyW") menuQueue.push("up");
+      else if (e.code === "ArrowDown" || e.code === "KeyS") menuQueue.push("down");
       else if (e.code === "Enter" || e.code === "Space") menuQueue.push("confirm");
     }
     keys.add(e.code);

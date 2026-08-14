@@ -18,6 +18,7 @@ const FADE_MS = 1000; // trailing fade so it clears for the race again
 export function createCheckpointStandings(courseSet) {
   const arrivals = new Map(); // checkpointSegId -> Map(racerId -> { t, name, carId })
   let selfLastCp = -1;
+  let primed = false; // suppress the board for the checkpoint we START/JOIN inside
   let board = null; // { segId, at, entries }
 
   function isCheckpoint(segId) {
@@ -48,6 +49,14 @@ export function createCheckpointStandings(courseSet) {
   // racers: [{ id, name, carId, segmentId, isSelf }]. Fires the board when SELF
   // reaches a checkpoint not yet shown.
   function update(now, racers) {
+    // On the first frame, mark the segment we START in as already-shown so no board
+    // pops the instant the race begins inside a checkpoint segment (a stage-1 board
+    // makes no sense — nobody has raced yet).
+    if (!primed) {
+      primed = true;
+      const self = racers.find((r) => r.isSelf);
+      if (self) selfLastCp = self.segmentId;
+    }
     let selfCrossed = null;
     for (const r of racers) {
       const isNew = record(r, now);

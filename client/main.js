@@ -26,7 +26,9 @@ import { readTuning, applyTuning, drawTuningHud } from "./tuning.js";
 import { createCountdown, drawCountdownLabel } from "./countdown.js";
 import { drawSplash } from "./splash.js";
 import { buildSummary, playersFromState, drawRaceSummary, drawLeaderboard, NEW_RACE_SECONDS, stageNumber, stageTotal } from "./race_summary.js";
-import { recordScore } from "./local_scores.js";
+import { recordScore, topScores } from "./local_scores.js";
+import { isBetter } from "../shared/leaderboard.js";
+import { createInitialsEntry } from "./initials_entry.js";
 import { drawLobby, lobbyTouchZone, inviteUrl } from "./lobby.js";
 import { getCourse, getSegment } from "../shared/road_data.js";
 import { carColor } from "./car_colors.js";
@@ -153,6 +155,12 @@ export async function boot(doc = document) {
   let raceSummary = null;
   let allTimeBoard = [];
   let summaryStart = 0;
+  let initialsEntry = null; // arcade high-score initials UI (solo, when qualifying)
+  let pendingResult = null; // the solo result awaiting its initials
+  const isHighScore = (result) => {
+    const top = topScores(storage, 10);
+    return top.length < 10 || isBetter(result, top[top.length - 1]);
+  };
   let timeUpSel = 0;      // 0 = RE-JOIN, 1 = SPECTATE (multiplayer time-up)
   let spectateIndex = 0;  // which rival is being spectated
   let lobbyShowQR = false; // invite QR overlay in the lobby
@@ -277,6 +285,13 @@ export async function boot(doc = document) {
         if (ev === "left") spectateIndex--;
         else if (ev === "right") spectateIndex++;
         else if (ev === "confirm") { start(activeCarId, activeTimeScale, activeDiffLevel); break; }
+      } else if (phase === "initials" && initialsEntry) {
+        if (initialsEntry.handle(ev)) { // confirmed -> record under the entered initials
+          allTimeBoard = recordScore(storage, { ...pendingResult, name: initialsEntry.text() });
+          summaryStart = now;
+          phase = "summary";
+          break;
+        }
       }
     }
     if (phase === "name") {
@@ -468,12 +483,27 @@ export async function boot(doc = document) {
       raceSummary = sb.length
         ? sb.map((e, i) => ({ rank: i + 1, name: e.name, color: carColor(e.carId), points: e.points, isYou: e.seatId === session.seatId, finished: false }))
         : buildSummary(courseSet, courseId, carSet, playersFromState(state));
-      // All-time board: the server's for MP; a localStorage board for solo.
-      allTimeBoard = remote
-        ? session.leaderboard
-        : recordScore(storage, { name: playerName, finishTicks: self.finishTicks >= 0 ? self.finishTicks : -1, stage: hud.stage || 1 });
-      summaryStart = now;
-      phase = "summary";
+      if (remote) {
+        allTimeBoard = session.leaderboard; // MP: server-side board, real names
+        summaryStart = now;
+        phase = "summary";
+      } else {
+        // Solo: arcade high-score flow. Only prompt for initials if this run makes
+        // the top 10; otherwise straight to the summary.
+        const result = { finishTicks: self.finishTicks >= 0 ? self.finishTicks : -1, stage: hud.stage || 1 };
+        if (isHighScore(result)) {
+          pendingResult = result;
+          initialsEntry = createInitialsEntry(playerName);
+          phase = "initials";
+        } else {
+          allTimeBoard = recordScore(storage, { ...result, name: playerName });
+          summaryStart = now;
+          phase = "summary";
+        }
+      }
+    }
+    if (phase === "initials" && initialsEntry) {
+      initialsEntry.draw(g, view); // arcade high-score initials over the frozen scene
     }
     if (phase === "summary") {
       if (remote) {
