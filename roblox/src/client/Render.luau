@@ -169,6 +169,7 @@ local camShake = 0 -- decaying crash shake magnitude (marker-0137)
 local ghostSmoothZ, ghostSmoothX = {}, {} -- per-seat smoothed rival position (anti-jitter)
 local roadCurveAhead = 0 -- road's lateral offset a bit ahead (for camera pan into corners)
 local camPanX = 0 -- eased camera pan
+local skyParts = {} -- backdrop parts, repositioned every frame so Roblox never lazy-defers them
 local crashFlash = 0 -- decaying white flash on crash (brief, not sustained over the stun)
 local prevCrashTint = 0 -- crash-edge detector for the flash
 
@@ -566,6 +567,7 @@ local function makeSky(parent, baseY)
 			p.Transparency = transp or 0
 			p.CFrame = CFrame.new(tx, baseY + yc, SKY_Z + (zoff or 0))
 			p.Parent = parent
+			table.insert(skyParts, { p = p, base = p.Position })
 		end
 	end
 	-- Each band a touch further back than the last: the bands overlap in Y, so at the
@@ -594,6 +596,7 @@ local function makeSky(parent, baseY)
 	sun.Size = Vector3.new(5, D, D)
 	sun.CFrame = CFrame.new(0, SUN_Y, SKY_Z + 20) * CFrame.Angles(0, math.rad(90), 0)
 	sun.Parent = parent
+	table.insert(skyParts, { p = sun, base = sun.Position })
 	for i = 0, 5 do
 		local cut = Instance.new("Part")
 		cut.Anchored, cut.CanCollide, cut.CanQuery, cut.CanTouch = true, false, false, false
@@ -602,6 +605,7 @@ local function makeSky(parent, baseY)
 		cut.Size = Vector3.new(D, 5 + i * 1.4, 2)
 		cut.CFrame = CFrame.new(0, SUN_Y - 30 - i * 22, SKY_Z + 24)
 		cut.Parent = parent
+		table.insert(skyParts, { p = cut, base = cut.Position })
 	end
 	-- A few soft dusk clouds high across the sky for depth (flat, warm, off-centre so
 	-- they don't sit on the sun). Static — the treadmill camera barely moves.
@@ -618,6 +622,7 @@ local function makeSky(parent, baseY)
 		cl.Size = Vector3.new(c[3], 120, 2)
 		cl.CFrame = CFrame.new(c[1], baseY + c[2], SKY_Z + 6)
 		cl.Parent = parent
+		table.insert(skyParts, { p = cl, base = cl.Position })
 	end
 end
 
@@ -1478,6 +1483,12 @@ function Render.cameraCFrame(): CFrame
 	camPanX += (roadCurveAhead * SX * 0.55 - camPanX) * 0.08
 	local eye = Vector3.new(cp.X * 0.4 + camPanX * 0.25, cp.Y + 7, cp.Z + 17)
 	local look = Vector3.new(cp.X * 0.15 + camPanX, cp.Y + 2, cp.Z - 40)
+	-- Recenter the backdrop on the view EVERY frame. Two wins: the sunset tracks where
+	-- you're heading, and — because the parts move each frame — Roblox never lazy-defers
+	-- them, which killed the "sunset fades in ~2 s at every race start" warm-up.
+	for _, sp in ipairs(skyParts) do
+		sp.p.Position = Vector3.new(sp.base.X + look.X, sp.base.Y, sp.base.Z)
+	end
 	-- Decaying crash shake.
 	if camShake > 0.02 then
 		local m = camShake * 3.5
