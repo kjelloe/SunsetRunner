@@ -194,7 +194,7 @@ Not scheduled; pick when ready. Ordered by rough impact.
 - [x] **Cap DPR on mobile** — DONE (marker-0092). computeBufferSize clamps
   effective DPR<=2; perf:mobile confirmed 4x 62->100fps, 6x 38->64fps. specs/68.
 - [~] **Roblox build** — playable host DONE and feature-complete for a shared-race
-  game (markers 0098–0141). Host + 3D-Parts renderer, real-player multiplayer +
+  game (markers 0098–0155; playtest rounds in specs/78). Host + 3D-Parts renderer, real-player multiplayer +
   AI rivals, lobby→countdown→race→summary framing, interpolation, full art pass
   (tiled sunset + sun, sculpted sports cars, per-biome terrain, trees, billboards
   with text, checkpoint/finish gantries, crash shake), mobile controls, boost VFX,

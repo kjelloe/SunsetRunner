@@ -93,7 +93,12 @@ CONFIRM CAR -> RACE LINEUP/READY; 0140 fix sunset flicker (z-stagger overlapping
 engine-hum audio (speed-reactive loop); 0144 race minimap (top-down course + player dot);
 0145 playtest fixes — softer pastel sunset (no neon glare), steady selected car colour
 (no boost/crash recolour flip), and no road gap at a fork/stage-end (buildStrips now
-continues straight instead of returning a short strip array).
+continues straight instead of returning a short strip array); 0147 oncoming stream
+halved + crash-flash colour (edge, brief); 0149/0151 car width vs crash box — slimmed
+the hitbox (CAR_WIDTH 200→140, conscious repin, 6 gates re-verified) + CAR_WIDEN 1.16;
+0152 hide lingering SurfaceGui text + smooth rivals; 0153 checkpoint race list (rank +
+seconds behind leader); 0154 sky-follow (fix every-race sunset warm-up); 0155 straight
+camera + CURVE_DAMP (road stays in corners) + 7-tile sky.
 
 ## Not done yet (backlog)
 

@@ -47,6 +47,32 @@ buffer can't decide which is in front. This bit us three separate times:
 Rule of thumb: **layer everything on distinct Z** (we use bands 0 / clouds +6 / glow
 +12 / sun +20 / cut-lines +24 in front of the backdrop plane).
 
+### Roblox lazy-defers large static distant parts (they "fade in")
+A big backdrop built once at init would render **only the centre for ~2 s at every
+scene start**, then fill — and a single render hitch (e.g. a screenshot) flushed it and
+it stayed full for the rest of the session. That's Roblox deferring large, far, static
+geometry until a full re-render. **Fix: move the parts every frame.** We reposition the
+sky parts each frame to track the camera's look; because they're "dynamic" Roblox keeps
+them in the active render set, so no warm-up (and the backdrop tracks the view for free).
+
+### SurfaceGui text renders even when its part is `Transparency = 1`
+Hiding a billboard/gantry by setting the part transparent leaves its **SurfaceGui text
+floating in space** (the "CHECKPOINT hanging at the start" bug). Toggle the label's
+`Visible` (or the SurfaceGui's `Enabled`) alongside the part's transparency.
+
+### A flat backdrop can't cover a camera that rotates
+If the chase camera **pans/rotates into corners**, a flat sky wall's edge swings into
+view (you "see past the sunset"), and panning also pushes the near road + the player car
+off-screen. Either keep the camera **straight** and dampen the *road's* lateral curve so
+corners stay on screen (we use `CURVE_DAMP`), or make the backdrop wrap — a flat wall
+only covers ≈±73° around its normal.
+
+### Match the visible car to the collision footprint
+The crash box is `CAR_WIDTH` **engine units** (`shared/collision.js`); the render picks
+its own stud size. If they disagree you crash with a visible gap (or clip without a
+crash). Convert: `studs = CAR_WIDTH * SX`. We size cars near that (and slimmed
+`CAR_WIDTH` itself when we wanted a more forgiving hitbox — a conscious golden repin).
+
 ---
 
 ## 2. Rojo project & sync

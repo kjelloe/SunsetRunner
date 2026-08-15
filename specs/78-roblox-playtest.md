@@ -79,8 +79,32 @@ etc.).
   and returned a SHORT strip array so the road vanished and cars drove on the terrain;
   now it freezes the curve and lays straight strips to the horizon.
 
+## Later rounds (markers 0147–0155)
+- **0147** — oncoming stream halved (ONC_N 8→4); car-colour flicker fixed (crash tint was
+  sustained over the 30-tick stun → brief decaying edge flash).
+- **0149 / 0151** — car width vs crash box: 0149 widened cars to the collision footprint
+  (too wide per playtest); 0151 **slimmed the hitbox** `CAR_WIDTH 200→140` (shared JS +
+  Luau twin — a CONSCIOUS REPIN of checkpoint_1a + physics_1a only; collision/fork/boost/AI
+  unchanged; 6 lune gates re-verify) and set Roblox `CAR_WIDEN 1.5→1.16` to match. Browser
+  gets the more-forgiving hitbox too (user OK'd it).
+- **0152** — three fixes: (1) SurfaceGui text renders even on a transparent part → hidden
+  gantry/billboard text hung ("CHECKPOINT at the start"); toggle labels' Visible. (2) rivals
+  "jigged" at the start (placed from 20 Hz view while the world scrolls at 60 fps) → ease
+  each rival's rendered dz/laneX. (3) camera pan into corners (later reverted, see 0155).
+- **0153** — **checkpoint race list**: server records each seat's checkpoint-arrival tick
+  and builds a ranked gap list on a player's own crossing (gap=(arrival−leader)/20 s), sent
+  ~5 s in the view; client shows a CHECKPOINT board (LEADER / +X.Xs).
+- **0154** — **sky-follow**: the sunset faded in ~2 s every race start (edge tiles lazy-
+  rendered; a render hitch cleared it for the session = Roblox lazy-deferring big static
+  distant parts). Reposition sky parts every frame to track the view → always rendered.
+- **0155** — road-in-corner + sky width: the 0152 pan overshot (near road + car off-screen,
+  sky-wall edge exposed). Reverted to a straight camera; keep the road on-screen via
+  `CURVE_DAMP=0.62` in buildStrips (scale the road's lateral curve); widened the sky to 7×
+  2000-stud tiles (14000).
+
 ## Not done / deferred
 - Collidable **oncoming** traffic (engine change; repins goldens) — cosmetic for now.
 - Verify bundled **SoundIds** in a live client (incl. the engine-loop placeholder).
-- Screenshot-guided fine-tuning of the car silhouette / sun size.
+- Screenshot-guided fine-tuning of the car silhouette / sun size / CURVE_DAMP.
 - Optional: near-miss whoosh; publish to Roblox.
+- Render warm-up (0154) + camera/curve (0155) await the user's next playtest confirmation.
