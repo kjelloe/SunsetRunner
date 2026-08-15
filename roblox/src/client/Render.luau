@@ -128,6 +128,7 @@ local PLAYER_CAR_COLORS = {
 
 -- Engine-units -> studs.
 local CAR_WIDEN = 1.16 -- widen cars in X toward the collision footprint (slimmed per playtest)
+local CURVE_DAMP = 0.62 -- scale the road's lateral curve so sharp corners stay on-screen
 local SX = 14 / 256 -- lateral (one lane = 14 studs)
 local SZ = 9 / 256 -- forward depth per road unit
 local SY = 0.7 -- hill height
@@ -244,7 +245,7 @@ local function buildStrips(segmentId: number, roadZ: number, count: number, fork
 		end
 		curveDx += curve
 		curveX += curveDx
-		out[k] = { curveX = curveX, hill = hill, dz = (k - 1) * ROAD_UNIT, seg = seg }
+		out[k] = { curveX = curveX * CURVE_DAMP, hill = hill, dz = (k - 1) * ROAD_UNIT, seg = seg }
 		stripIdx += 1
 	end
 	return out
@@ -554,7 +555,7 @@ local SKY_BANDS = {
 	{ Color3.fromRGB(78, 64, 120), 2000, 1800 }, -- soft indigo (top only)
 }
 local SKY_Z = -1500 -- backdrop depth (behind the ground far edge so they never intersect)
-local SKY_TILES = { -4000, -2000, 0, 2000, 4000 } -- 5 × 2000-wide tiles = 10000 wide
+local SKY_TILES = { -6000, -4000, -2000, 0, 2000, 4000, 6000 } -- 7 × 2000 = 14000 wide (covers wide/ultrawide + steer)
 local TILE_W = 2000
 local function makeSky(parent, baseY)
 	local function tiled(yc, h, color, material, transp, zoff)
@@ -1479,13 +1480,13 @@ function Render.cameraCFrame(): CFrame
 		return workspace.CurrentCamera.CFrame
 	end
 	local cp = carRig.body.Position
-	-- Pan toward the road ahead so a sharp corner never leaves the frame.
-	camPanX += (roadCurveAhead * SX * 0.55 - camPanX) * 0.08
-	local eye = Vector3.new(cp.X * 0.4 + camPanX * 0.25, cp.Y + 7, cp.Z + 17)
-	local look = Vector3.new(cp.X * 0.15 + camPanX, cp.Y + 2, cp.Z - 40)
-	-- Recenter the backdrop on the view EVERY frame. Two wins: the sunset tracks where
-	-- you're heading, and — because the parts move each frame — Roblox never lazy-defers
-	-- them, which killed the "sunset fades in ~2 s at every race start" warm-up.
+	-- Straight chase camera. (An earlier pan-into-corners swung the near road + the car
+	-- off-screen and exposed the sky-wall edge — the road/curve now stays in frame via
+	-- the curve damping in buildStrips instead.)
+	local eye = Vector3.new(cp.X * 0.4, cp.Y + 7, cp.Z + 17)
+	local look = Vector3.new(cp.X * 0.15, cp.Y + 2, cp.Z - 40)
+	-- Recenter the backdrop on the view EVERY frame — because the parts move each frame
+	-- Roblox never lazy-defers them (killed the every-race sunset warm-up).
 	for _, sp in ipairs(skyParts) do
 		sp.p.Position = Vector3.new(sp.base.X + look.X, sp.base.Y, sp.base.Z)
 	end
