@@ -2544,3 +2544,11 @@ hitch cleared it for the session — signature of Roblox lazy-deferring large st
 parts). Now every sky part is repositioned each frame to track the view (offset by look.X),
 so Roblox keeps them in the active render set (no lazy defer). Bonus: the sunset tracks the
 heading. Presentation only.
+
+## marker-0155 — Roblox: road-in-corner + sky width (revert pan) (2026-08-15)
+
+Screenshot-12: the 0152 camera pan overshot — swung the near road + car off-screen in a
+corner (terrain-only view) and the rotated camera exposed the flat sky-wall edge. Reverted
+to a straight chase camera; keep the road in frame via CURVE_DAMP=0.62 in buildStrips
+(scale the road's lateral curve, everything placed by curveX stays consistent); widened
+the sky to 7×2000 tiles (14000). Sky-follow retained (warm-up fix), offsets by look.X.
