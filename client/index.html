@@ -22,6 +22,10 @@
 </head>
 <body>
   <canvas id="game" width="960" height="540"></canvas>
-  <script type="module" src="./main.js"></script>
+  <!-- ABSOLUTE path: this page is served at BOTH "/" (server maps / -> client/
+       index.html) and "/client/index.html". A relative "./main.js" 404s at "/"
+       (it resolves to /main.js). main.js's own imports (../shared/...) resolve from
+       /client/main.js regardless of the document URL. -->
+  <script type="module" src="/client/main.js"></script>
 </body>
 </html>

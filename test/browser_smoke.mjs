@@ -102,10 +102,14 @@ async function checkStrand(browser) {
 }
 
 const h = await startServer(0);
-const base = `http://localhost:${h.port}/client/index.html`;
+const root = `http://localhost:${h.port}`;
+const base = `${root}/client/index.html`;
 const browser = await chromium.launch({ headless: true });
 let ok = true;
 try {
+  // The REAL entry point players hit is "/" (server maps it to client/index.html).
+  // A relative script src there 404s (/main.js) — this catches that regression.
+  ok = await checkPage(browser, `${root}/?car=1&diff=medium&mute=1`, "root '/' boot") && ok;
   ok = await checkPage(browser, `${base}?car=1&diff=medium&mute=1`, "local boot") && ok;
   ok = await checkPage(browser, `${base}?mode=remote&name=Smoke&car=1&diff=medium&mute=1`, "remote connect") && ok;
   ok = await checkStrand(browser) && ok;
