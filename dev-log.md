@@ -2552,3 +2552,13 @@ corner (terrain-only view) and the rotated camera exposed the flat sky-wall edge
 to a straight chase camera; keep the road in frame via CURVE_DAMP=0.62 in buildStrips
 (scale the road's lateral curve, everything placed by curveX stays consistent); widened
 the sky to 7×2000 tiles (14000). Sky-follow retained (warm-up fix), offsets by look.X.
+
+## marker-0156 — deploy 404 fix: absolute entry-script path (2026-08-16)
+
+Deployed game was dead: `GET /` served index.html but the URL stays `/`, so its relative
+`./main.js` resolved to `/main.js` (not a served dir) → 404 → module graph never booted.
+Fixed by making the entry reference absolute: `<script src="/client/main.js">` (main.js's
+own `../shared/...` imports resolve from `/client/main.js` regardless of document URL).
+Guards: `test/serve_static.test.js` now resolves the served page's `<script src>` against
+`/` and asserts it is 200 JS (runs in `npm test`); `test/browser_smoke.mjs` boots the real
+`/` entry. Same family as the marker-0019 served-dirs gotcha. Presentation/serving only.

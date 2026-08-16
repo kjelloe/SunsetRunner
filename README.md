@@ -2,7 +2,7 @@
 
 **A deterministic, server-authoritative arcade road racer for the browser — with a byte-identical Roblox/Luau twin.**
 
-![tests](https://img.shields.io/badge/tests-322%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-323%20passing-brightgreen)
 ![luau parity](https://img.shields.io/badge/Luau%20parity-6%20gates-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A518-informational)
 ![build](https://img.shields.io/badge/build-none%20(vanilla%20ESM)-blue)

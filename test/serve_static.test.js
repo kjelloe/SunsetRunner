@@ -53,6 +53,25 @@ test("static host serves client-imported modules with a JS MIME type", async () 
   }
 });
 
+// Deploy 404 guard (marker-0156): the page is served at "/" (not only at
+// /client/index.html), so its entry <script src> must RESOLVE against "/" to a
+// served file. A relative "./main.js" resolved to /main.js -> 404 -> dead game.
+test("the entry script referenced by / actually resolves and is served", async () => {
+  const h = await startServer(0);
+  try {
+    const base = `http://localhost:${h.port}`;
+    const body = await (await fetch(`${base}/`)).text();
+    const m = body.match(/<script[^>]*\bsrc=["']([^"']+)["']/i);
+    assert.ok(m, "index.html must have a <script src>");
+    const resolved = new URL(m[1], `${base}/`).href; // resolve like the browser at "/"
+    const res = await fetch(resolved);
+    assert.equal(res.status, 200, `entry script "${m[1]}" -> ${resolved} must be served (was 404 at /)`);
+    assert.match(res.headers.get("content-type") || "", /javascript/);
+  } finally {
+    await h.close();
+  }
+});
+
 test("health endpoint answers 200 ok for the deploy guard", async () => {
   const h = await startServer(0, { host: "127.0.0.1" });
   try {
