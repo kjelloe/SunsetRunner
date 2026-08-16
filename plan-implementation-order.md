@@ -183,14 +183,18 @@ Status: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 ## Backlog — future features (recorded 2026-08-05, user: "record all these")
 Not scheduled; pick when ready. Ordered by rough impact.
-- [ ] **GO LIVE (deploy)** — fill the gitignored ops/ configs + run the
-  docs/DEPLOYING.md server steps to publish. Deploy tooling complete (marker-0091):
-  docs/ssh-deploy.sh (--bootstrap/--dry/--yes + allowlist + health guard) and the
-  generic templates docs/sunset-runner.service.example + .nginx.conf.example
-  (placeholders; filled copies live only in gitignored ops/). Real domain/port
-  stay out of the repo. Remaining is on-box work only (agent can't reach the box):
-  fill ops/, `--bootstrap`, install the nginx block, extend the shared certbot
-  lineage, then `./docs/ssh-deploy.sh`.
+- [ ] **GO LIVE (deploy)** — READY, remaining is on-box execution only (agent can't
+  reach the box). Tracked repo keeps only the host-free templates (docs/ssh-deploy.sh
+  + docs/*.example with `<DOMAIN>`/`<PORT>`/`<USER>` placeholders; real domain/port
+  stay out of the repo). The FILLED, current deploy tooling lives in the private
+  **game-ops** repo (`game-ops/SunsetRunner/`): a boombrawl-derived `ssh-deploy.sh`
+  (--bootstrap/--dry/--yes/--neighbours; allowlist incl. `data/`; deploy guard;
+  loopback + public + neighbours verify), `DEPLOY.md`, and the filled service/nginx
+  (service caps aligned to the leanest sibling: 384M / 50% CPU / 256 tasks,
+  --max-old-space-size=256). DNS for the subdomain is up; the loopback port is
+  claimed in the shared-box port registry (RetroMultiCiv ops / game-ops). Remaining:
+  copy game-ops/SunsetRunner/* into the gitignored ops/, `--bootstrap`, install the
+  nginx block, extend the shared certbot lineage, then `./ops/ssh-deploy.sh`.
 - [x] **Cap DPR on mobile** — DONE (marker-0092). computeBufferSize clamps
   effective DPR<=2; perf:mobile confirmed 4x 62->100fps, 6x 38->64fps. specs/68.
 - [~] **Roblox build** — playable host DONE and feature-complete for a shared-race
