@@ -1,4 +1,4 @@
-# 78 — Roblox playtest rounds (markers 0121–0141)
+# 78 — Roblox playtest rounds (markers 0121–0141, 0152–0158)
 
 Presentation/host-only iteration on the Roblox build, driven by the user's Studio
 playtests + screenshots. The deterministic engine (`shared/`+`engine/`, the `luau/`
@@ -101,6 +101,16 @@ etc.).
   sky-wall edge exposed). Reverted to a straight camera; keep the road on-screen via
   `CURVE_DAMP=0.62` in buildStrips (scale the road's lateral curve); widened the sky to 7×
   2000-stud tiles (14000).
+
+- **0158** — mobile controls reworked to match the browser (marker-0157): replaced the
+  discrete steer ◄►/gas ▲/brake ▼ buttons with a **steering wheel** (bottom-centre, top
+  half visible, drag left/right; springs back; rim rotates with the lock) and a right-side
+  **set-speed lever** (knob = a cruise speed the car holds — `throttleFrac` 0..1 turned
+  into accel/brake vs the live `view.seat.speed` via a `cruiseInput` mirror using the
+  selected car's `maxSpeed`; deadband 64; default full; persists). Fork buttons unchanged.
+  Client loads `car_data`/`cars` for `maxSpeed`. Drag uses `InputBegan` + `UIS.InputChanged`
+  /`InputEnded` with active-`InputObject` matching (see roblox-howto §7). Presentation only
+  — server authoritative, no engine/fixture change. Rojo build (syntax gate) passes.
 
 ## Not done / deferred
 - Collidable **oncoming** traffic (engine change; repins goldens) — cosmetic for now.

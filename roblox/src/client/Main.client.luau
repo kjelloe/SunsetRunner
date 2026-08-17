@@ -15,6 +15,10 @@ local Shared = RS:WaitForChild("Shared")
 local GameData = RS:WaitForChild("GameData")
 local roadData = require(Shared:WaitForChild("road_data"))
 local courseSet = roadData.loadCourseSet(require(GameData:WaitForChild("roads")))
+-- Car roster: the mobile set-speed lever needs the selected car's maxSpeed to
+-- convert its 0..1 cruise fraction into accel/brake (marker-0158).
+local carData = require(Shared:WaitForChild("car_data"))
+local carSet = carData.loadCarSet(require(GameData:WaitForChild("cars")))
 
 -- Walk the default path of a course accumulating the lateral curve (double integral,
 -- same as the road renderer) to get a top-down (lateral X vs forward Z) polyline,
@@ -82,7 +86,26 @@ end)
 -- magnitude (±256 = full lock), matching shared/constants.js STEER_UNIT. Keyboard
 -- and on-screen touch controls are merged so either works.
 local held = { steer = 0, accel = 0, brake = 0 }
-local touch = { steer = 0, accel = 0, brake = 0 } -- set by the mobile buttons
+-- Mobile: steer comes from the wheel; accel/brake are DERIVED from the set-speed
+-- lever (throttleFrac = a 0..1 cruise speed the car holds), not held buttons.
+local touch = { steer = 0, accel = 0, brake = 0, throttleFrac = 1 }
+local lastSpeed = 0 -- freshest self-car speed from the last view (for cruise)
+local selCar, selCourse = 1, 4 -- declared early: applyCruise closes over selCar
+
+-- Mirror of client/touch_controls.js cruiseInput: turn the lever fraction into
+-- accel/brake against the live car speed. Presentation only (server is
+-- authoritative), so exact parity isn't a hashed concern — the deadband just
+-- stops accel/brake chatter at the set speed. SPEED_SCALE/4 = 64.
+local function cruiseInput(speed: number, frac: number, maxSpeed: number): (number, number)
+	local target = math.round(frac * maxSpeed)
+	local dead = 64
+	if speed < target - dead then
+		return 1, 0
+	elseif speed > target + dead then
+		return 0, 1
+	end
+	return 0, 0
+end
 
 local function computeIntent()
 	local left = UIS:IsKeyDown(Enum.KeyCode.A) or UIS:IsKeyDown(Enum.KeyCode.Left)
@@ -105,6 +128,23 @@ local function sendIfChanged()
 	end
 end
 
+-- Re-derive touch accel/brake from the set-speed lever against the freshest car
+-- speed, then push if the intent changed. Called from the view handler (20 Hz,
+-- authoritative speed) and whenever the lever knob moves. Touch devices only, so
+-- the default full lever never forces the throttle on a keyboard-only client.
+local function applyCruise()
+	if not UIS.TouchEnabled then
+		return
+	end
+	local car = carData.getCar(carSet, selCar)
+	local maxS = (car and car.maxSpeed) or 2400
+	local a, b = cruiseInput(lastSpeed, touch.throttleFrac, maxS)
+	if a ~= touch.accel or b ~= touch.brake then
+		touch.accel, touch.brake = a, b
+		sendIfChanged()
+	end
+end
+
 -- Pre-race selection (marker-0129): a CENTRED panel shown only during the lobby.
 -- Step 1 pick the TRACK, step 2 pick the CAR (miniature previews + ◄ ► arrows +
 -- a title), then START to ready-up. Hidden once the race is on.
@@ -123,7 +163,6 @@ local CAR_COLORS = {
 	Color3.fromRGB(72, 200, 96), Color3.fromRGB(240, 196, 64),
 }
 
-local selCar, selCourse = 1, 4
 local selSynced = false
 local step = "course" -- "course" | "car"
 
@@ -418,6 +457,10 @@ end)
 
 viewEvent.OnClientEvent:Connect(function(view)
 	Render.update(view)
+	if view.seat then -- freshest speed -> re-derive the mobile lever's accel/brake
+		lastSpeed = view.seat.speed or 0
+		applyCruise()
+	end
 	if not selSynced and view.car then
 		selCar = view.car
 		selCourse = view.courseId or selCourse
@@ -448,8 +491,10 @@ RunService.RenderStepped:Connect(function(dt)
 	end
 end)
 
--- On-screen touch controls (marker-0111): steer pad bottom-left, gas/brake
--- bottom-right, fork buttons top corners. Only built on touch devices.
+-- On-screen touch controls (marker-0158): a STEERING WHEEL bottom-centre (top
+-- half visible, drag left/right), a set-speed LEVER on the right (knob = a cruise
+-- speed the car holds; accel/brake derived via applyCruise), and fork buttons top
+-- corners. Mirrors client/touch_controls.js. Only built on touch devices.
 if UIS.TouchEnabled then
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "SunsetTouch"
@@ -457,11 +502,13 @@ if UIS.TouchEnabled then
 	gui.IgnoreGuiInset = true
 	gui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 
-	local function btn(text, pos, size, color)
+	-- Fork buttons (unchanged, top corners).
+	local forkCol = Color3.fromRGB(120, 90, 160)
+	local function forkBtn(text, pos)
 		local b = Instance.new("TextButton")
 		b.Position = pos
-		b.Size = size
-		b.BackgroundColor3 = color
+		b.Size = UDim2.new(0.1, 0, 0.11, 0)
+		b.BackgroundColor3 = forkCol
 		b.BackgroundTransparency = 0.35
 		b.AutoButtonColor = true
 		b.Text = text
@@ -471,37 +518,182 @@ if UIS.TouchEnabled then
 		b.Parent = gui
 		return b
 	end
-	local function hold(b, onDown, onUp)
-		b.MouseButton1Down:Connect(function()
-			onDown()
-			sendIfChanged()
-		end)
-		b.MouseButton1Up:Connect(function()
-			onUp()
-			sendIfChanged()
-		end)
-	end
-
-	local steerCol = Color3.fromRGB(60, 90, 150)
-	local goCol = Color3.fromRGB(60, 150, 80)
-	local stopCol = Color3.fromRGB(160, 60, 60)
-	local forkCol = Color3.fromRGB(120, 90, 160)
-
-	local bl = btn("◄", UDim2.new(0.02, 0, 0.66, 0), UDim2.new(0.13, 0, 0.16, 0), steerCol)
-	local br = btn("►", UDim2.new(0.17, 0, 0.66, 0), UDim2.new(0.13, 0, 0.16, 0), steerCol)
-	local gas = btn("▲", UDim2.new(0.85, 0, 0.62, 0), UDim2.new(0.13, 0, 0.16, 0), goCol)
-	local brk = btn("▼", UDim2.new(0.7, 0, 0.62, 0), UDim2.new(0.13, 0, 0.16, 0), stopCol)
-	local fl = btn("Q", UDim2.new(0.02, 0, 0.04, 0), UDim2.new(0.1, 0, 0.11, 0), forkCol)
-	local fr = btn("E", UDim2.new(0.88, 0, 0.04, 0), UDim2.new(0.1, 0, 0.11, 0), forkCol)
-
-	hold(bl, function() touch.steer = -256 end, function() if touch.steer < 0 then touch.steer = 0 end end)
-	hold(br, function() touch.steer = 256 end, function() if touch.steer > 0 then touch.steer = 0 end end)
-	hold(gas, function() touch.accel = 1 end, function() touch.accel = 0 end)
-	hold(brk, function() touch.brake = 1 end, function() touch.brake = 0 end)
-	fl.MouseButton1Down:Connect(function()
+	forkBtn("Q", UDim2.new(0.02, 0, 0.04, 0)).MouseButton1Down:Connect(function()
 		inputEvent:FireServer({ steer = held.steer, accel = held.accel, brake = held.brake, fork = -1 })
 	end)
-	fr.MouseButton1Down:Connect(function()
+	forkBtn("E", UDim2.new(0.88, 0, 0.04, 0)).MouseButton1Down:Connect(function()
 		inputEvent:FireServer({ steer = held.steer, accel = held.accel, brake = held.brake, fork = 1 })
+	end)
+
+	-- ===== Steering wheel: a rim centred below the bottom edge (only its top arc
+	-- shows), rotating with the steer lock. A square via RelativeYY size. =====
+	local wheel = Instance.new("Frame")
+	wheel.AnchorPoint = Vector2.new(0.5, 0.5)
+	wheel.Position = UDim2.new(0.5, 0, 1.16, 0)
+	wheel.Size = UDim2.new(0.9, 0, 0.9, 0)
+	wheel.SizeConstraint = Enum.SizeConstraint.RelativeYY
+	wheel.BackgroundColor3 = Color3.fromRGB(28, 28, 36)
+	wheel.BackgroundTransparency = 0.55
+	wheel.BorderSizePixel = 0
+	wheel.Parent = gui
+	local wCorner = Instance.new("UICorner")
+	wCorner.CornerRadius = UDim.new(0.5, 0)
+	wCorner.Parent = wheel
+	local wStroke = Instance.new("UIStroke")
+	wStroke.Thickness = 6
+	wStroke.Color = Color3.fromRGB(235, 235, 245)
+	wStroke.Transparency = 0.3
+	wStroke.Parent = wheel
+	for _, a in ipairs({ 0, 60, 120 }) do -- three bars through the centre = spokes
+		local sp = Instance.new("Frame")
+		sp.AnchorPoint = Vector2.new(0.5, 0.5)
+		sp.Position = UDim2.new(0.5, 0, 0.5, 0)
+		sp.Size = UDim2.new(0.92, 0, 0.05, 0)
+		sp.Rotation = a
+		sp.BackgroundColor3 = Color3.fromRGB(235, 235, 245)
+		sp.BackgroundTransparency = 0.3
+		sp.BorderSizePixel = 0
+		sp.Parent = wheel
+	end
+	local hub = Instance.new("Frame")
+	hub.AnchorPoint = Vector2.new(0.5, 0.5)
+	hub.Position = UDim2.new(0.5, 0, 0.5, 0)
+	hub.Size = UDim2.new(0.24, 0, 0.24, 0)
+	hub.BackgroundColor3 = Color3.fromRGB(255, 208, 96)
+	hub.BorderSizePixel = 0
+	hub.Parent = wheel
+	local hubCorner = Instance.new("UICorner")
+	hubCorner.CornerRadius = UDim.new(0.5, 0)
+	hubCorner.Parent = hub
+	-- Invisible grab band over the visible arc (matches STEER_WHEEL in the browser).
+	local wheelHit = Instance.new("Frame")
+	wheelHit.Position = UDim2.new(0.28, 0, 0.68, 0)
+	wheelHit.Size = UDim2.new(0.44, 0, 0.32, 0)
+	wheelHit.BackgroundTransparency = 1
+	wheelHit.Active = true
+	wheelHit.Parent = gui
+
+	-- ===== Set-speed lever: a vertical track + knob on the right. =====
+	local throttleTrack = Instance.new("Frame")
+	throttleTrack.Position = UDim2.new(0.86, 0, 0.3, 0)
+	throttleTrack.Size = UDim2.new(0.1, 0, 0.6, 0)
+	throttleTrack.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+	throttleTrack.BackgroundTransparency = 0.4
+	throttleTrack.BorderSizePixel = 0
+	throttleTrack.Active = true
+	throttleTrack.Parent = gui
+	local ttCorner = Instance.new("UICorner")
+	ttCorner.CornerRadius = UDim.new(0.12, 0)
+	ttCorner.Parent = throttleTrack
+	local throttleFill = Instance.new("Frame")
+	throttleFill.AnchorPoint = Vector2.new(0, 1)
+	throttleFill.Position = UDim2.new(0, 0, 1, 0)
+	throttleFill.Size = UDim2.new(1, 0, 1, 0)
+	throttleFill.BackgroundColor3 = Color3.fromRGB(255, 208, 96)
+	throttleFill.BackgroundTransparency = 0.55
+	throttleFill.BorderSizePixel = 0
+	throttleFill.Parent = throttleTrack
+	local throttleKnob = Instance.new("Frame")
+	throttleKnob.AnchorPoint = Vector2.new(0.5, 0.5)
+	throttleKnob.Position = UDim2.new(0.5, 0, 0, 0)
+	throttleKnob.Size = UDim2.new(1.3, 0, 0.07, 0)
+	throttleKnob.BackgroundColor3 = Color3.fromRGB(255, 208, 96)
+	throttleKnob.BorderSizePixel = 0
+	throttleKnob.Parent = throttleTrack
+	local knobLbl = Instance.new("TextLabel")
+	knobLbl.AnchorPoint = Vector2.new(1, 0.5)
+	knobLbl.Position = UDim2.new(0, -6, 0.5, 0)
+	knobLbl.Size = UDim2.new(2, 0, 1.6, 0)
+	knobLbl.BackgroundTransparency = 1
+	knobLbl.Text = "100"
+	knobLbl.TextScaled = true
+	knobLbl.Font = Enum.Font.GothamBold
+	knobLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+	knobLbl.Parent = throttleKnob
+	local spdLbl = Instance.new("TextLabel")
+	spdLbl.AnchorPoint = Vector2.new(0.5, 1)
+	spdLbl.Position = UDim2.new(0.5, 0, 0, -4)
+	spdLbl.Size = UDim2.new(1.4, 0, 0.08, 0)
+	spdLbl.SizeConstraint = Enum.SizeConstraint.RelativeXX
+	spdLbl.BackgroundTransparency = 1
+	spdLbl.Text = "SPD"
+	spdLbl.TextScaled = true
+	spdLbl.Font = Enum.Font.GothamBold
+	spdLbl.TextColor3 = Color3.fromRGB(200, 200, 214)
+	spdLbl.Parent = throttleTrack
+
+	local function updateThrottleVisual(frac)
+		throttleFill.Size = UDim2.new(1, 0, frac, 0)
+		throttleKnob.Position = UDim2.new(0.5, 0, 1 - frac, 0)
+		knobLbl.Text = tostring(math.round(frac * 100))
+	end
+	updateThrottleVisual(touch.throttleFrac)
+
+	-- ===== Drag handling (touch + mouse for desktop preview). =====
+	local steerInput, steerAnchorX = nil, 0
+	local throttleInput = nil
+	local function viewportW()
+		return workspace.CurrentCamera.ViewportSize.X
+	end
+	local function setSteerFromX(px)
+		local range = math.max(1, viewportW() * 0.14) -- PAD_RANGE = full lock
+		local raw = math.round(((px - steerAnchorX) / range) * 256)
+		touch.steer = math.clamp(raw, -256, 256)
+		wheel.Rotation = (touch.steer / 256) * 34
+		sendIfChanged()
+	end
+	local function setThrottleFromY(py)
+		local top = throttleTrack.AbsolutePosition.Y
+		local h = math.max(1, throttleTrack.AbsoluteSize.Y)
+		touch.throttleFrac = math.clamp((top + h - py) / h, 0, 1)
+		updateThrottleVisual(touch.throttleFrac)
+		applyCruise()
+	end
+	local function isPress(input)
+		return input.UserInputType == Enum.UserInputType.Touch
+			or input.UserInputType == Enum.UserInputType.MouseButton1
+	end
+	local function matches(input, active)
+		if not active then
+			return false
+		end
+		if input == active then
+			return true
+		end
+		return input.UserInputType == Enum.UserInputType.MouseMovement
+			and active.UserInputType == Enum.UserInputType.MouseButton1
+	end
+
+	wheelHit.InputBegan:Connect(function(input)
+		if isPress(input) then
+			steerInput = input
+			steerAnchorX = input.Position.X
+			touch.steer = 0
+		end
+	end)
+	throttleTrack.InputBegan:Connect(function(input)
+		if isPress(input) then
+			throttleInput = input
+			setThrottleFromY(input.Position.Y)
+		end
+	end)
+	UIS.InputChanged:Connect(function(input)
+		if matches(input, steerInput) then
+			setSteerFromX(input.Position.X)
+		end
+		if matches(input, throttleInput) then
+			setThrottleFromY(input.Position.Y)
+		end
+	end)
+	UIS.InputEnded:Connect(function(input)
+		if steerInput and input == steerInput then
+			steerInput = nil
+			touch.steer = 0 -- wheel springs back to centre
+			wheel.Rotation = 0
+			sendIfChanged()
+		end
+		if throttleInput and input == throttleInput then
+			throttleInput = nil -- knob stays where left (persistent set speed)
+		end
 	end)
 end

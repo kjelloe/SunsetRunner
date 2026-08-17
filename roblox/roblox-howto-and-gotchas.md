@@ -191,6 +191,18 @@ require rewrite**. Data JSON mounted via Rojo becomes **require-able tables**
   always check the `gameProcessedEvent` arg and bail if true (typing in chat, etc.).
 - **Mobile:** gate touch UI on `UIS.TouchEnabled`; on-screen `TextButton`s work for
   both mouse and touch (`MouseButton1Click` fires on tap).
+- **Drag controls (marker-0158 — steering wheel / set-speed lever):** a tap button
+  can't do analog drag. Capture the press with `frame.InputBegan` (store the
+  `InputObject` + anchor), then follow the drag on **`UIS.InputChanged`** and end on
+  **`UIS.InputEnded`**, not on the frame (a drag leaves the frame's bounds). Match the
+  moving input to the active one: for **touch** it's the *same* `InputObject`
+  (`input == active`); for **mouse** the move arrives as a *different* object of type
+  `MouseMovement`, so also accept `MouseMovement` while the active press is
+  `MouseButton1`. Set `frame.Active = true` so it sinks the press. Rotate a wheel with
+  `frame.Rotation`; make a circle with `UICorner` radius `UDim.new(0.5,0)` + a square
+  `SizeConstraint = RelativeYY`. A **set-speed lever** turns its knob fraction into
+  accel/brake against the live car speed (a client-side cruise mirror of
+  `client/touch_controls.js` `cruiseInput`) — the engine stays authoritative.
 - **Camera:** set `CameraType = Enum.CameraType.Scriptable` to drive it yourself, then
   set `CFrame` every `RenderStepped`. `FieldOfView` is the **vertical** FOV; horizontal
   is derived from the viewport aspect ratio (this is why a wall that fills a 16:9 view

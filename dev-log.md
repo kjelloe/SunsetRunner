@@ -2578,3 +2578,19 @@ finishes now). Tests: rewritten `touch_controls.test.js` (incl. `cruiseInput` ca
 `initials_entry.test.js` (327 green); browser smoke OK. Docs synced: specs/79 + specs/25
 "Current layout" + supersede notes in specs/30 & specs/64 + README controls table.
 Presentation only — no engine/fixture change.
+
+## marker-0158 — Roblox mobile controls: steering wheel + set-speed lever (2026-08-17)
+
+Ported the 0157 browser rework to the Roblox host (`roblox/src/client/Main.client.luau`).
+Replaced the discrete steer ◄►/gas ▲/brake ▼ buttons with a **steering wheel** (bottom-
+centre Frame, circular via UICorner 0.5 + RelativeYY, top half on-screen; drag L/R sets
+`touch.steer`, springs back on release, `wheel.Rotation` tracks the lock) and a right-side
+**set-speed lever** (vertical track + knob; `touch.throttleFrac` 0..1 = a cruise speed the
+car holds). A Luau `cruiseInput(speed,frac,maxSpeed)` (mirror of the JS helper, deadband
+64) turns the lever into accel/brake against the freshest `view.seat.speed`, re-derived in
+the view handler (20 Hz) + on knob move; gated on `UIS.TouchEnabled`. Client now loads
+`car_data`/`cars` for the selected car's `maxSpeed`. Drag uses `InputBegan` +
+`UIS.InputChanged`/`InputEnded` with active-`InputObject` matching (touch = same object,
+mouse = `MouseMovement` vs `MouseButton1`) — new gotcha in roblox-howto §7. Fork buttons
+unchanged. Rojo build (syntax gate) passes. Server authoritative — no engine/fixture
+change. Specs: 78 (+0158). Awaiting the user's Studio playtest.
