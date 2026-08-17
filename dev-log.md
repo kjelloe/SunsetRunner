@@ -2562,3 +2562,16 @@ own `../shared/...` imports resolve from `/client/main.js` regardless of documen
 Guards: `test/serve_static.test.js` now resolves the served page's `<script src>` against
 `/` and asserts it is 200 JS (runs in `npm test`); `test/browser_smoke.mjs` boots the real
 `/` entry. Same family as the marker-0019 served-dirs gotcha. Presentation/serving only.
+
+## marker-0157 — mobile controls: steering wheel + set-speed lever + touch initials (2026-08-17)
+
+Mobile playtest: touch controls reworked (touch only; keyboard/engine untouched). New
+`client/touch_controls.js`: a STEERING WHEEL bottom-centre (top half visible, drag L/R =
+steer, springs back), a right-side SET-SPEED LEVER (knob = a cruise speed the car holds so
+no button-holding — `readTouchInput` reports 0..1 `throttleFrac`, `main.js` turns it into
+accel/brake vs the live car speed with a `SPEED_SCALE/4` deadband; default full, gated on
+`showTouch`), fork arrows unchanged. Initials entry gets touch: `tap()` + shared
+`initialsLayout` — tap a slot to select, on-screen ▲ ▼ change its letter, ENTER advances
+slot-by-slot and confirms after the 5th (new `"enter"` event; keyboard `"confirm"` still
+finishes now). Tests: rewritten `touch_controls.test.js` + `initials_entry.test.js` (326
+green); browser smoke OK. Spec: specs/79. Presentation only — no engine/fixture change.

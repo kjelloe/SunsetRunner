@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { installTouch, readTouchInput, readTouchFork, eventFraction, BUTTONS, STEER_PAD, PAD_RANGE } from "../client/touch_controls.js";
+import { installTouch, readTouchInput, readTouchFork, eventFraction, BUTTONS, STEER_WHEEL, THROTTLE, PAD_RANGE } from "../client/touch_controls.js";
 
 // A fake canvas: captures listeners and reports a bounding rect, so we can
 // simulate a canvas that the browser has CSS-scaled to fit a phone.
@@ -21,11 +21,19 @@ function centerOf(rect, buttonId) {
   return { x: rect.left + ((b.x0 + b.x1) / 2) * rect.width, y: rect.top + ((b.y0 + b.y1) / 2) * rect.height };
 }
 
-// Centre of the analog steer pad, in client px.
-function steerPadCenter(rect) {
+// Centre of the steering wheel grab band, in client px.
+function wheelCenter(rect) {
   return {
-    x: rect.left + ((STEER_PAD.x0 + STEER_PAD.x1) / 2) * rect.width,
-    y: rect.top + ((STEER_PAD.y0 + STEER_PAD.y1) / 2) * rect.height,
+    x: rect.left + ((STEER_WHEEL.x0 + STEER_WHEEL.x1) / 2) * rect.width,
+    y: rect.top + ((STEER_WHEEL.y0 + STEER_WHEEL.y1) / 2) * rect.height,
+  };
+}
+
+// A point in the throttle lever at a given vertical fraction of the canvas.
+function throttlePoint(rect, fyFrac) {
+  return {
+    x: rect.left + ((THROTTLE.x0 + THROTTLE.x1) / 2) * rect.width,
+    y: rect.top + fyFrac * rect.height,
   };
 }
 
@@ -33,7 +41,6 @@ function drain() { while (readTouchFork() !== 0) {} }
 
 test("eventFraction maps via the bounding rect, independent of CSS scale/offset", () => {
   const canvas = { width: 960, height: 540, getBoundingClientRect: () => ({ left: 100, top: 50, width: 480, height: 270 }) };
-  // a point at 25% / 50% of the DISPLAYED rect
   const f = eventFraction(canvas, { clientX: 100 + 0.25 * 480, clientY: 50 + 0.5 * 270 });
   assert.ok(Math.abs(f.fx - 0.25) < 1e-9);
   assert.ok(Math.abs(f.fy - 0.5) < 1e-9);
@@ -45,50 +52,58 @@ test("eventFraction falls back to offset/buffer when no rect is available", () =
   assert.equal(f.fy, 0.5);
 });
 
-test("analog steer pad: drag right = full lock, release stops (full-size canvas)", () => {
+test("steering wheel: drag right = full lock, release springs back to centre", () => {
   const rect = { left: 0, top: 0, width: 960, height: 540 };
   const c = makeCanvas(rect);
   installTouch(c);
-  const p = steerPadCenter(rect);
+  const p = wheelCenter(rect);
   c.fire("pointerdown", p.x, p.y);
-  assert.deepEqual(readTouchInput(), { steer: 0, accel: 0, brake: 0 }); // anchor = no drag yet
+  assert.equal(readTouchInput().steer, 0); // anchor = no drag yet
   c.fire("pointermove", p.x + PAD_RANGE * rect.width, p.y); // full-lock drag right
-  assert.deepEqual(readTouchInput(), { steer: 256, accel: 0, brake: 0 });
+  assert.equal(readTouchInput().steer, 256);
   c.fire("pointermove", p.x + 0.5 * PAD_RANGE * rect.width, p.y); // half drag = analog
-  assert.deepEqual(readTouchInput(), { steer: 128, accel: 0, brake: 0 });
+  assert.equal(readTouchInput().steer, 128);
   c.fire("pointerup", p.x, p.y);
-  assert.deepEqual(readTouchInput(), { steer: 0, accel: 0, brake: 0 });
+  assert.equal(readTouchInput().steer, 0);
 });
 
-test("touch hit-testing is correct on a CSS-SCALED canvas (mobile)", () => {
-  // Canvas displayed at 360x202.5 (shrunk) and offset — the old offsetX/buffer
-  // math would land in the wrong button; rect-based mapping stays correct.
-  const rect = { left: 24, top: 80, width: 360, height: 202.5 };
+test("throttle lever: knob position sets a 0..1 speed fraction and PERSISTS on release", () => {
+  const rect = { left: 0, top: 0, width: 960, height: 540 };
   const c = makeCanvas(rect);
   installTouch(c);
-  const gas = centerOf(rect, "accel");
-  c.fire("pointerdown", gas.x, gas.y, 2);
-  assert.deepEqual(readTouchInput(), { steer: 0, accel: 1, brake: 0 });
-  c.fire("pointerup", gas.x, gas.y, 2);
-  assert.deepEqual(readTouchInput(), { steer: 0, accel: 0, brake: 0 });
+  const top = throttlePoint(rect, THROTTLE.y0);
+  c.fire("pointerdown", top.x, top.y, 5); // knob to the top = full speed
+  assert.equal(readTouchInput().throttleFrac, 1);
+  const mid = throttlePoint(rect, (THROTTLE.y0 + THROTTLE.y1) / 2);
+  c.fire("pointermove", mid.x, mid.y, 5); // drag to the middle = ~half
+  assert.ok(Math.abs(readTouchInput().throttleFrac - 0.5) < 1e-9);
+  c.fire("pointerup", mid.x, mid.y, 5); // released, but the set speed stays
+  assert.ok(Math.abs(readTouchInput().throttleFrac - 0.5) < 1e-9);
+  const bottom = throttlePoint(rect, THROTTLE.y1 - 0.001);
+  c.fire("pointerdown", bottom.x, bottom.y, 5); // knob to the bottom = stopped
+  assert.ok(readTouchInput().throttleFrac < 0.01);
+  c.fire("pointerup", bottom.x, bottom.y, 5);
 });
 
-test("multi-touch: analog steer + gas on a scaled canvas", () => {
-  const rect = { left: 0, top: 0, width: 480, height: 270 };
+test("multi-touch: steer wheel + throttle lever on a scaled canvas", () => {
+  const rect = { left: 24, top: 80, width: 480, height: 270 };
   const c = makeCanvas(rect);
   installTouch(c);
-  const l = steerPadCenter(rect);
-  const g = centerOf(rect, "accel");
-  c.fire("pointerdown", l.x, l.y, 1);
-  c.fire("pointermove", l.x - PAD_RANGE * rect.width, l.y, 1); // full-lock drag left
-  c.fire("pointerdown", g.x, g.y, 2);
-  assert.deepEqual(readTouchInput(), { steer: -256, accel: 1, brake: 0 });
-  c.fire("pointerup", l.x, l.y, 1); // release steer only; gas still held
-  assert.deepEqual(readTouchInput(), { steer: 0, accel: 1, brake: 0 });
-  c.fire("pointerup", g.x, g.y, 2);
+  const w = wheelCenter(rect);
+  const t = throttlePoint(rect, THROTTLE.y0);
+  c.fire("pointerdown", w.x, w.y, 1);
+  c.fire("pointermove", w.x - PAD_RANGE * rect.width, w.y, 1); // full-lock drag left
+  c.fire("pointerdown", t.x, t.y, 2); // full throttle with a second finger
+  const inp = readTouchInput();
+  assert.equal(inp.steer, -256);
+  assert.equal(inp.throttleFrac, 1);
+  c.fire("pointerup", w.x, w.y, 1); // release steer only; throttle stays set
+  assert.equal(readTouchInput().steer, 0);
+  assert.equal(readTouchInput().throttleFrac, 1);
+  c.fire("pointerup", t.x, t.y, 2);
 });
 
-test("fork buttons are edge-triggered and leave no held input", () => {
+test("fork buttons are edge-triggered and leave no held steer", () => {
   drain();
   const rect = { left: 0, top: 0, width: 960, height: 540 };
   const c = makeCanvas(rect);
@@ -100,28 +115,31 @@ test("fork buttons are edge-triggered and leave no held input", () => {
   assert.equal(readTouchFork(), 1);
   assert.equal(readTouchFork(), -1);
   assert.equal(readTouchFork(), 0);
-  assert.deepEqual(readTouchInput(), { steer: 0, accel: 0, brake: 0 });
+  assert.equal(readTouchInput().steer, 0);
 });
 
-test("a touch outside every button is ignored", () => {
+test("a touch outside every control does not start a steer", () => {
   const rect = { left: 0, top: 0, width: 960, height: 540 };
   const c = makeCanvas(rect);
   installTouch(c);
-  c.fire("pointerdown", 480, 20, 9); // top-centre, no button
-  assert.deepEqual(readTouchInput(), { steer: 0, accel: 0, brake: 0 });
+  c.fire("pointerdown", 480, 20, 9); // top-centre, no control there
+  assert.equal(readTouchInput().steer, 0);
 });
 
-test("button layout: unique ids, in-bounds, no overlap", () => {
+test("control layout: fork ids unique + in bounds; wheel/throttle regions disjoint from forks", () => {
   const ids = BUTTONS.map((b) => b.id);
   assert.equal(new Set(ids).size, ids.length);
   for (const b of BUTTONS) {
     assert.ok(b.x0 >= 0 && b.x1 <= 1 && b.y0 >= 0 && b.y1 <= 1 && b.x0 < b.x1 && b.y0 < b.y1, `${b.id} in bounds`);
   }
-  for (let i = 0; i < BUTTONS.length; i++) {
-    for (let j = i + 1; j < BUTTONS.length; j++) {
-      const a = BUTTONS[i], b = BUTTONS[j];
-      const overlap = a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
-      assert.ok(!overlap, `${a.id} and ${b.id} must not overlap`);
+  const regions = [STEER_WHEEL, THROTTLE];
+  for (const r of regions) {
+    for (const b of BUTTONS) {
+      const overlap = r.x0 < b.x1 && b.x0 < r.x1 && r.y0 < b.y1 && b.y0 < r.y1;
+      assert.ok(!overlap, "steer/throttle must not overlap a fork button");
     }
   }
+  // wheel (bottom-centre) and throttle (right) must not overlap each other
+  const o = STEER_WHEEL.x0 < THROTTLE.x1 && THROTTLE.x0 < STEER_WHEEL.x1 && STEER_WHEEL.y0 < THROTTLE.y1 && THROTTLE.y0 < STEER_WHEEL.y1;
+  assert.ok(!o, "wheel and throttle must not overlap");
 });

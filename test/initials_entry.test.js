@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createInitialsEntry } from "../client/initials_entry.js";
+import { createInitialsEntry, initialsLayout } from "../client/initials_entry.js";
+
+const VIEW = { w: 960, h: 540 };
+const centre = (r) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
 
 test("seeds from a name, padded to 5 slots", () => {
   const e = createInitialsEntry("XY");
@@ -42,4 +45,36 @@ test("confirm finishes and is reported by isDone()", () => {
 test("never returns an empty name (all-pad trims to a default)", () => {
   const e = createInitialsEntry(".....");
   assert.equal(e.text(), "AAA"); // all pad chars trimmed -> default
+});
+
+test("touch enter advances slot-by-slot and confirms after the 5th", () => {
+  const e = createInitialsEntry("AAAAA");
+  for (let i = 0; i < 4; i++) assert.equal(e.handle("enter"), false); // advance 0->4
+  assert.equal(e.handle("enter"), true); // on the last slot -> done
+  assert.equal(e.isDone(), true);
+});
+
+test("tap: a slot selects it, the ▲/▼ buttons change that slot's letter", () => {
+  const e = createInitialsEntry("AAAAA");
+  const L = initialsLayout(VIEW);
+  const c2 = centre(L.cells[2]);
+  e.tap(VIEW, c2.x, c2.y); // select slot 2
+  const up = centre(L.up);
+  e.tap(VIEW, up.x, up.y); // slot 2: A -> B
+  e.tap(VIEW, up.x, up.y); // slot 2: B -> C
+  assert.equal(e.text(), "AACAA");
+  const down = centre(L.down);
+  e.tap(VIEW, down.x, down.y); // slot 2: C -> B
+  assert.equal(e.text(), "AABAA");
+});
+
+test("tap: ENTER advances then confirms; taps after done are inert", () => {
+  const e = createInitialsEntry("AAAAA");
+  const L = initialsLayout(VIEW);
+  const enter = centre(L.enter);
+  for (let i = 0; i < 4; i++) assert.equal(e.tap(VIEW, enter.x, enter.y), false);
+  assert.equal(e.tap(VIEW, enter.x, enter.y), true); // 5th ENTER confirms
+  assert.equal(e.isDone(), true);
+  assert.equal(e.tap(VIEW, centre(L.up).x, centre(L.up).y), true); // inert, stays done
+  assert.equal(e.text(), "AAAAA");
 });

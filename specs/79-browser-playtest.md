@@ -1,4 +1,4 @@
-# 79 — Browser playtest round (markers 0146–0150)
+# 79 — Browser playtest round (markers 0146–0150, 0157)
 
 Browser (Canvas 2D) presentation fixes from playtest. Engine untouched; `npm test`
 green; `npm run test:browser` (Playwright smoke) OK.
@@ -28,6 +28,27 @@ green; `npm run test:browser` (Playwright smoke) OK.
 - The in-game player car drew a fixed red sprite regardless of the car-select choice;
   tint it (and the no-asset fallback) to `carColor(seat.carId)`, same identity colours
   the rivals use — what you pick is what you drive.
+
+## 0157 — mobile controls: steering wheel + set-speed lever + touch initials
+- Mobile playtest: the old drag-pad + hold ▲/▼ buttons were poor on a phone. Replaced
+  (touch only; keyboard unchanged) with three controls in `client/touch_controls.js`:
+  - **Steering wheel** — a rim drawn bottom-centre (top half visible), grab band
+    `STEER_WHEEL`; horizontal drag from the touch-down anchor steers (same relative
+    mapping as the old pad), springs back to centre on release, rotates with the lock.
+  - **Set-speed lever** — a vertical slider on the right (`THROTTLE`); the knob is a
+    CRUISE speed the car holds, so no button-holding. `readTouchInput` reports a 0..1
+    `throttleFrac`; `main.js` converts it to accel/brake against the live car speed
+    (`spd` vs `throttleFrac*maxSpeed`, `SPEED_SCALE/4` deadband) — engine untouched.
+    Default full; drag down for corners. Value persists across releases.
+  - Fork arrows unchanged (edge-triggered, top corners).
+  - Gated on `showTouch` so a desktop user's default lever never forces the throttle.
+- **Touch initials entry** — no arrows/Enter on a phone. `initials_entry.js` gains
+  `tap(view,x,y)` + shared `initialsLayout`: tap a slot to select it, on-screen ▲ ▼
+  change that slot's letter, an ENTER button advances slot-by-slot and confirms after
+  the 5th (new `"enter"` event; keyboard `"confirm"` still finishes immediately).
+- Tests: `test/touch_controls.test.js` (wheel drag, lever frac + persistence,
+  multi-touch, disjoint regions), `test/initials_entry.test.js` (enter-advances, tap
+  select + ▲/▼, inert-after-done). 326 green; browser smoke OK.
 
 ## Not done / deferred
 - Real-device mobile pass; GO LIVE deploy (on-box, needs the user). See

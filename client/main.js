@@ -6,7 +6,7 @@ import { loadCourseSet } from "../shared/road_data.js";
 import { loadCarSet } from "../shared/car_data.js";
 import { loadCheckpointConfig } from "../shared/checkpoint_data.js";
 import { loadTrafficConfig } from "../shared/traffic_data.js";
-import { TICK_HZ } from "../shared/constants.js";
+import { TICK_HZ, SPEED_SCALE } from "../shared/constants.js";
 import { createLocalSession } from "./session_local.js";
 import { createRemoteSession } from "./session_remote.js";
 import { installKeyboard, readInput, readForkChoice, readMenuNav, readMusicCycle } from "./input.js";
@@ -232,6 +232,12 @@ export async function boot(doc = document) {
       if (z === "prev") spectateIndex--;
       else if (z === "next") spectateIndex++;
       else start(activeCarId, activeTimeScale, activeDiffLevel);
+    } else if (phase === "initials" && initialsEntry) {
+      if (initialsEntry.tap(view, x, y)) { // confirmed -> record under the initials
+        allTimeBoard = recordScore(storage, { ...pendingResult, name: initialsEntry.text() });
+        summaryStart = performance.now();
+        phase = "summary";
+      }
     } else if (remote && session && session.watching) {
       session.join(); // JOIN IN
     } else if (remote && session && session.lobby && session.lobby.active) {
@@ -387,11 +393,24 @@ export async function boot(doc = document) {
         session.setInput({ steer: 0, accel: 0, brake: 0 });
       } else {
         const kb = readInput();
-        const tc = readTouchInput();
+        // Touch: the wheel gives steer; the lever is a SET SPEED. Convert the
+        // lever fraction to accel/brake against the live car speed (cruise), so
+        // the engine stays untouched. Keyboard keeps hold-to-go. Gated on
+        // showTouch so a desktop user's default lever never forces the throttle.
+        const tc = showTouch ? readTouchInput() : { steer: 0, throttleFrac: null };
+        let tAccel = 0, tBrake = 0;
+        if (tc.throttleFrac != null) {
+          const cur = session.getState().seats[0];
+          const spd = cur ? cur.speed : 0;
+          const target = Math.round(tc.throttleFrac * sel.car.maxSpeed);
+          const dead = SPEED_SCALE >> 2; // deadband to avoid accel/brake chatter
+          if (spd < target - dead) tAccel = 1;
+          else if (spd > target + dead) tBrake = 1;
+        }
         session.setInput({
           steer: kb.steer || tc.steer,
-          accel: kb.accel || tc.accel,
-          brake: kb.brake || tc.brake,
+          accel: kb.accel || tAccel,
+          brake: kb.brake || tBrake,
         });
         const fc = readForkChoice() || readTouchFork();
         if (fc !== 0) session.setForkChoice(fc);
