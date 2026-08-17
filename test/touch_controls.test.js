@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { installTouch, readTouchInput, readTouchFork, eventFraction, BUTTONS, STEER_WHEEL, THROTTLE, PAD_RANGE } from "../client/touch_controls.js";
+import { installTouch, readTouchInput, readTouchFork, eventFraction, cruiseInput, BUTTONS, STEER_WHEEL, THROTTLE, PAD_RANGE } from "../client/touch_controls.js";
 
 // A fake canvas: captures listeners and reports a bounding rect, so we can
 // simulate a canvas that the browser has CSS-scaled to fit a phone.
@@ -124,6 +124,20 @@ test("a touch outside every control does not start a steer", () => {
   installTouch(c);
   c.fire("pointerdown", 480, 20, 9); // top-centre, no control there
   assert.equal(readTouchInput().steer, 0);
+});
+
+test("cruiseInput: set-speed lever -> accel below target, brake above, coast within deadband", () => {
+  const MAX = 1000; // deadband = SPEED_SCALE/4 = 64
+  // frac 0.5 -> target 500
+  assert.deepEqual(cruiseInput(400, 0.5, MAX), { accel: 1, brake: 0 }); // well below
+  assert.deepEqual(cruiseInput(600, 0.5, MAX), { accel: 0, brake: 1 }); // well above
+  assert.deepEqual(cruiseInput(500, 0.5, MAX), { accel: 0, brake: 0 }); // at target -> coast
+  assert.deepEqual(cruiseInput(450, 0.5, MAX), { accel: 0, brake: 0 }); // inside deadband
+  // frac 0 -> target 0: any speed brakes down to a stop
+  assert.deepEqual(cruiseInput(100, 0, MAX), { accel: 0, brake: 1 });
+  // frac 1 -> target max: at top speed, coast (no perpetual accel chatter)
+  assert.deepEqual(cruiseInput(MAX, 1, MAX), { accel: 0, brake: 0 });
+  assert.deepEqual(cruiseInput(0, 1, MAX), { accel: 1, brake: 0 });
 });
 
 test("control layout: fork ids unique + in bounds; wheel/throttle regions disjoint from forks", () => {

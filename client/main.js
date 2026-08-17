@@ -6,11 +6,11 @@ import { loadCourseSet } from "../shared/road_data.js";
 import { loadCarSet } from "../shared/car_data.js";
 import { loadCheckpointConfig } from "../shared/checkpoint_data.js";
 import { loadTrafficConfig } from "../shared/traffic_data.js";
-import { TICK_HZ, SPEED_SCALE } from "../shared/constants.js";
+import { TICK_HZ } from "../shared/constants.js";
 import { createLocalSession } from "./session_local.js";
 import { createRemoteSession } from "./session_remote.js";
 import { installKeyboard, readInput, readForkChoice, readMenuNav, readMusicCycle } from "./input.js";
-import { installTouch, readTouchInput, readTouchFork, drawTouchControls, touchDetected } from "./touch_controls.js";
+import { installTouch, readTouchInput, readTouchFork, drawTouchControls, touchDetected, cruiseInput } from "./touch_controls.js";
 import { render } from "./renderer_canvas.js";
 import { createCelebration } from "./celebration.js";
 import { createCrashFeel } from "./crash_feel.js";
@@ -401,11 +401,7 @@ export async function boot(doc = document) {
         let tAccel = 0, tBrake = 0;
         if (tc.throttleFrac != null) {
           const cur = session.getState().seats[0];
-          const spd = cur ? cur.speed : 0;
-          const target = Math.round(tc.throttleFrac * sel.car.maxSpeed);
-          const dead = SPEED_SCALE >> 2; // deadband to avoid accel/brake chatter
-          if (spd < target - dead) tAccel = 1;
-          else if (spd > target + dead) tBrake = 1;
+          ({ accel: tAccel, brake: tBrake } = cruiseInput(cur ? cur.speed : 0, tc.throttleFrac, sel.car.maxSpeed));
         }
         session.setInput({
           steer: kb.steer || tc.steer,

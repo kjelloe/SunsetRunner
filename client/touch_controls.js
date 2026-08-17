@@ -8,7 +8,19 @@
 // against the live car speed (keeps the engine untouched + deterministic).
 // Import-safe; tested headlessly with synthetic pointer events (brief §17, #10).
 
-import { STEER_UNIT } from "../shared/constants.js";
+import { STEER_UNIT, SPEED_SCALE } from "../shared/constants.js";
+
+// Cruise control: turn the lever's set-speed fraction (0..1 of maxSpeed) into
+// accel/brake against the LIVE car speed, so the engine stays untouched. A
+// deadband stops accel/brake chatter when the car is already at the set speed.
+// Pure — unit-tested; main.js calls it each racing tick with the touch lever.
+export function cruiseInput(speed, throttleFrac, maxSpeed) {
+  const target = Math.round(throttleFrac * maxSpeed);
+  const dead = SPEED_SCALE >> 2;
+  if (speed < target - dead) return { accel: 1, brake: 0 };
+  if (speed > target + dead) return { accel: 0, brake: 1 };
+  return { accel: 0, brake: 0 };
+}
 
 // Edge-triggered fork arrows sit in the top corners.
 export const BUTTONS = [

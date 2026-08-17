@@ -48,7 +48,7 @@ green; `npm run test:browser` (Playwright smoke) OK.
   the 5th (new `"enter"` event; keyboard `"confirm"` still finishes immediately).
 - Tests: `test/touch_controls.test.js` (wheel drag, lever frac + persistence,
   multi-touch, disjoint regions), `test/initials_entry.test.js` (enter-advances, tap
-  select + ▲/▼, inert-after-done). 326 green; browser smoke OK.
+  select + ▲/▼, inert-after-done). 327 green; browser smoke OK.
 
 ## Not done / deferred
 - Real-device mobile pass; GO LIVE deploy (on-box, needs the user). See

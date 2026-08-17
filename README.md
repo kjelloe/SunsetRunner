@@ -2,7 +2,7 @@
 
 **A deterministic, server-authoritative arcade road racer for the browser — with a byte-identical Roblox/Luau twin.**
 
-![tests](https://img.shields.io/badge/tests-326%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-327%20passing-brightgreen)
 ![luau parity](https://img.shields.io/badge/Luau%20parity-6%20gates-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A518-informational)
 ![build](https://img.shields.io/badge/build-none%20(vanilla%20ESM)-blue)
@@ -27,7 +27,7 @@ No framework. No build step. No bundler. Just Node.js and vanilla ES modules.
 - 🚙 **Car roster + picker** — four balance-swept cars, chosen in a pre-race select screen (`?car=N` to skip).
 - 🔊 **Procedural audio** — synthesised engine hum that tracks speed, event SFX, and a chiptune loop (`?mute=1`).
 - 🌐 **Drop-in & reconnect multiplayer** — Node `ws` server, up to 8 seats, ghost rivals (colour-coded by car), live standings, **client-side prediction**, and **token-reclaim reconnect** (survives mobile backgrounding).
-- 📱 **Mobile-ready** — on-screen controls with an analog steer pad, correct touch mapping on CSS-scaled canvases, no page scroll/zoom while driving.
+- 📱 **Mobile-ready** — on-screen steering wheel + set-speed lever, correct touch mapping on CSS-scaled canvases, no page scroll/zoom while driving.
 - 🎉 **Finish celebration** — confetti + fireworks.
 - 🤖 **AI drivers + sim campaign** — headless balance tooling.
 - ⚖️ **Fairness instruments** — route-mirror, car-swap, traffic-swap, and seat-order analysis.
@@ -54,7 +54,7 @@ Open **http://localhost:8000/client/index.html** and drive with **WASD / arrows*
 - `?course=2` — the branching **canyon_split** (press **Q / E** at the fork)
 - `?course=3` — the mirror-fair **mirror_valley**
 - `?course=4` — the **grand_tour** (30-stage main route, ten terrains, three forks, checkpoint banners)
-- `?touch=1` — preview the mobile arrow pad on desktop
+- `?touch=1` — preview the touch controls (wheel + lever) on desktop
 
 ### Play (multiplayer)
 
@@ -66,7 +66,7 @@ Open **http://localhost:8000/client/index.html?mode=remote** in two tabs.
 ### Test
 
 ```bash
-npm test               # node --test: 316 unit/integration tests
+npm test               # node --test: 327 unit/integration tests
 ./test.sh              # the above + Luau (lune) cross-language parity gates
 ```
 
@@ -76,10 +76,13 @@ npm test               # node --test: 316 unit/integration tests
 
 | Action | Keyboard | Touch |
 |---|---|---|
-| Accelerate / brake | ↑↓ or W/S | ▲ ▼ |
-| Steer | ←→ or A/D | analog drag pad (left thumb) |
-| Fork left / right | Q / E | ↰ ↱ |
+| Accelerate / brake | ↑↓ or W/S | set-speed lever (right thumb — knob = cruise speed) |
+| Steer | ←→ or A/D | steering wheel (bottom-centre, drag left/right) |
+| Fork left / right | Q / E | ↰ ↱ (top corners) |
 | Cycle music track | M | — |
+
+High-score initials use ◄ ► ▲ ▼ / Enter on keyboard; on touch, tap a slot then use
+the on-screen ▲ ▼ / ENTER buttons.
 
 ---
 
@@ -109,7 +112,7 @@ specs/    the design brief + numbered decision docs
 
 ## 🧪 Testing & determinism
 
-- `npm test` — 316 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
+- `npm test` — 327 tests: fixed-point/PRNG/hash vectors, reducer + physics, server room, prediction, fairness, and client module loading.
 - `./test.sh` — adds the Luau parity gates ([`lune`](https://lune-org.github.io/docs) required; skipped gracefully if absent) + a headless-browser smoke (`npm run test:browser`, Playwright; `SKIP_BROWSER=1` to skip).
 - `node debugging/replay.mjs` — replay a scenario as a race report.
 - `node debugging/sim_campaign.mjs` — AI "do systems fire?" gate across 5 seeds.

@@ -48,6 +48,36 @@ paths, correct hit-testing on a **CSS-scaled + offset** canvas (the mobile bug),
 multi-touch on a scaled canvas, and a button-layout sanity check
 (unique/in-bounds/non-overlapping).
 
+## Current layout (marker-0157 — supersedes the button/pad layouts above)
+
+The discrete `BRK`/`GAS` + `◄`/`►` buttons (0025) and the later analog drag PAD
+(0087) proved poor on a real phone. The live control set in `client/touch_controls.js`
+is now (touch only — keyboard + engine unchanged):
+
+- **Steering wheel** (`STEER_WHEEL` grab band, bottom-centre; rim drawn with only
+  its top half on-screen). Horizontal drag from the touch-down anchor steers with
+  the same relative mapping as the old pad (`PAD_RANGE` = full lock at ±`STEER_UNIT`),
+  springs back to centre on release, and the drawn rim rotates with the lock.
+- **Set-speed lever** (`THROTTLE`, vertical slider, right side). The knob is a
+  **cruise speed the car holds** — no button-holding. `readTouchInput()` returns
+  `{ steer, throttleFrac }` where `throttleFrac` is 0..1 of the car's max; `main.js`
+  converts it to accel/brake against the **live** car speed (`spd` vs
+  `throttleFrac*maxSpeed`, `SPEED_SCALE/4` deadband to avoid chatter). Default full;
+  drag down for corners; value persists across releases. Merge is gated on
+  `showTouch`, so a desktop user's default lever never forces the throttle.
+- **Fork** arrows unchanged (edge-triggered, top corners, `readTouchFork()`).
+
+High-score **initials** entry (`client/initials_entry.js`) also gained touch:
+`tap(view,x,y)` + a shared `initialsLayout(view)` — tap a slot to select it,
+on-screen ▲ ▼ change that slot's letter, an ENTER button advances slot-by-slot and
+confirms after the 5th (new `"enter"` event; keyboard `"confirm"` still finishes
+immediately). See specs/79.
+
+Tests: `test/touch_controls.test.js` (wheel drag + spring-back, lever fraction +
+persistence, multi-touch wheel+lever, disjoint control regions) and
+`test/initials_entry.test.js` (enter-advances-then-confirms, tap-select + ▲/▼,
+inert-after-done). `npm test` 327 green; `npm run test:browser` OK.
+
 ## Not verified
 
 Real on-device ergonomics and high-DPR crispness (the 960 buffer is CSS-upscaled;

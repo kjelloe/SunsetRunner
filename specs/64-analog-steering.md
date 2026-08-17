@@ -34,6 +34,9 @@ JS-only AI. The AI now emits `±STEER_UNIT` (full lock); `truncDivI32(±256*rate
   sets an anchor; horizontal drag maps to steer, `PAD_RANGE` (0.14 of canvas
   width) = full lock, clamped to `±STEER_UNIT`. A thumb dot renders the current
   magnitude. Accel/brake/fork buttons are unchanged.
+  > **marker-0157**: the pad became a bottom-centre **steering wheel**
+  > (`STEER_WHEEL`) — the STEER_UNIT / `PAD_RANGE` / relative-anchor mapping here
+  > is byte-identical, only the widget + placement changed. See specs/25.
 
 ## Verified
 

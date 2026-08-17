@@ -2569,9 +2569,12 @@ Mobile playtest: touch controls reworked (touch only; keyboard/engine untouched)
 `client/touch_controls.js`: a STEERING WHEEL bottom-centre (top half visible, drag L/R =
 steer, springs back), a right-side SET-SPEED LEVER (knob = a cruise speed the car holds so
 no button-holding — `readTouchInput` reports 0..1 `throttleFrac`, `main.js` turns it into
-accel/brake vs the live car speed with a `SPEED_SCALE/4` deadband; default full, gated on
+accel/brake vs the live car speed via the pure `cruiseInput(speed,frac,maxSpeed)` helper
+(`SPEED_SCALE/4` deadband; default full, gated on
 `showTouch`), fork arrows unchanged. Initials entry gets touch: `tap()` + shared
 `initialsLayout` — tap a slot to select, on-screen ▲ ▼ change its letter, ENTER advances
 slot-by-slot and confirms after the 5th (new `"enter"` event; keyboard `"confirm"` still
-finishes now). Tests: rewritten `touch_controls.test.js` + `initials_entry.test.js` (326
-green); browser smoke OK. Spec: specs/79. Presentation only — no engine/fixture change.
+finishes now). Tests: rewritten `touch_controls.test.js` (incl. `cruiseInput` cases) +
+`initials_entry.test.js` (327 green); browser smoke OK. Docs synced: specs/79 + specs/25
+"Current layout" + supersede notes in specs/30 & specs/64 + README controls table.
+Presentation only — no engine/fixture change.

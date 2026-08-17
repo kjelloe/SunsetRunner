@@ -28,6 +28,10 @@ the old `GAS`/`BRK` text. Zones stay non-overlapping (guarded by the layout
 test); hit-testing already uses the bounding rect (marker-0029) so it's correct
 at any CSS scale.
 
+> **Superseded by marker-0157**: steer is now a bottom-centre steering wheel and
+> accel/brake a right-side set-speed lever (the fork arrows are unchanged). See
+> specs/25 "Current layout" for the live control set.
+
 ## Verified / not
 
 `./test.sh` → 139/139 + 4 Luau gates. The celebration particle/state logic and
