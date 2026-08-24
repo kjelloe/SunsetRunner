@@ -2,7 +2,7 @@
 
 Presentation/host-only iteration on the Roblox build, driven by the user's Studio
 playtests + screenshots. The deterministic engine (`shared/`+`engine/`, the `luau/`
-twin, the 6 lune parity gates, the 316 JS tests) is **untouched throughout** — every
+twin, the 6 lune parity gates, the 327 JS tests) is **untouched throughout** — every
 change here is in `roblox/src/` or `roblox/` docs. `rojo build` valid on each marker.
 
 See `roblox/roblox-howto-and-gotchas.md` for the Roblox-specific gotchas these rounds

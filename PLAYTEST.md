@@ -128,14 +128,20 @@ Open `...index.html?course=4`.
 
 On a phone (or desktop with `...index.html?touch=1`):
 
-- [ ] **[bug]** Controls appear: an **analog steer PAD** (left thumb, with a
-  sliding thumb-dot), `▲`/`▼` (accel/brake, right thumb), `↰`/`↱` (fork, top
-  corners) — marker-0087.
-- [ ] **[feel]** **Analog steering**: touch the steer pad and drag — a small drag
-  = gentle steer, a full drag = full lock. Is the range/sensitivity good on a
-  phone? (Keyboard is still full-lock.)
-- [ ] **[bug]** Two fingers at once (steer pad + GAS) both register.
+- [ ] **[bug]** Controls appear (marker-0157): a **steering WHEEL** (bottom-centre,
+  top half visible), a **set-speed LEVER** (right thumb, knob shows a %), and
+  `↰`/`↱` (fork, top corners).
+- [ ] **[feel]** **Analog steering**: grab the wheel and drag left/right — a small
+  drag = gentle steer, a full drag = full lock; the wheel springs back to centre on
+  release. Is the range/sensitivity good on a phone? (Keyboard is still full-lock.)
+- [ ] **[feel]** **Set-speed lever**: drag the knob up = faster, down = slower. The
+  car auto-accelerates/brakes to hold the set speed (no button-holding). Default is
+  full; pulling back for corners feels right? MAX/MIN ends clear?
+- [ ] **[bug]** Two fingers at once (steer wheel + throttle lever) both register.
 - [ ] **[bug]** Tapping a fork button chooses that branch (one tap = one choice).
+- [ ] **[bug]** **High-score initials** (touch): on a top-10 solo run, tap a slot to
+  select it, the on-screen `▲`/`▼` change its letter, and `ENTER` advances slot-by-slot
+  then confirms after the 5th (no keyboard needed).
 - [ ] **[bug]** Canvas fills the screen keeping 16:9 (no overflow / page scroll);
   buttons are hit-tested correctly at that scale (marker-0029 fixed the CSS-scale
   mapping bug — verify a tap actually triggers the button under your finger).
