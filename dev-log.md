@@ -2594,3 +2594,14 @@ the view handler (20 Hz) + on knob move; gated on `UIS.TouchEnabled`. Client now
 mouse = `MouseMovement` vs `MouseButton1`) — new gotcha in roblox-howto §7. Fork buttons
 unchanged. Rojo build (syntax gate) passes. Server authoritative — no engine/fixture
 change. Specs: 78 (+0158). Awaiting the user's Studio playtest.
+
+## marker-0159 — Roblox mobile controls: colour + clarity pass (2026-08-25)
+
+Studio playtest (0158 worked but looked flat): styled the wheel + lever.
+**Steering wheel** now reads as a wheel — transparent centre (never blocks the road),
+a thick dark rubber rim via a fat `UIStroke` (thickness 16), light metallic spokes, and
+a gold hub with a rim outline. **Set-speed lever** — semi-transparent deep-blue track +
+a green "go" fill under the knob (view stays visible through both), a SOLID gold knob
+(opaque, outlined, % on it) so it clearly reads as the handle, and **MAX** (green, top)
+/ **MIN** (red, bottom) end labels so the range is clear. Presentation only; rojo build
+passes. User confirmed steering works; this is the visual follow-up.

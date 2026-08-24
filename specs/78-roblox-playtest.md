@@ -1,4 +1,4 @@
-# 78 — Roblox playtest rounds (markers 0121–0141, 0152–0158)
+# 78 — Roblox playtest rounds (markers 0121–0141, 0152–0159)
 
 Presentation/host-only iteration on the Roblox build, driven by the user's Studio
 playtests + screenshots. The deterministic engine (`shared/`+`engine/`, the `luau/`
@@ -111,6 +111,11 @@ etc.).
   Client loads `car_data`/`cars` for `maxSpeed`. Drag uses `InputBegan` + `UIS.InputChanged`
   /`InputEnded` with active-`InputObject` matching (see roblox-howto §7). Presentation only
   — server authoritative, no engine/fixture change. Rojo build (syntax gate) passes.
+- **0159** — colour + clarity pass on the 0158 controls (Studio playtest: worked but flat).
+  Steering wheel now reads as a wheel: transparent centre (never blocks the road) + a thick
+  rubber rim (fat `UIStroke`) + metallic spokes + gold hub. Set-speed lever: semi-transparent
+  deep-blue track + green go-fill (view stays visible), a SOLID outlined gold knob with its %,
+  and **MAX**/**MIN** end labels for a clear range. Presentation only; rojo build passes.
 
 ## Not done / deferred
 - Collidable **oncoming** traffic (engine change; repins goldens) — cosmetic for now.
