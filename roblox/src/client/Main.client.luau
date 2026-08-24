@@ -525,46 +525,55 @@ if UIS.TouchEnabled then
 		inputEvent:FireServer({ steer = held.steer, accel = held.accel, brake = held.brake, fork = 1 })
 	end)
 
-	-- ===== Steering wheel: a rim centred below the bottom edge (only its top arc
-	-- shows), rotating with the steer lock. A square via RelativeYY size. =====
+	-- ===== Steering wheel: a RIM centred below the bottom edge (only its top arc
+	-- shows), rotating with the steer lock. Centre is transparent so it never blocks
+	-- the road — the wheel reads from its thick rubber rim + spokes. Square via
+	-- RelativeYY size. =====
+	local wheelRimCol = Color3.fromRGB(34, 34, 40) -- rubber rim
+	local wheelSpokeCol = Color3.fromRGB(210, 212, 224) -- metallic spokes/hub
 	local wheel = Instance.new("Frame")
 	wheel.AnchorPoint = Vector2.new(0.5, 0.5)
 	wheel.Position = UDim2.new(0.5, 0, 1.16, 0)
 	wheel.Size = UDim2.new(0.9, 0, 0.9, 0)
 	wheel.SizeConstraint = Enum.SizeConstraint.RelativeYY
-	wheel.BackgroundColor3 = Color3.fromRGB(28, 28, 36)
-	wheel.BackgroundTransparency = 0.55
+	wheel.BackgroundTransparency = 1 -- see-through centre
 	wheel.BorderSizePixel = 0
 	wheel.Parent = gui
 	local wCorner = Instance.new("UICorner")
 	wCorner.CornerRadius = UDim.new(0.5, 0)
 	wCorner.Parent = wheel
-	local wStroke = Instance.new("UIStroke")
-	wStroke.Thickness = 6
-	wStroke.Color = Color3.fromRGB(235, 235, 245)
-	wStroke.Transparency = 0.3
+	local wStroke = Instance.new("UIStroke") -- the rubber rim itself
+	wStroke.Thickness = 16
+	wStroke.Color = wheelRimCol
+	wStroke.Transparency = 0.15
 	wStroke.Parent = wheel
 	for _, a in ipairs({ 0, 60, 120 }) do -- three bars through the centre = spokes
 		local sp = Instance.new("Frame")
 		sp.AnchorPoint = Vector2.new(0.5, 0.5)
 		sp.Position = UDim2.new(0.5, 0, 0.5, 0)
-		sp.Size = UDim2.new(0.92, 0, 0.05, 0)
+		sp.Size = UDim2.new(0.92, 0, 0.06, 0)
 		sp.Rotation = a
-		sp.BackgroundColor3 = Color3.fromRGB(235, 235, 245)
-		sp.BackgroundTransparency = 0.3
+		sp.BackgroundColor3 = wheelSpokeCol
+		sp.BackgroundTransparency = 0.35
 		sp.BorderSizePixel = 0
 		sp.Parent = wheel
 	end
 	local hub = Instance.new("Frame")
 	hub.AnchorPoint = Vector2.new(0.5, 0.5)
 	hub.Position = UDim2.new(0.5, 0, 0.5, 0)
-	hub.Size = UDim2.new(0.24, 0, 0.24, 0)
+	hub.Size = UDim2.new(0.26, 0, 0.26, 0)
 	hub.BackgroundColor3 = Color3.fromRGB(255, 208, 96)
+	hub.BackgroundTransparency = 0.15
 	hub.BorderSizePixel = 0
 	hub.Parent = wheel
 	local hubCorner = Instance.new("UICorner")
 	hubCorner.CornerRadius = UDim.new(0.5, 0)
 	hubCorner.Parent = hub
+	local hubStroke = Instance.new("UIStroke")
+	hubStroke.Thickness = 3
+	hubStroke.Color = wheelRimCol
+	hubStroke.Transparency = 0.2
+	hubStroke.Parent = hub
 	-- Invisible grab band over the visible arc (matches STEER_WHEEL in the browser).
 	local wheelHit = Instance.new("Frame")
 	wheelHit.Position = UDim2.new(0.28, 0, 0.68, 0)
@@ -573,54 +582,84 @@ if UIS.TouchEnabled then
 	wheelHit.Active = true
 	wheelHit.Parent = gui
 
-	-- ===== Set-speed lever: a vertical track + knob on the right. =====
+	-- ===== Set-speed lever: a vertical track + knob on the right. Track + fill are
+	-- semi-transparent (never block the view); the knob is SOLID so it stands out;
+	-- MAX / MIN are labelled at the ends so the range is clear. =====
 	local throttleTrack = Instance.new("Frame")
 	throttleTrack.Position = UDim2.new(0.86, 0, 0.3, 0)
 	throttleTrack.Size = UDim2.new(0.1, 0, 0.6, 0)
-	throttleTrack.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
-	throttleTrack.BackgroundTransparency = 0.4
+	throttleTrack.BackgroundColor3 = Color3.fromRGB(26, 32, 54) -- deep blue track
+	throttleTrack.BackgroundTransparency = 0.45
 	throttleTrack.BorderSizePixel = 0
 	throttleTrack.Active = true
 	throttleTrack.Parent = gui
 	local ttCorner = Instance.new("UICorner")
 	ttCorner.CornerRadius = UDim.new(0.12, 0)
 	ttCorner.Parent = throttleTrack
-	local throttleFill = Instance.new("Frame")
+	local ttStroke = Instance.new("UIStroke")
+	ttStroke.Thickness = 2
+	ttStroke.Color = Color3.fromRGB(120, 140, 200)
+	ttStroke.Transparency = 0.4
+	ttStroke.Parent = throttleTrack
+	local throttleFill = Instance.new("Frame") -- coloured "how fast" fill under the knob
 	throttleFill.AnchorPoint = Vector2.new(0, 1)
 	throttleFill.Position = UDim2.new(0, 0, 1, 0)
 	throttleFill.Size = UDim2.new(1, 0, 1, 0)
-	throttleFill.BackgroundColor3 = Color3.fromRGB(255, 208, 96)
-	throttleFill.BackgroundTransparency = 0.55
+	throttleFill.BackgroundColor3 = Color3.fromRGB(90, 200, 120) -- green go
+	throttleFill.BackgroundTransparency = 0.45
 	throttleFill.BorderSizePixel = 0
 	throttleFill.Parent = throttleTrack
-	local throttleKnob = Instance.new("Frame")
+	local fillCorner = Instance.new("UICorner")
+	fillCorner.CornerRadius = UDim.new(0.12, 0)
+	fillCorner.Parent = throttleFill
+	-- MAX (top) / MIN (bottom) end labels.
+	local maxLbl = Instance.new("TextLabel")
+	maxLbl.AnchorPoint = Vector2.new(0.5, 1)
+	maxLbl.Position = UDim2.new(0.5, 0, 0, -2)
+	maxLbl.Size = UDim2.new(1.6, 0, 0.09, 0)
+	maxLbl.SizeConstraint = Enum.SizeConstraint.RelativeXX
+	maxLbl.BackgroundTransparency = 1
+	maxLbl.Text = "MAX"
+	maxLbl.TextScaled = true
+	maxLbl.Font = Enum.Font.GothamBold
+	maxLbl.TextColor3 = Color3.fromRGB(150, 240, 170)
+	maxLbl.Parent = throttleTrack
+	local minLbl = Instance.new("TextLabel")
+	minLbl.AnchorPoint = Vector2.new(0.5, 0)
+	minLbl.Position = UDim2.new(0.5, 0, 1, 2)
+	minLbl.Size = UDim2.new(1.6, 0, 0.09, 0)
+	minLbl.SizeConstraint = Enum.SizeConstraint.RelativeXX
+	minLbl.BackgroundTransparency = 1
+	minLbl.Text = "MIN"
+	minLbl.TextScaled = true
+	minLbl.Font = Enum.Font.GothamBold
+	minLbl.TextColor3 = Color3.fromRGB(220, 150, 150)
+	minLbl.Parent = throttleTrack
+	local throttleKnob = Instance.new("Frame") -- SOLID grabbable knob
 	throttleKnob.AnchorPoint = Vector2.new(0.5, 0.5)
 	throttleKnob.Position = UDim2.new(0.5, 0, 0, 0)
-	throttleKnob.Size = UDim2.new(1.3, 0, 0.07, 0)
+	throttleKnob.Size = UDim2.new(1.35, 0, 0.1, 0)
 	throttleKnob.BackgroundColor3 = Color3.fromRGB(255, 208, 96)
+	throttleKnob.BackgroundTransparency = 0 -- opaque so it clearly reads as the handle
 	throttleKnob.BorderSizePixel = 0
 	throttleKnob.Parent = throttleTrack
+	local knobCorner = Instance.new("UICorner")
+	knobCorner.CornerRadius = UDim.new(0.35, 0)
+	knobCorner.Parent = throttleKnob
+	local knobStroke = Instance.new("UIStroke")
+	knobStroke.Thickness = 2
+	knobStroke.Color = Color3.fromRGB(120, 90, 20)
+	knobStroke.Parent = throttleKnob
 	local knobLbl = Instance.new("TextLabel")
-	knobLbl.AnchorPoint = Vector2.new(1, 0.5)
-	knobLbl.Position = UDim2.new(0, -6, 0.5, 0)
-	knobLbl.Size = UDim2.new(2, 0, 1.6, 0)
+	knobLbl.AnchorPoint = Vector2.new(0.5, 0.5)
+	knobLbl.Position = UDim2.new(0.5, 0, 0.5, 0)
+	knobLbl.Size = UDim2.new(0.9, 0, 0.8, 0)
 	knobLbl.BackgroundTransparency = 1
 	knobLbl.Text = "100"
 	knobLbl.TextScaled = true
 	knobLbl.Font = Enum.Font.GothamBold
-	knobLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+	knobLbl.TextColor3 = Color3.fromRGB(40, 30, 0)
 	knobLbl.Parent = throttleKnob
-	local spdLbl = Instance.new("TextLabel")
-	spdLbl.AnchorPoint = Vector2.new(0.5, 1)
-	spdLbl.Position = UDim2.new(0.5, 0, 0, -4)
-	spdLbl.Size = UDim2.new(1.4, 0, 0.08, 0)
-	spdLbl.SizeConstraint = Enum.SizeConstraint.RelativeXX
-	spdLbl.BackgroundTransparency = 1
-	spdLbl.Text = "SPD"
-	spdLbl.TextScaled = true
-	spdLbl.Font = Enum.Font.GothamBold
-	spdLbl.TextColor3 = Color3.fromRGB(200, 200, 214)
-	spdLbl.Parent = throttleTrack
 
 	local function updateThrottleVisual(frac)
 		throttleFill.Size = UDim2.new(1, 0, frac, 0)
